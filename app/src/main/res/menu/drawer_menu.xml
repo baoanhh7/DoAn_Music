@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <!--    chi cho phép một phần tử(item) được kiểm tra, các phần từ còn lại sẽ bị bỏ kiểm tra-->
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/home"
+            android:icon="@drawable/ic_home"
+            android:title="Trang chủ" />
+
+        <item
+            android:id="@+id/allSongs"
+            android:icon="@drawable/ic_clock"
+            android:title="Tất cả bài hát">
+
+        </item>
+
+        <item
+            android:id="@+id/logout"
+            android:icon="@drawable/ic_logout1"
+            android:title="Đăng xuất">
+
+        </item>
+
+    </group>
+</menu>

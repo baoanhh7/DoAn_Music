@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <uses-feature android:name="android.hardware.camera" />
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.SEND_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application
+        android:name=".music.MyNoti"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@drawable/logo"
+        android:label="@string/app_name"
+        android:roundIcon="@drawable/logo"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
+        tools:targetApi="31">
+        <activity
+            android:name=".loginPackage.ConfirmGmailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".loginPackage.Register_GmailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.admin.song.UpdateSongActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.admin.artist.AddArtistActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.admin.artist.UpdateArtistActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.admin.artist.ArtistActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.home.SongsPlayListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.admin.song.AddSongActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.admin.song.SongActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.library.PlaylistUserLoveActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.admin.album.UpdateAlbumActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.library.ArtistSongActivity"
+            android:exported="false" />
+        <activity
+            android:name=".loginPackage.OTPActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.library.AddNgheSiActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.admin.playlist.UpdatePlayListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.admin.playlist.AddPlayListActivity"
+            android:exported="false" /> <!-- 13 -->
+        <activity
+            android:name=".activity.admin.playlist.PlayListActivity"
+            android:exported="true" /> <!-- 1 -->
+        <activity
+            android:name=".activity.home.SongsAlbumActivity"
+            android:exported="false" /> <!-- 2 -->
+        <activity
+            android:name=".activity.admin.AdminActivity"
+            android:exported="true" /> <!-- 3 -->
+        <activity
+            android:name=".activity.admin.album.AlbumActivity"
+            android:exported="true" /> <!-- 4 -->
+        <activity
+            android:name=".activity.admin.album.AddAlbumActivity"
+            android:exported="true" /> <!-- 5 -->
+        <activity
+            android:name=".loginPackage.LoginActivity"
+            android:exported="true" /> <!-- 6 -->
+        <activity
+            android:name=".loginPackage.Register_emailActivity"
+            android:exported="true" /> <!-- 7 -->
+        <activity
+            android:name=".loginPackage.Login_userActivity"
+            android:exported="true" /> <!-- 8 -->
+        <activity
+            android:name=".activity.MainActivity"
+            android:exported="true" /> <!-- 9 -->
+        <activity
+            android:name=".activity.SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Design.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity> <!-- 10 -->
+        <activity
+            android:name=".music.PlayMusicActivity"
+            android:exported="true" /> <!-- 11 -->
+        <activity
+            android:name=".activity.home.PlayListActivity"
+            android:exported="true" />
+    </application>
+
+</manifest>
