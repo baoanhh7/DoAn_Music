@@ -27,6 +27,9 @@ import com.example.doan_music.m_interface.OnItemClickListener;
 import com.example.doan_music.model.Song;
 import com.example.doan_music.music.PlayMusicActivity;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,6 +42,10 @@ public class AllSongs_Fragment extends Fragment {
     SQLiteDatabase database = null;
     List<Song> songList, filterSongList;
     ArrayList<Integer> arr = new ArrayList<>();
+    Connection connection;
+    String query;
+    Statement smt;
+    ResultSet resultSet;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

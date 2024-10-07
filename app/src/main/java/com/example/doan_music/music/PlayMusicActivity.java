@@ -34,6 +34,7 @@ import com.example.doan_music.R;
 import com.example.doan_music.activity.MainActivity;
 import com.example.doan_music.data.DatabaseManager;
 import com.example.doan_music.data.DbHelper;
+import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,6 +66,10 @@ public class PlayMusicActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play_music);
         addControls();
+//        String imageUrl = "https://firebasestorage.googleapis.com/v0/b/doanmusic-c1235.appspot.com/o/image%2Fbadbye.jpg?alt=media&token=a7b3c64f-fe04-404a-a011-a822b4b528ad";
+//        Picasso.get()
+//                .load(imageUrl)
+//                .into(imageView_songs);
 
         arr = (ArrayList<Integer>) getIntent().getSerializableExtra("arrIDSongs");
         Integer IDSong = getIntent().getIntExtra("SongID", -1);
@@ -181,13 +186,14 @@ public class PlayMusicActivity extends AppCompatActivity {
             Integer Id = cursor.getInt(0);
             String ten = cursor.getString(2);
             byte[] img = cursor.getBlob(3);
-            String linkSong = cursor.getString(5);
+            //String linkSong = cursor.getString(5);
+            String linkSong = "https://firebasestorage.googleapis.com/v0/b/doanmusic-c1235.appspot.com/o/BADBYE.mp3?alt=media&token=92b7f2ab-5fc3-4d17-8ee6-dabeb8d2d45c";
             int view = cursor.getInt(8);
 
             if (IDSong.equals(Id)) {
                 Bitmap bitmap = BitmapFactory.decodeByteArray(img, 0, img.length);
 
-                imageView_songs.setImageBitmap(bitmap);
+                //imageView_songs.setImageBitmap(bitmap);
                 txt_name_song.setText(ten);
                 txt_view_playmusic.setText(view + "");
 

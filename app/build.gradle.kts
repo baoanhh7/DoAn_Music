@@ -74,6 +74,6 @@ dependencies {
 
     implementation("com.sun.mail:android-mail:1.6.0")
     implementation("com.sun.mail:android-activation:1.6.0")
-
+    implementation ("com.squareup.picasso:picasso:2.71828")
 
 }
