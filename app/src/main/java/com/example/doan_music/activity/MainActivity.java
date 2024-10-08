@@ -132,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
             // Lấy dữ liệu từ Intent
             maU = intent.getIntExtra("maU", 0);
             tenU = intent.getStringExtra("tenU");
+
         }
     }
 

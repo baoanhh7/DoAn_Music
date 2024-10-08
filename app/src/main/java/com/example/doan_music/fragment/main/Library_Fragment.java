@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +31,7 @@ import com.example.doan_music.activity.library.ArtistSongActivity;
 import com.example.doan_music.activity.library.PlaylistUserLoveActivity;
 import com.example.doan_music.adapter.thuvien.ThuVienAdapter;
 import com.example.doan_music.data.DbHelper;
+import com.example.doan_music.database.ConnectionClass;
 import com.example.doan_music.fragment.library.AddNgheSiFragment;
 import com.example.doan_music.fragment.library.AddPlaylistFragment;
 import com.example.doan_music.m_interface.OnItemClickListener;
@@ -37,6 +39,13 @@ import com.example.doan_music.model.ThuVien;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 
 
@@ -51,6 +60,11 @@ public class Library_Fragment extends Fragment implements OnItemClickListener {
     ImageButton btn_thuvien_add;
     SearchView btn_thuvien_search;
     TableRow tbr_bottom_sheet_thuvien_adddanhsachphat, tbr_bottom_sheet_thuvien_addnghesy;
+    Connection connection;
+    String query;
+    Statement smt;
+    ResultSet resultSet;
+    private int userId;
 
     public static byte[] convertDrawableToByteArray(Context context, int drawableId) {
         Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), drawableId);
@@ -64,6 +78,11 @@ public class Library_Fragment extends Fragment implements OnItemClickListener {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_library_, container, false);
+        if (getActivity() instanceof MainActivity) {
+            MainActivity mainActivity = (MainActivity) getActivity();
+            userId = mainActivity.getMyVariable();
+            Log.e("userId", String.valueOf(userId));
+        }
         addControl();
         addEvents();
         return view;
@@ -72,7 +91,7 @@ public class Library_Fragment extends Fragment implements OnItemClickListener {
     @Override
     public void onResume() {
         super.onResume();
-        loadData();
+        loadDataSQLServer();
     }
 
     private void addEvents() {
@@ -134,9 +153,70 @@ public class Library_Fragment extends Fragment implements OnItemClickListener {
         bottomSheetDialog.show();
     }
 
-    private void loadData() {
-        // arr.add(new ThuVien(R.drawable.obito, "Obito"));
-        //arr.add(new ThuVien(R.drawable.podcastchualanh, "Viết chữa lành"));
+    private void loadDataSQLServer() {
+        ConnectionClass sql = new ConnectionClass();
+        connection = sql.conClass();
+        if (connection != null) {
+            try {
+                query = "SELECT * " +
+                        "FROM Artist " +
+                        " INNER JOIN User_Artist ON Artist.ArtistID = User_Artist.ArtistID " +
+                        " WHERE User_Artist.UserID = " + userId;
+                smt = connection.createStatement();
+                resultSet = smt.executeQuery(query);
+                arr.clear();
+                while (resultSet.next()) {
+                    Integer maArtist = resultSet.getInt(1);
+                    String ten = resultSet.getString(2);
+                    String linkImage = resultSet.getString(3);
+                    // Chuyển đổi linkImage thành byte[]
+                    byte[] img = getImageBytesFromURL(linkImage);
+                    ThuVien thuVien = new ThuVien(img, ten);
+                    arr.add(thuVien);
+                }
+                query = "SELECT * " +
+                        "FROM  Playlist_User " +
+                        "WHERE Playlist_User.UserID = " + userId;
+                smt = connection.createStatement();
+                resultSet = smt.executeQuery(query);
+                while (resultSet.next()) {
+                    Integer UserID = resultSet.getInt(3);
+                    String ten = resultSet.getString(2);
+                    byte[] byteArray = convertDrawableToByteArray(requireContext(), R.drawable.music_logo);
+                    if (userId == UserID) {
+                        ThuVien thuVien = new ThuVien(byteArray, ten);
+                        arr.add(thuVien);
+                    }
+                }
+                thuVienAdapter.notifyDataSetChanged();
+                connection.close();
+            } catch (Exception e) {
+                Log.e("Error: ", e.getMessage());
+            }
+        } else {
+            Log.e("Error: ", "Connection null");
+        }
+    }
+
+    // Phương thức để tải ảnh từ URL và chuyển thành byte[]
+    private byte[] getImageBytesFromURL(String imageUrl) {
+        try {
+            URL url = new URL(imageUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            InputStream input = connection.getInputStream();
+            Bitmap bitmap = BitmapFactory.decodeStream(input);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            return stream.toByteArray();
+        } catch (IOException e) {
+            Log.e("Error: ", "Failed to load image from URL: " + e.getMessage());
+            return null; // Hoặc có thể trả về mảng byte rỗng nếu muốn
+        }
+    }
+
+    private void loadDataSQLite() {
         if (getActivity() instanceof MainActivity) {
             MainActivity mainActivity = (MainActivity) getActivity();
             Integer maU = mainActivity.getMyVariable();
@@ -191,31 +271,33 @@ public class Library_Fragment extends Fragment implements OnItemClickListener {
         thuVienAdapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(String data) {
-                database = getActivity().openOrCreateDatabase("doanmusic.db", MODE_PRIVATE, null);
-                Cursor cursor = database.rawQuery("select * from Artists", null);
-                while (cursor.moveToNext()) {
-                    Integer Id = cursor.getInt(0);
-                    String ten = cursor.getString(1);
-                    if (data.equals(ten)) {
-                        Intent intent = new Intent(requireContext(), ArtistSongActivity.class);
-                        intent.putExtra("MaArtist", Id);
-                        startActivity(intent);
-                        break;
-                    }
-                }
-                cursor.close();
-                cursor = database.rawQuery("select * from Playlist_User", null);
-                while (cursor.moveToNext()) {
-                    Integer Id = cursor.getInt(0);
-                    String ten = cursor.getString(1);
-                    if (data.equals(ten)) {
-                        Intent intent = new Intent(requireContext(), PlaylistUserLoveActivity.class);
-                        intent.putExtra("MaPlaylist", Id);
-                        startActivity(intent);
-                        break;
-                    }
-                }
-                cursor.close();
+                loadDataArtistUser(data);
+                loadDataPlaylistUser(data);
+//                database = getActivity().openOrCreateDatabase("doanmusic.db", MODE_PRIVATE, null);
+//                Cursor cursor = database.rawQuery("select * from Artists", null);
+//                while (cursor.moveToNext()) {
+//                    Integer Id = cursor.getInt(0);
+//                    String ten = cursor.getString(1);
+//                    if (data.equals(ten)) {
+//                        Intent intent = new Intent(requireContext(), ArtistSongActivity.class);
+//                        intent.putExtra("MaArtist", Id);
+//                        startActivity(intent);
+//                        break;
+//                    }
+//                }
+//                cursor.close();
+//                cursor = database.rawQuery("select * from Playlist_User", null);
+//                while (cursor.moveToNext()) {
+//                    Integer Id = cursor.getInt(0);
+//                    String ten = cursor.getString(1);
+//                    if (data.equals(ten)) {
+//                        Intent intent = new Intent(requireContext(), PlaylistUserLoveActivity.class);
+//                        intent.putExtra("MaPlaylist", Id);
+//                        startActivity(intent);
+//                        break;
+//                    }
+//                }
+//                cursor.close();
             }
         });
         recyclerView.setAdapter(thuVienAdapter);
@@ -234,6 +316,56 @@ public class Library_Fragment extends Fragment implements OnItemClickListener {
         });
         //recyclerViewNV.setLayoutManager(new StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.HORIZONTAL));
         // Lấy Bundle từ Fragment
+    }
+
+    private void loadDataPlaylistUser(String data) {
+        ConnectionClass sql = new ConnectionClass();
+        connection = sql.conClass();
+        if (connection != null) {
+            try {
+                query = "select * from Playlist_User ";
+                smt = connection.createStatement();
+                resultSet = smt.executeQuery(query);
+                while (resultSet.next()) {
+                    Integer Id = resultSet.getInt(1);
+                    String ten = resultSet.getString(2);
+                    if (data.equals(ten)) {
+                        Intent intent = new Intent(requireContext(), PlaylistUserLoveActivity.class);
+                        intent.putExtra("MaPlaylist", Id);
+                        startActivity(intent);
+                        break;
+                    }
+                }
+                connection.close();
+            } catch (Exception e) {
+                Log.e("Error: ", e.getMessage());
+            }
+        }
+    }
+
+    private void loadDataArtistUser(String data) {
+        ConnectionClass sql = new ConnectionClass();
+        connection = sql.conClass();
+        if (connection != null) {
+            try {
+                query = "select * from Artist ";
+                smt = connection.createStatement();
+                resultSet = smt.executeQuery(query);
+                while (resultSet.next()) {
+                    Integer Id = resultSet.getInt(1);
+                    String ten = resultSet.getString(2);
+                    if (data.equals(ten)) {
+                        Intent intent = new Intent(requireContext(), ArtistSongActivity.class);
+                        intent.putExtra("MaArtist", Id);
+                        startActivity(intent);
+                        break;
+                    }
+                }
+                connection.close();
+            } catch (Exception e) {
+                Log.e("Error: ", e.getMessage());
+            }
+        }
     }
 
     @Override
