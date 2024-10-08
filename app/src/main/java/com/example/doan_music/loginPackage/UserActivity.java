@@ -13,7 +13,7 @@ import com.example.doan_music.data.DbHelper;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-public class LoginActivity extends AppCompatActivity {
+public class UserActivity extends AppCompatActivity {
 
     Button LoginID, RegisterID, RegisterGmail;
     DbHelper dbHelper = null;
@@ -32,21 +32,21 @@ public class LoginActivity extends AppCompatActivity {
         LoginID.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(LoginActivity.this, Login_userActivity.class);
+                Intent intent = new Intent(UserActivity.this, Login_userActivity.class);
                 startActivity(intent);
             }
         });
         RegisterID.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(LoginActivity.this, Register_emailActivity.class);
+                Intent intent = new Intent(UserActivity.this, RegisterPhoneUserActivity.class);
                 startActivity(intent);
             }
         });
         RegisterGmail.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(LoginActivity.this, Register_GmailActivity.class));
+                startActivity(new Intent(UserActivity.this, RegisterGmailUserActivity.class));
             }
         });
     }

@@ -21,11 +21,11 @@ import com.example.doan_music.fragment.main.Home_Fragment;
 import com.example.doan_music.fragment.main.Library_Fragment;
 import com.example.doan_music.fragment.main.Search_Fragment;
 import com.example.doan_music.fragment.main.Spotify_Fragment;
-import com.example.doan_music.loginPackage.LoginActivity;
+import com.example.doan_music.loginPackage.UserActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
-//public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+//public class BeginActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 public class MainActivity extends AppCompatActivity {
     DrawerLayout drawerLayout;
     Toolbar toolbar;
@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
                     builder.setPositiveButton("Có", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                            startActivity(new Intent(MainActivity.this, UserActivity.class));
                             finish();
                         }
                     });

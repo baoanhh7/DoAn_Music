@@ -39,7 +39,7 @@ public class Home_Fragment extends Fragment implements TabLayoutAdapter.Fragment
         mView = inflater.inflate(R.layout.fragment_home_, container, false);
         addControls();
 
-//        MainActivity mainActivity = (MainActivity) getActivity();
+//        BeginActivity mainActivity = (BeginActivity) getActivity();
 //        String value = mainActivity.getName();
 
         SharedPreferences preferences = requireContext().getSharedPreferences("data", Context.MODE_PRIVATE);

@@ -18,6 +18,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v4.media.session.MediaSessionCompat;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -34,7 +35,9 @@ import com.example.doan_music.R;
 import com.example.doan_music.activity.MainActivity;
 import com.example.doan_music.data.DatabaseManager;
 import com.example.doan_music.data.DbHelper;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -60,17 +63,37 @@ public class PlayMusicActivity extends AppCompatActivity {
     Animation animation;
     private boolean frag = true;
     private boolean frag_heart = false;
-
+    // Tạo một biến Bitmap để lưu hình ảnh
+    Bitmap bitmapResult;
+    Drawable drawable;
+    Bitmap bitmap;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play_music);
         addControls();
-//        String imageUrl = "https://firebasestorage.googleapis.com/v0/b/doanmusic-c1235.appspot.com/o/image%2Fbadbye.jpg?alt=media&token=a7b3c64f-fe04-404a-a011-a822b4b528ad";
-//        Picasso.get()
-//                .load(imageUrl)
-//                .into(imageView_songs);
+        String imageUrl = "https://firebasestorage.googleapis.com/v0/b/doanmusic-c1235.appspot.com/o/image%2Fbadbye.jpg?alt=media&token=a7b3c64f-fe04-404a-a011-a822b4b528ad";
+        Picasso.get()
+                .load(imageUrl)
+                .into(imageView_songs, new Callback() {
+                    @Override
+                    public void onSuccess() {
+                        // Hình ảnh đã được tải xong
+                         drawable = imageView_songs.getDrawable();
+                        if (drawable != null && drawable instanceof BitmapDrawable) {
+                             bitmap = ((BitmapDrawable) drawable).getBitmap();
+                            // Xử lý với bitmap
+                        } else {
+                            Log.e("ImageView", "Drawable is not a BitmapDrawable");
+                        }
+                    }
 
+                    @Override
+                    public void onError(Exception e) {
+                        // Xử lý lỗi nếu hình ảnh không thể tải
+                        Log.e("Picasso", "Failed to load image", e);
+                    }
+                });
         arr = (ArrayList<Integer>) getIntent().getSerializableExtra("arrIDSongs");
         Integer IDSong = getIntent().getIntExtra("SongID", -1);
         if (Isshuffle) {
@@ -120,26 +143,25 @@ public class PlayMusicActivity extends AppCompatActivity {
 
 
     private void sendNotification() {
-        Drawable drawable = imageView_songs.getDrawable();
-        Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
-        MediaSessionCompat mediaSessionCompat = new MediaSessionCompat(this, "tag");
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_headphone)
-                .setSubText("Music")
-                .setContentTitle(txt_artist_song.getText().toString())
-                .setContentText(txt_name_song.getText().toString())
-                .setLargeIcon(bitmap)
-                // Add media control buttons that invoke intents in your media service
-                .addAction(R.drawable.ic_pre, "Previous", null) // #0
-                .addAction(R.drawable.ic_pause, "Pause", null)  // #1
-                .addAction(R.drawable.ic_next, "Next", null)     // #2
-                .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
-                        .setShowActionsInCompactView(0, 1, 2 /* #1: pause button */))
-                .build();
+            // Tiếp tục xử lý với bitmap
+            MediaSessionCompat mediaSessionCompat = new MediaSessionCompat(this, "tag");
+            Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                    .setSmallIcon(R.drawable.ic_headphone)
+                    .setSubText("Music")
+                    .setContentTitle(txt_artist_song.getText().toString())
+                    .setContentText(txt_name_song.getText().toString())
+                    .setLargeIcon(bitmap)
+                    // Add media control buttons that invoke intents in your media service
+                    .addAction(R.drawable.ic_pre, "Previous", null) // #0
+                    .addAction(R.drawable.ic_pause, "Pause", null)  // #1
+                    .addAction(R.drawable.ic_next, "Next", null)     // #2
+                    .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
+                            .setShowActionsInCompactView(0, 1, 2 /* #1: pause button */))
+                    .build();
 
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        if (notificationManager != null)
-            notificationManager.notify(1, notification);
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            if (notificationManager != null)
+                notificationManager.notify(1, notification);
     }
 
     private void volume() {
@@ -524,13 +546,23 @@ public class PlayMusicActivity extends AppCompatActivity {
         btn_back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (myMusic.isPlaying()) {
-                    myMusic.stop();
-                    myMusic.reset();
+                if (myMusic != null) {  // Kiểm tra myMusic có null không
+                    if (myMusic.isPlaying()) {
+                        try {
+                            myMusic.stop();
+                            //myMus
+                            //myMusic.reset();
+                        } catch (IllegalStateException e) {
+                            Log.e("MediaPlayer", "Error stopping or resetting", e);
+                        }
+                    }
+                } else {
+                    Log.e("MediaPlayer", "myMusic is null");
                 }
                 finish();
             }
         });
+
 
         btn_heart.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -799,4 +831,7 @@ public class PlayMusicActivity extends AppCompatActivity {
         // Áp dụng animation vào ImageView
         imageView_songs.startAnimation(animation);
     }
+
+
+
 }

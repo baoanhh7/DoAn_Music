@@ -33,7 +33,7 @@ import com.google.firebase.auth.PhoneAuthProvider;
 
 import java.util.concurrent.TimeUnit;
 
-public class Register_emailActivity extends AppCompatActivity {
+public class RegisterPhoneUserActivity extends AppCompatActivity {
 
     EditText EdtUsername, EdtEmail, EdtPassword, EdtRepassword, EdtPhone;
     Button btnRegister, btn_back;
@@ -58,14 +58,14 @@ public class Register_emailActivity extends AppCompatActivity {
         tvLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(Register_emailActivity.this, Login_userActivity.class));
+                startActivity(new Intent(RegisterPhoneUserActivity.this, Login_userActivity.class));
             }
         });
 
         btn_back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(Register_emailActivity.this, LoginActivity.class));
+                startActivity(new Intent(RegisterPhoneUserActivity.this, UserActivity.class));
             }
         });
     }
@@ -126,7 +126,7 @@ public class Register_emailActivity extends AppCompatActivity {
 
                             @Override
                             public void onVerificationFailed(@NonNull FirebaseException e) {
-                                Toast.makeText(Register_emailActivity.this, "Verification Fail ", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(RegisterPhoneUserActivity.this, "Verification Fail ", Toast.LENGTH_SHORT).show();
                             }
 
                             @Override
@@ -167,7 +167,7 @@ public class Register_emailActivity extends AppCompatActivity {
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
                             if (task.getException() instanceof FirebaseAuthInvalidCredentialsException) {
                                 // The verification code entered was invalid
-                                Toast.makeText(Register_emailActivity.this, "/ The verification code entered was invalid", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(RegisterPhoneUserActivity.this, "/ The verification code entered was invalid", Toast.LENGTH_SHORT).show();
                             }
                         }
                     }
@@ -180,13 +180,13 @@ public class Register_emailActivity extends AppCompatActivity {
         values.put("Email", EdtEmail.getText().toString());
         values.put("Phone", EdtPhone.getText().toString());
         values.put("Password", EdtPassword.getText().toString());
-        dbHelper = DatabaseManager.dbHelper(Register_emailActivity.this);
+        dbHelper = DatabaseManager.dbHelper(RegisterPhoneUserActivity.this);
         long kq = dbHelper.getReadableDatabase().insert("Users", null, values);
         if (kq > 0) {
             Toast.makeText(this, "Register Successful", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(Register_emailActivity.this, Login_userActivity.class));
+            startActivity(new Intent(RegisterPhoneUserActivity.this, Login_userActivity.class));
         } else
-            Toast.makeText(Register_emailActivity.this, "Register Fail", Toast.LENGTH_SHORT);
+            Toast.makeText(RegisterPhoneUserActivity.this, "Register Fail", Toast.LENGTH_SHORT);
     }
 
     private void showError(EditText Edt, String s) {

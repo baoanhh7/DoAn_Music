@@ -22,7 +22,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 
-public class Register_GmailActivity extends AppCompatActivity {
+public class RegisterGmailUserActivity extends AppCompatActivity {
 
     EditText edt_name, edt_email;
     TextInputEditText edt_password, edt_confirm_password;
@@ -41,7 +41,7 @@ public class Register_GmailActivity extends AppCompatActivity {
         addControls();
         addEvents();
 
-        final ProgressDialog progressDialog = new ProgressDialog(Register_GmailActivity.this);
+        final ProgressDialog progressDialog = new ProgressDialog(RegisterGmailUserActivity.this);
         progressDialog.setTitle("Loading...");
         progressDialog.setMessage("Please wait...");
         btn_dangky.setOnClickListener(new View.OnClickListener() {
@@ -82,21 +82,21 @@ public class Register_GmailActivity extends AppCompatActivity {
                                         public void onComplete(@NonNull Task<Void> task) {
                                             if (task.isSuccessful()) {
 
-                                                Intent intent = new Intent(Register_GmailActivity.this, ConfirmGmailActivity.class);
+                                                Intent intent = new Intent(RegisterGmailUserActivity.this, ConfirmGmailActivity.class);
                                                 intent.putExtra("email", email);
                                                 intent.putExtra("password", password);
                                                 intent.putExtra("name", name);
 
                                                 startActivity(intent);
 
-                                                Toast.makeText(Register_GmailActivity.this, "Registered Successfully", Toast.LENGTH_LONG).show();
+                                                Toast.makeText(RegisterGmailUserActivity.this, "Registered Successfully", Toast.LENGTH_LONG).show();
                                             } else {
-                                                Toast.makeText(Register_GmailActivity.this, task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                                                Toast.makeText(RegisterGmailUserActivity.this, task.getException().getMessage(), Toast.LENGTH_LONG).show();
                                             }
                                         }
                                     });
                                 } else {
-                                    Toast.makeText(Register_GmailActivity.this, task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                                    Toast.makeText(RegisterGmailUserActivity.this, task.getException().getMessage(), Toast.LENGTH_LONG).show();
                                 }
 
                             });
@@ -114,7 +114,7 @@ public class Register_GmailActivity extends AppCompatActivity {
         txt_dangnhap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(Register_GmailActivity.this, Login_userActivity.class));
+                startActivity(new Intent(RegisterGmailUserActivity.this, Login_userActivity.class));
             }
         });
     }

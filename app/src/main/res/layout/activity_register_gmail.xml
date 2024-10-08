@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/br"
-    tools:context=".loginPackage.Register_GmailActivity">
+    tools:context=".loginPackage.RegisterGmailUserActivity">
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
