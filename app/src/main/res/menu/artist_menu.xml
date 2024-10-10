@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_add_song"
+        android:title="Thêm bài hát" />
+    <item
+        android:id="@+id/menu_update_album"
+        android:title="Cập nhật album" />
+    <item
+        android:id="@+id/menu_view_revenue"
+        android:title="Xem doanh thu" />
+</menu>

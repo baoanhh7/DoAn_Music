@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -16,7 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.doan_music.R;
-import com.example.doan_music.activity.Artist.HomeActivity;
+import com.example.doan_music.activity.Artist.HomeArtistActivity;
 import com.example.doan_music.activity.MainActivity;
 import com.example.doan_music.activity.admin.AdminActivity;
 import com.example.doan_music.database.ConnectionClass;
@@ -48,7 +49,6 @@ public class Login_userActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 checkCrededentials();
-                checkArtistStatus();
             }
         });
         tvSignup.setOnClickListener(new View.OnClickListener() {
@@ -123,79 +123,58 @@ public class Login_userActivity extends AppCompatActivity {
         connection = new ConnectionClass().conClass();
         if (connection != null) {
             try {
-                query = "SELECT UserID, Role, Status FROM Users WHERE (Phone = ? OR Email = ? OR Username = ? AND Password = ?)";
-                PreparedStatement smt = connection.prepareStatement(query);
-                smt.setString(1, EdtEmail.getText().toString());
-                smt.setString(2, EdtEmail.getText().toString());
-                smt.setString(3, EdtEmail.getText().toString());
-                smt.setString(4, EdtPassword.getText().toString());
-                Toast.makeText(Login_userActivity.this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
-                resultSet = smt.executeQuery();
-                if (resultSet.next()) {
-                    Integer userID =resultSet.getInt(1);
-                    String Role = resultSet.getString(2);
-                    String Status = resultSet.getString(3);
-                    if ("admin".equalsIgnoreCase(Role)) {
-                        // Nếu là admin, chuyển đến AdminActivity
-                        intent = new Intent(Login_userActivity.this, AdminActivity.class);
-                    }else if("member".equalsIgnoreCase(Role)){
-                        // Nếu là người dùng thông thường, chuyển đến MainActivity
-                        intent = new Intent(Login_userActivity.this, MainActivity.class);
-                        intent.putExtra("maU", userID);
-                    } else if ("artist".equalsIgnoreCase(Role)) {
-                        intent = new Intent(Login_userActivity.this, MainActivity.class);
-                        intent.putExtra("maU", userID);
-                    } else{
-                        
-                    }
-                }
-                startActivity(intent);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    private void showError(@NonNull EditText Edt, String s) {
-        Edt.setError(s);
-        Edt.requestFocus();
-    }
-    private void checkArtistStatus() {
-        connection = new ConnectionClass().conClass();
-        if (connection != null) {
-            try {
                 query = "SELECT UserID, Role, Status FROM Users WHERE (Phone = ? OR Email = ? OR Username = ?) AND Password = ?";
                 PreparedStatement smt = connection.prepareStatement(query);
                 smt.setString(1, EdtEmail.getText().toString());
                 smt.setString(2, EdtEmail.getText().toString());
                 smt.setString(3, EdtEmail.getText().toString());
                 smt.setString(4, EdtPassword.getText().toString());
+
                 resultSet = smt.executeQuery();
-                Intent intent = null; // Khởi tạo Intent với giá trị mặc định là null
+
                 if (resultSet.next()) {
                     Integer userID = resultSet.getInt(1);
                     String Role = resultSet.getString(2);
                     String Status = resultSet.getString(3);
-                if ("artist".equalsIgnoreCase(Role) && "active".equalsIgnoreCase(Status)) {
-                        // Nếu là nghệ sĩ và trạng thái là active, chuyển đến HomeActivity
-                        intent = new Intent(Login_userActivity.this, HomeActivity.class);
+
+                    Log.d("LoginDebug", "UserID: " + userID + " Role: " + Role + " Status: " + Status); // Debug
+
+                    if ("admin".equalsIgnoreCase(Role)) {
+                        // Chuyển đến AdminActivity
+                        intent = new Intent(Login_userActivity.this, AdminActivity.class);
+                    } else if ("member".equalsIgnoreCase(Role)) {
+                        // Chuyển đến MainActivity
+                        intent = new Intent(Login_userActivity.this, MainActivity.class);
+                        intent.putExtra("maU", userID);
+                    } else if ("artist".equalsIgnoreCase(Role) && "active".equalsIgnoreCase(Status)) {
+                        // Chuyển đến HomeArtistActivity
+                        intent = new Intent(Login_userActivity.this, HomeArtistActivity.class);
                         intent.putExtra("UserID", userID);
+                    }
+
+                    if (intent != null) {
+                        startActivity(intent);
+                        finish();
                     } else {
-                        // Xử lý các trường hợp khác hoặc trạng thái không hoạt động
-                        Toast.makeText(Login_userActivity.this, "Đăng nhập thất bại: Trạng thái không hoạt động hoặc vai trò không hợp lệ", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(Login_userActivity.this, "Login failed: Invalid role or inactive status", Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    Toast.makeText(Login_userActivity.this, "Đăng nhập thất bại", Toast.LENGTH_SHORT).show();
-                }
-                if (intent != null) {
-                    startActivity(intent); // Kiểm tra Intent trước khi gọi startActivity
+                    Toast.makeText(Login_userActivity.this, "Login failed: Incorrect credentials", Toast.LENGTH_SHORT).show();
                 }
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                e.printStackTrace();
+                Toast.makeText(Login_userActivity.this, "Database error", Toast.LENGTH_SHORT).show();
             }
+        } else {
+            Toast.makeText(Login_userActivity.this, "Cannot connect to database", Toast.LENGTH_SHORT).show();
         }
     }
 
+
+    private void showError(@NonNull EditText Edt, String s) {
+        Edt.setError(s);
+        Edt.requestFocus();
+    }
 
     public void AddControl() {
         EdtEmail = findViewById(R.id.EdtEmail);
