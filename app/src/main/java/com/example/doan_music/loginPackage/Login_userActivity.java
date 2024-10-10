@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.doan_music.R;
+import com.example.doan_music.activity.Artist.HomeActivity;
 import com.example.doan_music.activity.MainActivity;
 import com.example.doan_music.activity.admin.AdminActivity;
 import com.example.doan_music.database.ConnectionClass;
@@ -45,7 +46,9 @@ public class Login_userActivity extends AppCompatActivity {
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 checkCrededentials();
+                checkArtistStatus();
             }
         });
         tvSignup.setOnClickListener(new View.OnClickListener() {
@@ -157,6 +160,42 @@ public class Login_userActivity extends AppCompatActivity {
         Edt.setError(s);
         Edt.requestFocus();
     }
+    private void checkArtistStatus() {
+        connection = new ConnectionClass().conClass();
+        if (connection != null) {
+            try {
+                query = "SELECT UserID, Role, Status FROM Users WHERE (Phone = ? OR Email = ? OR Username = ?) AND Password = ?";
+                PreparedStatement smt = connection.prepareStatement(query);
+                smt.setString(1, EdtEmail.getText().toString());
+                smt.setString(2, EdtEmail.getText().toString());
+                smt.setString(3, EdtEmail.getText().toString());
+                smt.setString(4, EdtPassword.getText().toString());
+                resultSet = smt.executeQuery();
+                Intent intent = null; // Khởi tạo Intent với giá trị mặc định là null
+                if (resultSet.next()) {
+                    Integer userID = resultSet.getInt(1);
+                    String Role = resultSet.getString(2);
+                    String Status = resultSet.getString(3);
+                if ("artist".equalsIgnoreCase(Role) && "active".equalsIgnoreCase(Status)) {
+                        // Nếu là nghệ sĩ và trạng thái là active, chuyển đến HomeActivity
+                        intent = new Intent(Login_userActivity.this, HomeActivity.class);
+                        intent.putExtra("UserID", userID);
+                    } else {
+                        // Xử lý các trường hợp khác hoặc trạng thái không hoạt động
+                        Toast.makeText(Login_userActivity.this, "Đăng nhập thất bại: Trạng thái không hoạt động hoặc vai trò không hợp lệ", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(Login_userActivity.this, "Đăng nhập thất bại", Toast.LENGTH_SHORT).show();
+                }
+                if (intent != null) {
+                    startActivity(intent); // Kiểm tra Intent trước khi gọi startActivity
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
 
     public void AddControl() {
         EdtEmail = findViewById(R.id.EdtEmail);
