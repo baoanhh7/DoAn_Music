@@ -1,10 +1,14 @@
 package com.example.doan_music.fragment.tab_home;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,12 +26,21 @@ import com.example.doan_music.adapter.home.CategoryAdapter;
 import com.example.doan_music.adapter.home.HomeAdapter;
 import com.example.doan_music.data.DatabaseManager;
 import com.example.doan_music.data.DbHelper;
+import com.example.doan_music.database.ConnectionClass;
 import com.example.doan_music.m_interface.IClickItemCategory;
 import com.example.doan_music.m_interface.OnItemClickListener;
 import com.example.doan_music.model.Album;
 import com.example.doan_music.model.Category;
 import com.example.doan_music.model.Playlists;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +51,12 @@ public class All_Fragment extends Fragment {
     private RecyclerView rcv_all_header, rcv_all_bottom;
     private HomeAdapter allAdapter_header;
     private CategoryAdapter allCateAdapter_bottom;
+
+    Connection connection;
+    String query;
+    Statement smt;
+    ResultSet resultSet;
+    private int userId;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -97,23 +116,33 @@ public class All_Fragment extends Fragment {
     private List<Album> getlistuserHeader() {
         List<Album> list = new ArrayList<>();
 
-        dbHelper = DatabaseManager.dbHelper(requireContext());
-        database = dbHelper.getReadableDatabase();
+        ConnectionClass sql = new ConnectionClass();
+        connection = sql.conClass();
+        if (connection != null) {
+            try {
+                query = "SELECT * FROM Album";
+                smt = connection.createStatement();
+                resultSet = smt.executeQuery(query);
 
-        list.clear();
-        Cursor cursor = database.rawQuery("select * from Albums", null);
-
-        int count = 0;
-        while (cursor.moveToNext() && count < 8) {
-            int id = cursor.getInt(0);
-            String ten = cursor.getString(1);
-            byte[] anh = cursor.getBlob(2);
-            int idArtist = cursor.getInt(3);
-
-            list.add(new Album(id, ten, anh, idArtist));
-            count++;
+                while (resultSet.next()) {
+                    Integer AlbumID = resultSet.getInt(1);
+                    String AlbumName = resultSet.getString(2);
+                    String AlbumImage = resultSet.getString(3);
+                    // Chuyển đổi linkImage thành byte[]
+                    byte[] img = getImageBytesFromURL(AlbumImage);
+                    byte[] byteArray = convertDrawableToByteArray(requireContext(), R.drawable.music_logo);
+                    Integer ArtistID = resultSet.getInt(4);
+                    Album album = new Album(AlbumID, AlbumName, byteArray, ArtistID);
+                    list.add(album);
+                }
+                allAdapter_header.notifyDataSetChanged();
+                connection.close();
+            } catch (Exception e) {
+                Log.e("Error: ", e.getMessage());
+            }
+        } else {
+            Log.e("Error: ", "Connection null");
         }
-        cursor.close();
 
         return list;
     }
@@ -167,5 +196,29 @@ public class All_Fragment extends Fragment {
 
         rcv_all_header.setAdapter(allAdapter_header);
         rcv_all_bottom.setAdapter(allCateAdapter_bottom);
+    }
+
+    private byte[] getImageBytesFromURL(String imageUrl) {
+        try {
+            URL url = new URL(imageUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            InputStream input = connection.getInputStream();
+            Bitmap bitmap = BitmapFactory.decodeStream(input);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            return stream.toByteArray();
+        } catch (IOException e) {
+            Log.e("Error: ", "Failed to load image from URL: " + e.getMessage());
+            return null; // Hoặc có thể trả về mảng byte rỗng nếu muốn
+        }
+    }
+
+    private byte[] convertDrawableToByteArray(Context context, int drawableId) {
+        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), drawableId);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        return stream.toByteArray();
     }
 }
