@@ -72,17 +72,19 @@ public class RegisterPhoneUserActivity extends AppCompatActivity {
 
     private void checkCredentials() {
         String username = EdtUsername.getText().toString();
-        String email = EdtEmail.getText().toString();
+        //String email = EdtEmail.getText().toString();
         String phone = EdtPhone.getText().toString();
         String password = EdtPassword.getText().toString();
         String repassword = EdtRepassword.getText().toString();
 
 
         if (username.isEmpty()) {
-            showError(EdtUsername, "Your username is not valid!");
-        } else if (email.isEmpty() || !email.contains("@gmail.com")) {
-            showError(EdtEmail, "Your Email is not valid!");
-        } else if (password.isEmpty() || password.length() < 7) {
+            showError(EdtUsername, "Tên đăng nhập không được để trống");
+        }
+//        else if (email.isEmpty() || !email.contains("@gmail.com")) {
+//            showError(EdtEmail, "Your Email is not valid!");
+//        }
+        else if (password.isEmpty() || password.length() < 7) {
             showError(EdtPassword, "Your password must be at least 8 character");
         } else if (repassword.isEmpty() || !repassword.equals(password)) {
             showError(EdtRepassword, "Your password is not match");
@@ -93,10 +95,10 @@ public class RegisterPhoneUserActivity extends AppCompatActivity {
             Cursor cursor = database.rawQuery("select * from Users", null);
             while (cursor.moveToNext()) {
                 String Email = cursor.getString(2);
-                if (email.equals(Email)) {
-                    showError(EdtEmail, "This email has been registered");
-                    return;
-                }
+//                if (email.equals(Email)) {
+//                    showError(EdtEmail, "This email has been registered");
+//                    return;
+//                }
             }
             cursor.close();
             onClickverifyPhone(phone);
@@ -145,7 +147,7 @@ public class RegisterPhoneUserActivity extends AppCompatActivity {
         intent.putExtra("phone", phone);
         intent.putExtra("verification_Id", verificationId);
         intent.putExtra("Username", EdtUsername.getText().toString());
-        intent.putExtra("Email", EdtEmail.getText().toString());
+        //intent.putExtra("Email", EdtEmail.getText().toString());
         intent.putExtra("Password", EdtPassword.getText().toString());
         startActivity(intent);
     }
@@ -177,7 +179,7 @@ public class RegisterPhoneUserActivity extends AppCompatActivity {
     private void goToLogin() {
         ContentValues values = new ContentValues();
         values.put("Username", EdtUsername.getText().toString());
-        values.put("Email", EdtEmail.getText().toString());
+        //values.put("Email", EdtEmail.getText().toString());
         values.put("Phone", EdtPhone.getText().toString());
         values.put("Password", EdtPassword.getText().toString());
         dbHelper = DatabaseManager.dbHelper(RegisterPhoneUserActivity.this);
