@@ -32,7 +32,10 @@
             android:exported="false" />
         <activity
             android:name=".activity.Artist.HomeArtistActivity"
-            android:exported="true" />
+            android:exported="true" >
+
+        </activity>
+
         <activity
             android:name=".activity.Artist.ArtistSingupActivity"
             android:exported="false" />

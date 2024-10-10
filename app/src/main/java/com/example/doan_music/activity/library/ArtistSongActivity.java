@@ -1,7 +1,6 @@
 package com.example.doan_music.activity.library;
 
 import android.content.Intent;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
@@ -122,8 +121,8 @@ public class ArtistSongActivity extends AppCompatActivity implements OnItemClick
                     // Lấy URL từ cột tương ứng (ví dụ: cột thứ 3)
                     String imgUrl = resultSet.getString(3);
 //                    if (resultSet.getInt(1) == IDArtist) {
-                        // Tải ảnh từ URL và hiển thị
-                        new LoadImageTask(imgHinh).execute(imgUrl);
+                    // Tải ảnh từ URL và hiển thị
+                    new LoadImageTask(imgHinh).execute(imgUrl);
 //                    }
                 }
                 connection.close();
@@ -153,9 +152,9 @@ public class ArtistSongActivity extends AppCompatActivity implements OnItemClick
 
                     // Tải ảnh từ URL và chuyển thành byte[]
                     byte[] img = new LoadImageFromUrl(linkImage).getImageBytes();
-                        ThuVien thuVien = new ThuVien(img, ten);
-                        arr1.add(id);
-                        arr.add(thuVien);
+                    ThuVien thuVien = new ThuVien(img, ten);
+                    arr1.add(id);
+                    arr.add(thuVien);
                 }
                 connection.close();
             } catch (Exception e) {
@@ -185,9 +184,6 @@ public class ArtistSongActivity extends AppCompatActivity implements OnItemClick
                         PreparedStatement statement = connection.prepareStatement(query);
                         statement.setString(1, data);
                         resultSet = statement.executeQuery();
-                        //query = "SELECT * FROM Song WHERE SongName = ' " + data + " ' ";
-                        //smt = connection.createStatement();
-                        //resultSet = smt.executeQuery(query);
 
                         while (resultSet.next()) {
                             Integer Id = resultSet.getInt(1);
