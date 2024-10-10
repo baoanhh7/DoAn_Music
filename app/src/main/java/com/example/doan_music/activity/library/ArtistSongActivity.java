@@ -13,8 +13,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.doan_music.LoadImage.LoadImageFromUrl;
-import com.example.doan_music.LoadImage.LoadImageTask;
+//import com.example.doan_music.LoadImage.LoadImageFromUrl;
+//import com.example.doan_music.LoadImage.LoadImageTask;
 import com.example.doan_music.R;
 import com.example.doan_music.adapter.thuvien.ThuVienAlbumAdapter;
 import com.example.doan_music.database.ConnectionClass;
@@ -123,7 +123,7 @@ public class ArtistSongActivity extends AppCompatActivity implements OnItemClick
                     String imgUrl = resultSet.getString(3);
 //                    if (resultSet.getInt(1) == IDArtist) {
                         // Tải ảnh từ URL và hiển thị
-                        new LoadImageTask(imgHinh).execute(imgUrl);
+                       // new LoadImageTask(imgHinh).execute(imgUrl);
 //                    }
                 }
                 connection.close();
@@ -152,10 +152,10 @@ public class ArtistSongActivity extends AppCompatActivity implements OnItemClick
                     String linkImage = resultSet.getString(3); // Cột chứa URL ảnh
 
                     // Tải ảnh từ URL và chuyển thành byte[]
-                    byte[] img = new LoadImageFromUrl(linkImage).getImageBytes();
-                        ThuVien thuVien = new ThuVien(img, ten);
+                   //byte[] img = new LoadImageFromUrl(linkImage).getImageBytes();
+                      //  ThuVien thuVien = new ThuVien(img, ten);
                         arr1.add(id);
-                        arr.add(thuVien);
+                      //  arr.add(thuVien);
                 }
                 connection.close();
             } catch (Exception e) {
