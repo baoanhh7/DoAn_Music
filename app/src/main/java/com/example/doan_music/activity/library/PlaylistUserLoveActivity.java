@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 //import com.example.doan_music.LoadImage.LoadImageFromUrl;
+import com.example.doan_music.LoadImage.LoadImageFromUrl;
 import com.example.doan_music.R;
 import com.example.doan_music.adapter.thuvien.ThuVienAlbumAdapter;
 import com.example.doan_music.database.ConnectionClass;
@@ -123,10 +124,10 @@ public class PlaylistUserLoveActivity extends AppCompatActivity {
                         Integer id = resultSet1.getInt(1);
                         String ten = resultSet1.getString(2);
                         String linkImage = resultSet1.getString(3);
-                        //byte[] img = new LoadImageFromUrl(linkImage).getImageBytes();
-                        //ThuVien thuVien = new ThuVien(img, ten);
+                        byte[] img = new LoadImageFromUrl(linkImage).getImageBytes();
+                        ThuVien thuVien = new ThuVien(img, ten);
                         arr1.add(id);
-                        //arr.add(thuVien);
+                        arr.add(thuVien);
                     }
                 }
                 connection.close();
