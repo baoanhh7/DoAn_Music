@@ -50,6 +50,11 @@ dependencies {
     implementation("androidx.activity:activity:1.8.0")
     implementation("androidx.media3:media3-session:1.3.0")
     implementation("com.google.firebase:firebase-firestore:24.10.3")
+    implementation(fileTree(mapOf(
+        "dir" to "E:\\ZaloPayLib",
+        "include" to listOf("*.aar", "*.jar"),
+        "exclude" to listOf("")
+    )))
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
