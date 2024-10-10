@@ -19,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.doan_music.R;
 import com.example.doan_music.data.DatabaseManager;
 import com.example.doan_music.data.DbHelper;
+import com.example.doan_music.database.ConnectionClass;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseException;
@@ -30,6 +31,11 @@ import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthOptions;
 import com.google.firebase.auth.PhoneAuthProvider;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
 public class OTPActivity extends AppCompatActivity {
@@ -41,7 +47,10 @@ public class OTPActivity extends AppCompatActivity {
     FirebaseAuth auth;
     SQLiteDatabase database = null;
     PhoneAuthProvider.ForceResendingToken mforceResendingToken;
-
+    Connection connection;
+    String query;
+    Statement smt;
+    ResultSet resultSet;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -133,21 +142,54 @@ public class OTPActivity extends AppCompatActivity {
                     }
                 });
     }
-
     private void goToLogin() {
-        ContentValues values = new ContentValues();
-        values.put("Username", username);
-        values.put("Email", email);
-        values.put("Phone", phone);
-        values.put("Password", password);
-        dbHelper = DatabaseManager.dbHelper(OTPActivity.this);
-        long kq = dbHelper.getReadableDatabase().insert("Users", null, values);
-        if (kq > 0) {
-            Toast.makeText(this, "Register Successful", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(OTPActivity.this, Login_userActivity.class));
-        } else
-            Toast.makeText(OTPActivity.this, "Register Fail", Toast.LENGTH_SHORT);
+        // Tạo kết nối SQL Server
+        ConnectionClass sql = new ConnectionClass();
+        connection = sql.conClass(); // Tạo kết nối
+
+        if (connection != null) {
+            try {
+                // Truy vấn SQL để chèn dữ liệu vào bảng Users
+                String query = "INSERT INTO Users (Username, Phone, Password, Role) VALUES (?, ?, ?, ?)";
+                PreparedStatement preparedStatement = connection.prepareStatement(query);
+                preparedStatement.setString(1, username);
+                preparedStatement.setString(2, phone);
+                preparedStatement.setString(3, password);
+                preparedStatement.setString(3, "member");
+                // Thực thi truy vấn
+                int rowsAffected = preparedStatement.executeUpdate();
+                if (rowsAffected > 0) {
+                    Toast.makeText(this, "Register Successful", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(OTPActivity.this, Login_userActivity.class));
+                } else {
+                    Toast.makeText(OTPActivity.this, "Register Fail", Toast.LENGTH_SHORT).show();
+                }
+
+                // Đóng kết nối
+                connection.close();
+            } catch (SQLException e) {
+                Log.e("Error: ", e.getMessage());
+                Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Log.e("Error: ", "Connection is null");
+            Toast.makeText(this, "Connection to database failed", Toast.LENGTH_SHORT).show();
+        }
     }
+//    private void goToLogin() {
+//        ContentValues values = new ContentValues();
+//        values.put("Username", username);
+//        values.put("Email", email);
+//        values.put("Phone", phone);
+//        values.put("Password", password);
+//        dbHelper = DatabaseManager.dbHelper(OTPActivity.this);
+//        long kq = dbHelper.getReadableDatabase().insert("Users", null, values);
+//        if (kq > 0) {
+//            Toast.makeText(this, "Register Successful", Toast.LENGTH_SHORT).show();
+//            startActivity(new Intent(OTPActivity.this, Login_userActivity.class));
+//        } else
+//            Toast.makeText(OTPActivity.this, "Register Fail", Toast.LENGTH_SHORT);
+//    }
 
     private void addControls() {
         otpEditText = findViewById(R.id.otpEditText);

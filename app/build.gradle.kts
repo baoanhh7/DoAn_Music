@@ -62,7 +62,7 @@ dependencies {
     implementation("androidx.media:media:1.7.0")
 
     // Import the Firebase BoM
-    implementation(platform("com.google.firebase:firebase-bom:32.7.4"))
+    implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
     //sqlite
     implementation("com.readystatesoftware.sqliteasset:sqliteassethelper:2.0.1")
 

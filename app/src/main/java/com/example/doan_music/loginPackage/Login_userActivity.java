@@ -46,9 +46,8 @@ public class Login_userActivity extends AppCompatActivity {
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 checkCrededentials();
-                checkArtistStatus();
+                //checkArtistStatus();
             }
         });
         tvSignup.setOnClickListener(new View.OnClickListener() {
@@ -121,6 +120,8 @@ public class Login_userActivity extends AppCompatActivity {
 
     private void checkDatabase() {
         connection = new ConnectionClass().conClass();
+        SharedPreferences preferences = getSharedPreferences("data", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
         if (connection != null) {
             try {
                 query = "SELECT UserID, Role, Status FROM Users WHERE (Phone = ? OR Email = ? OR Username = ? AND Password = ?)";
@@ -142,9 +143,13 @@ public class Login_userActivity extends AppCompatActivity {
                         // Nếu là người dùng thông thường, chuyển đến MainActivity
                         intent = new Intent(Login_userActivity.this, MainActivity.class);
                         intent.putExtra("maU", userID);
+                        editor.putInt("userID", userID);
+                        editor.apply();
                     } else if ("artist".equalsIgnoreCase(Role)) {
                         intent = new Intent(Login_userActivity.this, MainActivity.class);
                         intent.putExtra("maU", userID);
+                        editor.putInt("userID", userID);
+                        editor.apply();
                     } else{
                         
                     }

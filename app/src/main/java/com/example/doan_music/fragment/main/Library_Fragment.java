@@ -260,7 +260,6 @@ public class Library_Fragment extends Fragment implements OnItemClickListener {
 
     private void addControl() {
         btn_thuvien_search = view.findViewById(R.id.btn_thuvien_search);
-
         EditText editTextSearch = btn_thuvien_search.findViewById(androidx.appcompat.R.id.search_src_text);
         editTextSearch.setTextColor(getResources().getColor(R.color.white));
         recyclerView = view.findViewById(R.id.recyclerviewTV);

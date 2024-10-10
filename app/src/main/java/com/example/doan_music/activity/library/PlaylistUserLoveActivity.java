@@ -21,6 +21,7 @@ import com.example.doan_music.model.ThuVien;
 import com.example.doan_music.music.PlayMusicActivity;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -176,9 +177,10 @@ public class PlaylistUserLoveActivity extends AppCompatActivity {
                 if (connection != null) {
                     try {
                         // Truy vấn SQL Server để lấy dữ liệu
-                        query = "SELECT * FROM Song WHERE SongName = " + data;
-                        smt = connection.createStatement();
-                        resultSet = smt.executeQuery(query);
+                        query = "SELECT * FROM Song WHERE SongName = ?";
+                        PreparedStatement statement = connection.prepareStatement(query);
+                        statement.setString(1, data);
+                        resultSet = statement.executeQuery();
 
                         while (resultSet.next()) {
                             Integer Id = resultSet.getInt(1);

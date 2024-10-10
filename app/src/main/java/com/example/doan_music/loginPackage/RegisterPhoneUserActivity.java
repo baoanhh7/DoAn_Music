@@ -3,7 +3,9 @@ package com.example.doan_music.loginPackage;
 import static android.content.ContentValues.TAG;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -18,8 +20,11 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.doan_music.R;
+import com.example.doan_music.activity.MainActivity;
+import com.example.doan_music.activity.admin.AdminActivity;
 import com.example.doan_music.data.DatabaseManager;
 import com.example.doan_music.data.DbHelper;
+import com.example.doan_music.database.ConnectionClass;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseException;
@@ -31,6 +36,11 @@ import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthOptions;
 import com.google.firebase.auth.PhoneAuthProvider;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 
 public class RegisterPhoneUserActivity extends AppCompatActivity {
@@ -41,6 +51,10 @@ public class RegisterPhoneUserActivity extends AppCompatActivity {
     DbHelper dbHelper;
     SQLiteDatabase database = null;
     FirebaseAuth auth;
+    Connection connection;
+    String query;
+    Statement smt;
+    ResultSet resultSet;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,19 +102,41 @@ public class RegisterPhoneUserActivity extends AppCompatActivity {
             showError(EdtPassword, "Your password must be at least 8 character");
         } else if (repassword.isEmpty() || !repassword.equals(password)) {
             showError(EdtRepassword, "Your password is not match");
-        } else if (phone.isEmpty() || (phone.length() < 12 && phone.length() > 12)) {
+        } else if (phone.length()!=12) {
             showError(EdtPhone, "Your phone is not valid!");
         } else {
-            database = openOrCreateDatabase("doanmusic.db", MODE_PRIVATE, null);
-            Cursor cursor = database.rawQuery("select * from Users", null);
-            while (cursor.moveToNext()) {
-                String Email = cursor.getString(2);
+            connection = new ConnectionClass().conClass();
+            if (connection != null) {
+                try {
+                    query = "SELECT * FROM Users ";
+                    smt = connection.createStatement();
+                    resultSet = smt.executeQuery(query);
+                    while (resultSet.next()) {
+                        String Phone = resultSet.getString(6);
+                        String UserName = resultSet.getString(2);
+                        if (phone.equals(Phone)) {
+                            showError(EdtPhone, "Số điện thoại đã được đăng ký");
+                            return;
+                        }else if(username.equals(UserName)){
+                            showError(EdtUsername, "Tên đăng nhập đã được dùng");
+                            return;
+                        }
+                    }
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+
+            }
+//            database = openOrCreateDatabase("doanmusic.db", MODE_PRIVATE, null);
+//            Cursor cursor = database.rawQuery("select * from Users", null);
+//            while (cursor.moveToNext()) {
+//                String Email = cursor.getString(2);
 //                if (email.equals(Email)) {
 //                    showError(EdtEmail, "This email has been registered");
 //                    return;
 //                }
-            }
-            cursor.close();
+//            }
+//            cursor.close();
             onClickverifyPhone(phone);
         }
     }
@@ -177,19 +213,45 @@ public class RegisterPhoneUserActivity extends AppCompatActivity {
     }
 
     private void goToLogin() {
-        ContentValues values = new ContentValues();
-        values.put("Username", EdtUsername.getText().toString());
-        //values.put("Email", EdtEmail.getText().toString());
-        values.put("Phone", EdtPhone.getText().toString());
-        values.put("Password", EdtPassword.getText().toString());
-        dbHelper = DatabaseManager.dbHelper(RegisterPhoneUserActivity.this);
-        long kq = dbHelper.getReadableDatabase().insert("Users", null, values);
-        if (kq > 0) {
-            Toast.makeText(this, "Register Successful", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(RegisterPhoneUserActivity.this, Login_userActivity.class));
-        } else
-            Toast.makeText(RegisterPhoneUserActivity.this, "Register Fail", Toast.LENGTH_SHORT);
+        // Lấy dữ liệu từ các trường nhập liệu
+        String username = EdtUsername.getText().toString();
+        String phone = EdtPhone.getText().toString();
+        String password = EdtPassword.getText().toString();
+
+        // Tạo kết nối SQL Server
+        ConnectionClass sql = new ConnectionClass();
+        connection = sql.conClass(); // Tạo kết nối
+
+        if (connection != null) {
+            try {
+                // Truy vấn SQL để chèn dữ liệu vào bảng Users
+                String query = "INSERT INTO Users (Username, Phone, Password, Role) VALUES (?, ?, ?, ?)";
+                PreparedStatement preparedStatement = connection.prepareStatement(query);
+                preparedStatement.setString(1, username);
+                preparedStatement.setString(2, phone);
+                preparedStatement.setString(3, password);
+                preparedStatement.setString(3, "member");
+                // Thực thi truy vấn
+                int rowsAffected = preparedStatement.executeUpdate();
+                if (rowsAffected > 0) {
+                    Toast.makeText(this, "Register Successful", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(RegisterPhoneUserActivity.this, Login_userActivity.class));
+                } else {
+                    Toast.makeText(RegisterPhoneUserActivity.this, "Register Fail", Toast.LENGTH_SHORT).show();
+                }
+
+                // Đóng kết nối
+                connection.close();
+            } catch (SQLException e) {
+                Log.e("Error: ", e.getMessage());
+                Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Log.e("Error: ", "Connection is null");
+            Toast.makeText(this, "Connection to database failed", Toast.LENGTH_SHORT).show();
+        }
     }
+
 
     private void showError(EditText Edt, String s) {
         Edt.setError(s);
