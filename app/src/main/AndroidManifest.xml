@@ -22,8 +22,17 @@
         android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
         tools:targetApi="31">
         <activity
-            android:name=".activity.Artist.HomeActivity"
+            android:name=".activity.Artist.ViewRevenueArtistActivity"
             android:exported="false" />
+        <activity
+            android:name=".activity.Artist.UpdateAlbumArtistActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.Artist.AddSongArtisActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.Artist.HomeArtistActivity"
+            android:exported="true" />
         <activity
             android:name=".activity.Artist.ArtistSingupActivity"
             android:exported="false" />

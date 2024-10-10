@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/Bacgrouk"
+    tools:context=".activity.Artist.HomeArtistActivity">
+
+    <!-- Nội dung chính -->
+
+    <!-- Thanh Navbar ở dưới cùng -->
+    <LinearLayout
+        android:id="@+id/navbartop"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:gravity="center_vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- TextView cho phần "Hi! Username" -->
+        <TextView
+            android:id="@+id/home_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:text="Hi!"
+            android:textColor="@color/TextColor"
+            android:textStyle="bold"
+            android:textSize="24sp"
+            android:layout_gravity="center_vertical" />
+
+        <TextView
+            android:id="@+id/UserArtist_Name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:gravity="center_vertical"
+            android:text="Username"
+            android:textColor="@color/TextColor"
+            android:textStyle="bold"
+            android:textSize="24sp"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"/>
+
+        <!-- ImageButton cho phần menu -->
+        <ImageButton
+            android:id="@+id/btn_menu_artist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|center_vertical"
+            android:background="@null"
+            android:scaleType="centerInside"
+            android:src="@drawable/menu_artist"
+            android:contentDescription="Menu" />
+
+    </LinearLayout>
+
+
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="80dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/navbartop"
+        app:layout_constraintVertical_bias="1.0"></FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/navbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/BacgroukNav"
+        android:gravity="center"
+        android:padding="12dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:paddingStart="38dp"
+        android:paddingEnd="38dp">
+
+        <!-- Nút Home -->
+        <ImageButton
+            android:id="@+id/btn_home"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:background="@null"
+            android:src="@drawable/home"
+            android:scaleType="centerInside"
+            android:contentDescription="Home" />
+
+        <!-- Nút Search -->
+        <ImageButton
+            android:id="@+id/btn_search"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            android:layout_weight="1"
+            android:background="@null"
+            android:src="@drawable/search"
+            android:scaleType="centerInside"
+            android:contentDescription="Search" />
+
+        <!-- Nút Account -->
+        <ImageButton
+            android:id="@+id/btn_account"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:background="@null"
+            android:src="@drawable/user"
+            android:scaleType="centerInside"
+            android:contentDescription="Account" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
