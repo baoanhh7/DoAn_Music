@@ -147,14 +147,12 @@ public class Login_userActivity extends AppCompatActivity {
                         editor.apply();
                     }
                     else if ("artist".equalsIgnoreCase(Role)&&"active".equalsIgnoreCase(Status)) {
-                            // Nếu là nghệ sĩ và trạng thái là "active", chuyển đến HomeArtistActivity
                             intent = new Intent(Login_userActivity.this, HomeArtistActivity.class);
                             intent.putExtra("UserID", userID);
                         editor.putInt("userID", userID);
                         editor.apply();
                     }
                     else {
-                        // Nếu nghệ sĩ nhưng không phải "active", chuyển đến MainActivity (hoặc xử lý khác tùy yêu cầu)
                         intent = new Intent(Login_userActivity.this, MainActivity.class);
                         intent.putExtra("maU", userID);
                     }
