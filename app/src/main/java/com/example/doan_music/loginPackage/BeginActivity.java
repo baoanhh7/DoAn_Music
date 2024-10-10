@@ -8,6 +8,8 @@ import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.doan_music.R;
+import com.example.doan_music.activity.Artist.StarArtistActivity;
+
 
 public class BeginActivity extends AppCompatActivity {
 
@@ -20,7 +22,7 @@ public class BeginActivity extends AppCompatActivity {
         Artist.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(BeginActivity.this, UserActivity.class);
+                Intent intent = new Intent(BeginActivity.this, StarArtistActivity.class);
                 startActivity(intent);
             }
         });
