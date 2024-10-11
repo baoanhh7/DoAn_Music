@@ -32,6 +32,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 
 //import com.example.doan_music.LoadImage.LoadImageTask;
+import com.example.doan_music.LoadImage.LoadImageTask;
 import com.example.doan_music.R;
 import com.example.doan_music.activity.MainActivity;
 import com.example.doan_music.data.DatabaseManager;
@@ -348,7 +349,7 @@ public class PlayMusicActivity extends AppCompatActivity {
                     int view = resultSet.getInt(8);
                     String linkSong = resultSet.getString(6);
                     // Tải ảnh từ URL và hiển thị
-                   // new LoadImageTask(imageView_songs).execute(img);
+                    new LoadImageTask(imageView_songs).execute(img);
                     txt_name_song.setText(ten);
                     txt_view_playmusic.setText(view + "");
                     try {
