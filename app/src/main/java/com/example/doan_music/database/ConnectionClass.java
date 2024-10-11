@@ -11,7 +11,7 @@ public class ConnectionClass {
 
     private static final String DB_URL = "jdbc:jtds:sqlserver://10.21.1.130:1433;databaseName=DemoMusic";
     //private static final String DB_URL = "jdbc:jtds:sqlserver://192.168.1.55:1433;databaseName=DemoMusic";
-    private static final String DB_URL = "jdbc:jtds:sqlserver://192.168.1.251:1433;databaseName=DemoMusic";
+   // private static final String DB_URL = "jdbc:jtds:sqlserver://192.168.1.251:1433;databaseName=DemoMusic";
 //    private static final String DB_URL = "jdbc:jtds:sqlserver://192.168.1.55:1433;databaseName=DemoMusic";
     //private static final String DB_URL = "jdbc:jtds:sqlserver://192.168.1.73:1433;databaseName=DemoMusic";
     //private static final String DB_URL = "jdbc:jtds:sqlserver://172.20.10.7:1433;databaseName=DemoMusic";
