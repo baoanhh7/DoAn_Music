@@ -11,9 +11,11 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 
 import com.example.doan_music.R;
 import com.example.doan_music.activity.Artist.AddSongArtisActivity;
+import com.example.doan_music.activity.Artist.HomeArtistActivity;
 import com.example.doan_music.activity.Artist.UpdateAlbumArtistActivity;
 import com.example.doan_music.activity.Artist.ViewRevenueArtistActivity;
 
@@ -39,11 +41,11 @@ public class ArtistMenuDialogFragment extends DialogFragment {
         View viewRevenueButton = view.findViewById(R.id.btn_view_revenue);
 
         addSongButton.setOnClickListener(v -> {
-            navigateToActivity(AddSongArtisActivity.class);
+            navigateToFragment(new AddSongArtisFragment(), userID);
         });
 
         updateAlbumButton.setOnClickListener(v -> {
-            navigateToActivity(UpdateAlbumArtistActivity.class);
+            navigateToFragment(new UpdateAlbumArtistFragment(), userID);
         });
 
         viewRevenueButton.setOnClickListener(v -> {
@@ -76,4 +78,17 @@ public class ArtistMenuDialogFragment extends DialogFragment {
         fragment.setArguments(args);
         return fragment;
     }
+    private void navigateToFragment(Fragment fragment, int userID) {
+        Bundle args = new Bundle();
+        args.putInt("UserID", userID);
+        fragment.setArguments(args);
+
+        // Kiểm tra xem hoạt động hiện tại có phải là HomeActivity không
+        if (getActivity() instanceof HomeArtistActivity) {
+            HomeArtistActivity homeActivity = (HomeArtistActivity) getActivity();
+            homeActivity.loadFragment(fragment);  // Gọi phương thức từ HomeActivity để thay thế fragment
+        }
+        dismiss();  // Đóng dialog sau khi fragment được tải
+    }
+
 }
