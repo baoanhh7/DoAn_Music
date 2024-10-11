@@ -56,7 +56,6 @@ public class All_Fragment extends Fragment {
     String query;
     Statement smt;
     ResultSet resultSet;
-    private int userId;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -86,27 +85,36 @@ public class All_Fragment extends Fragment {
         allAdapter_header.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(String data) {
-                dbHelper = DatabaseManager.dbHelper(requireContext());
-                database = dbHelper.getReadableDatabase();
+                ConnectionClass sql = new ConnectionClass();
+                connection = sql.conClass();
+                if (connection != null) {
+                    try {
+                        query = "SELECT * FROM Album";
+                        smt = connection.createStatement();
+                        resultSet = smt.executeQuery(query);
 
-                Cursor cursor = database.rawQuery("select * from Albums", null);
-                while (cursor.moveToNext()) {
-                    int id = cursor.getInt(0);
-                    String name = cursor.getString(1);
-                    int view = cursor.getInt(4);
+                        while (resultSet.next()) {
+                            int id = resultSet.getInt(1);
+                            String name = resultSet.getString(2);
+//                            int view = resultSet.getInt(4);
+                            if (name.equals(data)) {
+//                                view++;
+//                                ContentValues values = new ContentValues();
+//                                values.put("AlbumView", view);
+//                                database.update("Albums", values, "AlbumID=?", new String[]{String.valueOf(id)});
 
-                    if (name.equals(data)) {
-
-                        view++;
-                        ContentValues values = new ContentValues();
-                        values.put("AlbumView", view);
-                        database.update("Albums", values, "AlbumID=?", new String[]{String.valueOf(id)});
-
-                        Intent intent = new Intent(requireContext(), SongsAlbumActivity.class);
-                        intent.putExtra("albumID", id);
-                        startActivity(intent);
-                        break;
+                                Intent intent = new Intent(requireContext(), SongsAlbumActivity.class);
+                                intent.putExtra("albumID", id);
+                                startActivity(intent);
+                                break;
+                            }
+                        }
+                        connection.close();
+                    } catch (Exception e) {
+                        Log.e("Error: ", e.getMessage());
                     }
+                } else {
+                    Log.e("Error: ", "Connection null");
                 }
             }
         });
@@ -130,9 +138,8 @@ public class All_Fragment extends Fragment {
                     String AlbumImage = resultSet.getString(3);
                     // Chuyển đổi linkImage thành byte[]
                     byte[] img = getImageBytesFromURL(AlbumImage);
-                    byte[] byteArray = convertDrawableToByteArray(requireContext(), R.drawable.music_logo);
                     Integer ArtistID = resultSet.getInt(4);
-                    Album album = new Album(AlbumID, AlbumName, byteArray, ArtistID);
+                    Album album = new Album(AlbumID, AlbumName, img, ArtistID);
                     list.add(album);
                 }
                 allAdapter_header.notifyDataSetChanged();

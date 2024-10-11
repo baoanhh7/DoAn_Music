@@ -4,15 +4,11 @@ import static com.example.doan_music.music.MyNoti.CHANNEL_ID;
 
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -31,16 +27,11 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 
-//import com.example.doan_music.LoadImage.LoadImageTask;
 import com.example.doan_music.LoadImage.LoadImageTask;
 import com.example.doan_music.R;
 import com.example.doan_music.activity.MainActivity;
-import com.example.doan_music.data.DatabaseManager;
 import com.example.doan_music.data.DbHelper;
 import com.example.doan_music.database.ConnectionClass;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -80,7 +71,8 @@ public class PlayMusicActivity extends AppCompatActivity {
     String query;
     Statement smt;
     ResultSet resultSet;
-    int  userID;
+    int userID;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -214,35 +206,32 @@ public class PlayMusicActivity extends AppCompatActivity {
         }
     }
 
-
-
     private Integer getRandom(int i) {
         Random random = new Random();
 
         return random.nextInt(i + 1);
     }
 
-
     private void sendNotification() {
-            // Tiếp tục xử lý với bitmap
-            MediaSessionCompat mediaSessionCompat = new MediaSessionCompat(this, "tag");
-            Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setSmallIcon(R.drawable.ic_headphone)
-                    .setSubText("Music")
-                    .setContentTitle(txt_artist_song.getText().toString())
-                    .setContentText(txt_name_song.getText().toString())
-                    .setLargeIcon(bitmap)
-                    // Add media control buttons that invoke intents in your media service
-                    .addAction(R.drawable.ic_pre, "Previous", null) // #0
-                    .addAction(R.drawable.ic_pause, "Pause", null)  // #1
-                    .addAction(R.drawable.ic_next, "Next", null)     // #2
-                    .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
-                            .setShowActionsInCompactView(0, 1, 2 /* #1: pause button */))
-                    .build();
+        // Tiếp tục xử lý với bitmap
+        MediaSessionCompat mediaSessionCompat = new MediaSessionCompat(this, "tag");
+        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_headphone)
+                .setSubText("Music")
+                .setContentTitle(txt_artist_song.getText().toString())
+                .setContentText(txt_name_song.getText().toString())
+                .setLargeIcon(bitmap)
+                // Add media control buttons that invoke intents in your media service
+                .addAction(R.drawable.ic_pre, "Previous", null) // #0
+                .addAction(R.drawable.ic_pause, "Pause", null)  // #1
+                .addAction(R.drawable.ic_next, "Next", null)     // #2
+                .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
+                        .setShowActionsInCompactView(0, 1, 2 /* #1: pause button */))
+                .build();
 
-            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            if (notificationManager != null)
-                notificationManager.notify(1, notification);
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if (notificationManager != null)
+            notificationManager.notify(1, notification);
     }
 
     private void volume() {
@@ -291,45 +280,10 @@ public class PlayMusicActivity extends AppCompatActivity {
         } else {
             Log.e("Error: ", "Connection null");
         }
-//        database = openOrCreateDatabase("doanmusic.db", MODE_PRIVATE, null);
-//        Cursor cursor = database.rawQuery("select * " +
-//                "from Artists " +
-//                "JOIN Songs ON Artists.ArtistID =Songs.ArtistID " +
-//                "WHERE Songs.SongID = ? ", new String[]{String.valueOf(IDSong)});
-//        while (cursor.moveToNext()) {
-//            String ten = cursor.getString(1);
-//            txt_artist_song.setText(ten);
-//        }
     }
 
     private void loadData() {
         loadDataSong(IDSong);
-//        database = openOrCreateDatabase("doanmusic.db", MODE_PRIVATE, null);
-//        Cursor cursor = database.rawQuery("select * from Songs", null);
-//        while (cursor.moveToNext()) {
-//            Integer Id = cursor.getInt(0);
-//            String ten = cursor.getString(2);
-//            byte[] img = cursor.getBlob(3);
-//            //String linkSong = cursor.getString(5);
-//            String linkSong = "https://firebasestorage.googleapis.com/v0/b/doanmusic-c1235.appspot.com/o/BADBYE.mp3?alt=media&token=92b7f2ab-5fc3-4d17-8ee6-dabeb8d2d45c";
-//            int view = cursor.getInt(8);
-//
-//            if (IDSong.equals(Id)) {
-//                Bitmap bitmap = BitmapFactory.decodeByteArray(img, 0, img.length);
-//
-//                //imageView_songs.setImageBitmap(bitmap);
-//                txt_name_song.setText(ten);
-//                txt_view_playmusic.setText(view + "");
-//
-//                try {
-//                    myMusic.setDataSource(linkSong);
-//                    myMusic.prepare();
-//                } catch (IOException e) {
-//                    throw new RuntimeException(e);
-//                }
-//            }
-//        }
-//        cursor.close();
     }
 
     private void loadDataSong(int id) {
@@ -397,7 +351,7 @@ public class PlayMusicActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (myMusic.isPlaying()) {
                     myMusic.stop();
-                   // myMusic.reset();
+                    // myMusic.reset();
                 }
 
                 Intent intent = new Intent(PlayMusicActivity.this, MainActivity.class);
@@ -453,42 +407,8 @@ public class PlayMusicActivity extends AppCompatActivity {
                     loadNameArtist(idSong);
                     updateHistorySong(idSong);
                     updateViewSong(idSong);
-//                    database = openOrCreateDatabase("doanmusic.db", MODE_PRIVATE, null);
-//                    Cursor cursor = database.rawQuery("select * from Songs", null);
-//                    while (cursor.moveToNext()) {
-//                        Integer Id = cursor.getInt(0);
-//                        String ten = cursor.getString(2);
-//                        byte[] img = cursor.getBlob(3);
-//                        String linkSong = cursor.getString(5);
-//                        int view = cursor.getInt(8);
-//
-//                        if (idSong.equals(Id)) {
-//                            Bitmap bitmap = BitmapFactory.decodeByteArray(img, 0, img.length);
-//                            imageView_songs.setImageBitmap(bitmap);
-//                            try {
-//                                myMusic.setDataSource(linkSong);
-//                                myMusic.prepare();
-//                            } catch (IOException e) {
-//                                throw new RuntimeException(e);
-//                            }
-//                            txt_name_song.setText(ten);
-//                            txt_view_playmusic.setText(view + "");
-//                        }
-//
-//                        int farovite = cursor.getInt(6);
-//                        setFavorite(farovite);
-//
-//                    }
-//                    cursor.close();
-//                    database = openOrCreateDatabase("doanmusic.db", MODE_PRIVATE, null);
-//                    Cursor cursor1 = database.rawQuery("select * " +
-//                            "from Artists " +
-//                            "JOIN Songs ON Artists.ArtistID =Songs.ArtistID " +
-//                            "WHERE Songs.SongID = ? ", new String[]{String.valueOf(idSong)});
-//                    while (cursor1.moveToNext()) {
-//                        String ten = cursor1.getString(1);
-//                        txt_artist_song.setText(ten);
-//                    }
+
+
                     sendNotification();
                     String duration = timeSeekbar(myMusic.getDuration());
                     txt_time.setText(duration);
@@ -617,12 +537,7 @@ public class PlayMusicActivity extends AppCompatActivity {
                 if (frag_heart) {
                     btn_heart.setImageResource(R.drawable.ic_red_heart);
 
-//                    ContentValues values = new ContentValues();
-//                    values.put("StateFavorite", 1);
-//                    database.update("Songs", values, "SongID=?", new String[]{String.valueOf(IDSong)});
-                    //addSongToLoveList(IDSong);
                     addSongToLoveList(IDSong);
-
                 } else {
                     btn_heart.setImageResource(R.drawable.ic_heart);
                     removeSongFromLoveList(IDSong);
@@ -716,9 +631,9 @@ public class PlayMusicActivity extends AppCompatActivity {
                 query = "SELECT * FROM User_SongLove WHERE SongID = " + IDSong + " AND UserID = " + userID;
                 smt = connection.createStatement();
                 resultSet = smt.executeQuery(query);
-                if(resultSet.next()) {
+                if (resultSet.next()) {
                     btn_heart.setImageResource(R.drawable.ic_red_heart);
-                }else {
+                } else {
                     btn_heart.setImageResource(R.drawable.ic_heart);
                 }
                 connection.close();
@@ -834,36 +749,6 @@ public class PlayMusicActivity extends AppCompatActivity {
         updateHeartButtonUI();
         updateViewSong(idSong);
         updateHistorySong(idSong);
-//        database = openOrCreateDatabase("doanmusic.db", MODE_PRIVATE, null);
-//        Cursor cursor = database.rawQuery("select * from Songs", null);
-//        while (cursor.moveToNext()) {
-//            Integer Id = cursor.getInt(0);
-//            String ten = cursor.getString(2);
-//            byte[] img = cursor.getBlob(3);
-//            String linkSong = cursor.getString(5);
-//            if (idSong.equals(Id)) {
-//                Bitmap bitmap = BitmapFactory.decodeByteArray(img, 0, img.length);
-//                imageView_songs.setImageBitmap(bitmap);
-//                try {
-//                    myMusic.reset();
-//                    myMusic.setDataSource(linkSong);
-//                    myMusic.prepare();
-//                } catch (IOException e) {
-//                    throw new RuntimeException(e);
-//                }
-//                txt_name_song.setText(ten);
-//            }
-//        }
-//        cursor.close();
-//        database = openOrCreateDatabase("doanmusic.db", MODE_PRIVATE, null);
-//        Cursor cursor1 = database.rawQuery("select * " +
-//                "from Artists " +
-//                "JOIN Songs ON Artists.ArtistID =Songs.ArtistID " +
-//                "WHERE Songs.SongID = ? ", new String[]{String.valueOf(idSong)});
-//        while (cursor1.moveToNext()) {
-//            String ten = cursor1.getString(1);
-//            txt_artist_song.setText(ten);
-//        }
 
         String duration = timeSeekbar(myMusic.getDuration());
         txt_time.setText(duration);
@@ -896,7 +781,4 @@ public class PlayMusicActivity extends AppCompatActivity {
         // Áp dụng animation vào ImageView
         imageView_songs.startAnimation(animation);
     }
-
-
-
 }

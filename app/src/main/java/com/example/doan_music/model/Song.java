@@ -56,6 +56,13 @@ public class Song implements Serializable {
         this.isFavorite = isFavorite;
     }
 
+    public Song(int id, String name, byte[] img, int AlbumID, int view) {
+        SongID = id;
+        SongName = name;
+        SongImage = img;
+        this.AlbumID = AlbumID;
+        this.view = view;
+    }
 
     public int getSongID() {
         return SongID;
