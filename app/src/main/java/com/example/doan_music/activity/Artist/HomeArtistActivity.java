@@ -175,10 +175,11 @@ public class HomeArtistActivity extends AppCompatActivity {
             btnAccount.setImageResource(R.drawable.user_choise);
         }
     }
-    private void loadFragment(Fragment fragment) {
+    public void loadFragment(Fragment fragment) {
         // Replace the current fragment with the new fragment
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragment_container, fragment);
         transaction.commit();
     }
+
 }

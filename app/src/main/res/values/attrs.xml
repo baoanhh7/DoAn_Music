@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Định nghĩa các thuộc tính tuỳ chỉnh -->
+    <attr name="fullscreenBackgroundColor" format="color"/>
+    <attr name="fullscreenTextColor" format="color"/>
+</resources>
