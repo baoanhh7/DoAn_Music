@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <uses-feature android:name="android.hardware.camera" />
 
@@ -22,6 +23,25 @@
         android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
         tools:targetApi="31">
         <activity
+            android:name=".registerpremium.SuccessfulPremiumActivity"
+            android:exported="false" />
+        <activity
+            android:name=".registerpremium.RegisterPremiumActivity"
+            android:exported="true"
+            android:label="Merchant Demo"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="app"
+                    android:scheme="demozpdk" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".activity.Artist.ViewRevenueArtistActivity"
             android:exported="false" />
         <activity
@@ -32,10 +52,7 @@
             android:exported="false" />
         <activity
             android:name=".activity.Artist.HomeArtistActivity"
-            android:exported="true" >
-
-        </activity>
-
+            android:exported="true" />
         <activity
             android:name=".activity.Artist.ArtistSingupActivity"
             android:exported="false" />
@@ -119,7 +136,7 @@
             android:exported="true" /> <!-- 8 -->
         <activity
             android:name=".activity.MainActivity"
-            android:exported="true" /> <!-- 9 -->
+            android:exported="true"></activity> <!-- 9 -->
         <activity
             android:name=".activity.SplashActivity"
             android:exported="true"

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#131313"
-    tools:context=".fragment.main.Spotify_Fragment"
-
-    >
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    tools:context=".fragment.main.Spotify_Fragment">
 
     <!-- TODO: Update blank fragment layout -->
     <TextView
@@ -17,32 +17,15 @@
         android:textAlignment="center"
         android:textColor="@color/white"
         android:textSize="35sp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-
-        />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
-        android:text="Bạn không thể nâng cấp lên premium trong ứng dụng này. Chúng tôi biết điều này thật bất tiện"
-        android:textAlignment="center"
-        android:textColor="#8C8C8C"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_marginTop="20dp" />
 
     <LinearLayout
+        android:id="@+id/LNL_member"
         android:layout_width="370dp"
         android:layout_height="70dp"
-        android:layout_marginTop="150dp"
+        android:layout_marginTop="50dp"
         android:background="#838383"
-        android:gravity="center"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:gravity="center">
 
         <TextView
             android:layout_width="wrap_content"
@@ -60,14 +43,44 @@
             android:textColor="@color/white"
             android:textSize="15sp" />
     </LinearLayout>
+    <LinearLayout
+        android:visibility="gone"
+        android:id="@+id/LNL_premium"
+        android:layout_width="370dp"
+        android:layout_height="70dp"
+        android:layout_marginTop="50dp"
+        android:background="#838383"
+        android:gravity="center">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerSpotify"
-        android:layout_width="409dp"
-        android:layout_height="669dp"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="1dp"
-        tools:layout_editor_absoluteY="221dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Premium"
+            android:textColor="@color/white"
+            android:textSize="25sp" />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="100dp"
+            android:text="Gói hiện tại"
+            android:textAllCaps="true"
+            android:textColor="@color/white"
+            android:textSize="15sp" />
+    </LinearLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nghe không quảng cáo. Dùng premium với giá 100.000đ/tháng"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        android:textSize="25sp"
+        android:layout_marginTop="50dp" />
+    <Button
+        android:id="@+id/btn_registerpremium"
+        android:layout_marginTop="50dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Đăng ký premium"/>
+</LinearLayout>
