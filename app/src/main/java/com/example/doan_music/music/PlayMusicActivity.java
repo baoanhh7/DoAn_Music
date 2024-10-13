@@ -32,6 +32,13 @@ import com.example.doan_music.R;
 import com.example.doan_music.activity.MainActivity;
 import com.example.doan_music.data.DbHelper;
 import com.example.doan_music.database.ConnectionClass;
+import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.FullScreenContentCallback;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -72,6 +79,8 @@ public class PlayMusicActivity extends AppCompatActivity {
     Statement smt;
     ResultSet resultSet;
     int userID;
+    private InterstitialAd mInterstitialAd;
+    String Role;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,12 +100,12 @@ public class PlayMusicActivity extends AppCompatActivity {
         SeekBar sbTime;
         myMusic = new MediaPlayer();
         //myMusic = MediaPlayer.create(this, R.raw.nhung_loi_hua_bo_quen);
+        loadRoleUser(userID);
         loadData();
         updateHistorySong(IDSong);
         updateViewSong(IDSong);
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         myMusic.seekTo(0);
-
         myMusic.start();
         myMusic.setLooping(false);
         seekbar1.setVisibility(View.GONE);
@@ -111,8 +120,11 @@ public class PlayMusicActivity extends AppCompatActivity {
         updateHeartButtonUI();
 
         volume();
+        if(Role.equalsIgnoreCase("member"))
+        {
+            createADS();
+        }
         // Bắt đầu cập nhật lời bài hát
-
         if (frag) {
             myMusic.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
@@ -123,6 +135,99 @@ public class PlayMusicActivity extends AppCompatActivity {
             });
         }
     }
+
+    private void loadRoleUser(int userID) {
+        ConnectionClass sql = new ConnectionClass();
+        connection = sql.conClass();
+        if (connection != null) {
+            try {
+                // Truy vấn SQL Server để lấy dữ liệu
+                query = "SELECT * FROM Users WHERE UserID = " + userID;
+                smt = connection.createStatement();
+                resultSet = smt.executeQuery(query);
+                if(resultSet.next()) {
+                    Role = resultSet.getString(5);
+                }
+                connection.close();
+            } catch (Exception e) {
+                Log.e("Error: ", e.getMessage());
+            }
+        } else {
+            Log.e("Error: ", "Connection null");
+        }
+
+    }
+
+    private void createADS() {
+
+        new Thread(
+                () -> {
+                    // Initialize the Google Mobile Ads SDK on a background thread.
+                    MobileAds.initialize(this, initializationStatus -> {});
+                })
+                .start();
+        AdRequest adRequest = new AdRequest.Builder().build();
+
+        InterstitialAd.load(this,"ca-app-pub-3940256099942544/1033173712", adRequest,
+                new InterstitialAdLoadCallback() {
+                    @Override
+                    public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                        // The mInterstitialAd reference will be null until
+                        // an ad is loaded.
+                        mInterstitialAd = interstitialAd;
+                        Log.i("ADS", "onAdLoaded");
+                        if (mInterstitialAd != null) {
+                            myMusic.pause();
+                            mInterstitialAd.show(PlayMusicActivity.this);
+                            mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback(){
+                                @Override
+                                public void onAdClicked() {
+                                    // Called when a click is recorded for an ad.
+                                    Log.d("ADS", "Ad was clicked.");
+                                }
+
+                                @Override
+                                public void onAdDismissedFullScreenContent() {
+                                    // Called when ad is dismissed.
+                                    // Set the ad reference to null so you don't show the ad a second time.
+                                    myMusic.start();
+                                    Log.d("ADS", "Ad dismissed fullscreen content.");
+                                    mInterstitialAd = null;
+                                }
+
+                                @Override
+                                public void onAdFailedToShowFullScreenContent(AdError adError) {
+                                    // Called when ad fails to show.
+                                    Log.e("ADS", "Ad failed to show fullscreen content.");
+                                    mInterstitialAd = null;
+                                }
+
+                                @Override
+                                public void onAdImpression() {
+                                    // Called when an impression is recorded for an ad.
+                                    Log.d("ADS", "Ad recorded an impression.");
+                                }
+
+                                @Override
+                                public void onAdShowedFullScreenContent() {
+                                    // Called when ad is shown.
+                                    Log.d("ADS", "Ad showed fullscreen content.");
+                                }
+                            });
+                        } else {
+                            Log.d("TAG", "The interstitial ad wasn't ready yet.");
+                        }
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                        // Handle the error
+                        Log.d("ADS", loadAdError.toString());
+                        mInterstitialAd = null;
+                    }
+                });
+    }
+
 
     private void updateViewSong(Integer idSong) {
         // Kiểm tra nếu userID hợp lệ
@@ -416,6 +521,10 @@ public class PlayMusicActivity extends AppCompatActivity {
                     myMusic.start();
                     updateHeartButtonUI();
                     imageView_songs.startAnimation(animation);
+                    if(Role.equalsIgnoreCase("member"))
+                    {
+                        createADS();
+                    }
                 } else {
                     if (myMusic.isPlaying()) {
                         myMusic.stop();
@@ -438,6 +547,10 @@ public class PlayMusicActivity extends AppCompatActivity {
 
                     updateHeartButtonUI();
                     imageView_songs.startAnimation(animation);
+                    if(Role.equalsIgnoreCase("member"))
+                    {
+                        createADS();
+                    }
                 }
             }
         });
@@ -475,8 +588,11 @@ public class PlayMusicActivity extends AppCompatActivity {
                     txt_time.setText(duration);
                     seekBar.setMax(myMusic.getDuration());
                     myMusic.start();
-
                     imageView_songs.startAnimation(animation);
+                    if(Role.equalsIgnoreCase("member"))
+                    {
+                        createADS();
+                    }
                 } else {
                     if (myMusic.isPlaying()) {
                         myMusic.stop();
@@ -498,8 +614,11 @@ public class PlayMusicActivity extends AppCompatActivity {
                     txt_time.setText(duration);
                     seekBar.setMax(myMusic.getDuration());
                     myMusic.start();
-
                     imageView_songs.startAnimation(animation);
+                    if(Role.equalsIgnoreCase("member"))
+                    {
+                        createADS();
+                    }
                 }
             }
         });
@@ -754,6 +873,10 @@ public class PlayMusicActivity extends AppCompatActivity {
         txt_time.setText(duration);
         seekBar.setMax(myMusic.getDuration());
         myMusic.start();
+        if(Role.equalsIgnoreCase("member"))
+        {
+            createADS();
+        }
     }
 
     private void addControls() {
