@@ -24,19 +24,18 @@
         android:gravity="center" />
 
     <!-- Image Placeholder -->
-    <ImageView
+    <ImageButton
         android:id="@+id/imagePlaceholder"
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_marginTop="16dp"
+        android:background="@color/BacgroukNav"
         android:src="@drawable/ic_add_picture"
         app:layout_constraintTop_toBottomOf="@+id/title"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-
-
     <EditText
-        android:id="@+id/username"
+        android:id="@+id/nameSong"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -53,7 +52,7 @@
         app:layout_constraintWidth_percent="0.8" />
 
     <EditText
-        android:id="@+id/email"
+        android:id="@+id/album"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="album"
@@ -62,14 +61,14 @@
         android:textColor="@color/white"
         android:padding="12dp"
         android:inputType="textEmailAddress"
-        app:layout_constraintTop_toBottomOf="@+id/username"
+        app:layout_constraintTop_toBottomOf="@+id/nameSong"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintWidth_percent="0.8"
         android:layout_marginTop="12dp" />
     <!-- Phone Number Field -->
     <EditText
-        android:id="@+id/phone"
+        android:id="@+id/TheLoai"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="thể loại"
@@ -78,7 +77,7 @@
         android:textColor="@color/white"
         android:padding="12dp"
         android:inputType="phone"
-        app:layout_constraintTop_toBottomOf="@+id/email"
+        app:layout_constraintTop_toBottomOf="@+id/album"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintWidth_percent="0.8"
@@ -86,7 +85,7 @@
 
     <!-- Password Field -->
     <EditText
-        android:id="@+id/password"
+        android:id="@+id/nameNgheSi"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="Tên nghệ sĩ"
@@ -95,7 +94,7 @@
         android:textColor="@color/white"
         android:padding="12dp"
         android:inputType="textAutoComplete"
-        app:layout_constraintTop_toBottomOf="@+id/phone"
+        app:layout_constraintTop_toBottomOf="@+id/TheLoai"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintWidth_percent="0.8"
@@ -103,7 +102,7 @@
 
     <!-- Confirm Password Field -->
     <EditText
-        android:id="@+id/confirm_password"
+        android:id="@+id/fileSong"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="link bài hát"
@@ -112,7 +111,7 @@
         android:textColor="@color/white"
         android:padding="12dp"
         android:inputType="textPassword"
-        app:layout_constraintTop_toBottomOf="@+id/password"
+        app:layout_constraintTop_toBottomOf="@+id/nameNgheSi"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintWidth_percent="0.8"
@@ -133,7 +132,7 @@
         android:text="Back"
         android:textColor="@color/white"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/confirm_password" />
+        app:layout_constraintTop_toBottomOf="@+id/fileSong" />
 
     <Button
         android:id="@+id/btn_confirm"
@@ -146,7 +145,7 @@
         android:text="Xác nhận"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/confirm_password" />
+        app:layout_constraintTop_toBottomOf="@+id/fileSong" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

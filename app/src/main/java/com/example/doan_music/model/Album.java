@@ -23,6 +23,9 @@ public class Album implements Serializable {
         AlbumName = albumName;
     }
 
+    public Album(int albumID, String albumName, String albumImage) {
+    }
+
     public Integer getAlbumID() {
         return AlbumID;
     }

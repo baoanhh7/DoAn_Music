@@ -30,11 +30,13 @@
             android:gravity="center" />
 
         <!-- Image Placeholder -->
-        <ImageView
+        <ImageButton
+            app:layout_constraintCircleRadius="30dp"
             android:id="@+id/imagePlaceholder"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:layout_marginTop="16dp"
+            android:background="@color/BacgroukNav"
             android:src="@drawable/ic_add_picture"
             app:layout_constraintTop_toBottomOf="@+id/title"
             app:layout_constraintStart_toStartOf="parent"
