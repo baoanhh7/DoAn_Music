@@ -88,5 +88,6 @@ dependencies {
     implementation("com.sun.mail:android-activation:1.6.0")
     implementation ("com.squareup.picasso:picasso:2.71828")
     implementation("net.sourceforge.jtds:jtds:1.3.1")
+    implementation ("com.jjoe64:graphview:4.2.2")
 
 }
