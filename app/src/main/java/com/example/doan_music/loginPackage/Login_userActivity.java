@@ -139,7 +139,7 @@ public class Login_userActivity extends AppCompatActivity {
                     if ("admin".equalsIgnoreCase(Role)) {
                         // Nếu là admin, chuyển đến AdminActivity
                         intent = new Intent(Login_userActivity.this, AdminActivity.class);
-                    } else if ("member".equalsIgnoreCase(Role)) {
+                    } else if ("member".equalsIgnoreCase(Role) || "premium".equalsIgnoreCase(Role)) {
                         // Nếu là người dùng thông thường, chuyển đến MainActivity
                         intent = new Intent(Login_userActivity.this, MainActivity.class);
                         intent.putExtra("maU", userID);
@@ -152,11 +152,6 @@ public class Login_userActivity extends AppCompatActivity {
                         editor.putInt("userID", userID);
                         editor.apply();
                     }
-                    else {
-                        intent = new Intent(Login_userActivity.this, MainActivity.class);
-                        intent.putExtra("maU", userID);
-                    }
-
                     if (intent != null) {
                         startActivity(intent);
                         finish();
@@ -164,7 +159,6 @@ public class Login_userActivity extends AppCompatActivity {
                         Toast.makeText(Login_userActivity.this, "Login failed: Invalid role or inactive status", Toast.LENGTH_SHORT).show();
                     }
                 }
-                startActivity(intent);
             } catch (SQLException e) {
                 e.printStackTrace();
                 Toast.makeText(Login_userActivity.this, "Database error", Toast.LENGTH_SHORT).show();

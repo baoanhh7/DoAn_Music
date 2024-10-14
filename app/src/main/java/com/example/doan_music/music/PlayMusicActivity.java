@@ -9,10 +9,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.util.Log;
 import android.view.View;
@@ -27,7 +29,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 
+import com.example.doan_music.LoadImage.ImagetoBitmap;
 import com.example.doan_music.LoadImage.LoadImageTask;
+import com.example.doan_music.Lyric.LRCParser;
+import com.example.doan_music.Lyric.LyricsSyncManager;
 import com.example.doan_music.R;
 import com.example.doan_music.activity.MainActivity;
 import com.example.doan_music.data.DbHelper;
@@ -40,20 +45,26 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class PlayMusicActivity extends AppCompatActivity {
 
     ImageButton btn_home, btn_play, btn_back, btn_next, btn_pre, btn_toggle, btn_shuffle, btn_volume, btn_heart;
     SeekBar seekBar, seekbar1;
-    TextView txt_time, txt_time_first, txt_view_playmusic;
+    TextView txt_time, txt_time_first, txt_view_playmusic,txt_lyric;
     MediaPlayer myMusic;
     AudioManager audioManager;
     ArrayList<Integer> arr;
@@ -70,8 +81,8 @@ public class PlayMusicActivity extends AppCompatActivity {
     private boolean frag = true;
     private boolean frag_heart = false;
     // Tạo một biến Bitmap để lưu hình ảnh
-    Bitmap bitmapResult;
-    Drawable drawable;
+//    Bitmap bitmapResult;
+//    Drawable drawable;
     Bitmap bitmap;
     Integer IDSong;
     Connection connection;
@@ -81,7 +92,10 @@ public class PlayMusicActivity extends AppCompatActivity {
     int userID;
     private InterstitialAd mInterstitialAd;
     String Role;
-
+    private Map<Integer, String> lyricsMap = new HashMap<>();
+    private Handler handler = new Handler();
+    private Runnable refreshRunnable;
+    private static final long REFRESH_INTERVAL = 1000;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -120,6 +134,17 @@ public class PlayMusicActivity extends AppCompatActivity {
         updateHeartButtonUI();
 
         volume();
+        // Đọc file LRC và lưu trữ lời bài hát
+        readLRCFile();
+
+//        refreshRunnable = new Runnable() {
+//            @Override
+//            public void run() {
+//
+//                updateLyrics();
+//                handler.postDelayed(this, REFRESH_INTERVAL);
+//            }
+//        };
         if(Role.equalsIgnoreCase("member"))
         {
             createADS();
@@ -135,6 +160,15 @@ public class PlayMusicActivity extends AppCompatActivity {
             });
         }
     }
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//        startAutoRefresh();
+//    }
+//
+//    private void startAutoRefresh() {
+//        handler.postDelayed(refreshRunnable, REFRESH_INTERVAL);
+//    }
 
     private void loadRoleUser(int userID) {
         ConnectionClass sql = new ConnectionClass();
@@ -319,6 +353,7 @@ public class PlayMusicActivity extends AppCompatActivity {
 
     private void sendNotification() {
         // Tiếp tục xử lý với bitmap
+
         MediaSessionCompat mediaSessionCompat = new MediaSessionCompat(this, "tag");
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_headphone)
@@ -407,8 +442,12 @@ public class PlayMusicActivity extends AppCompatActivity {
                     String img = resultSet.getString(3);
                     int view = resultSet.getInt(8);
                     String linkSong = resultSet.getString(6);
+
+                    //bitmap = ImagetoBitmap.getBitmapFromURL(linkSong);
                     // Tải ảnh từ URL và hiển thị
                     new LoadImageTask(imageView_songs).execute(img);
+                    Drawable drawable = imageView_songs.getDrawable();
+                    bitmap = ((BitmapDrawable) drawable).getBitmap();
                     txt_name_song.setText(ten);
                     txt_view_playmusic.setText(view + "");
                     try {
@@ -896,12 +935,74 @@ public class PlayMusicActivity extends AppCompatActivity {
         btn_toggle = findViewById(R.id.btn_toggle);
         btn_shuffle = findViewById(R.id.btn_shuffle);
         btn_heart = findViewById(R.id.btn_heart);
-
+        txt_lyric = findViewById(R.id.txt_lyric);
         txt_view_playmusic = findViewById(R.id.txt_view_playmusic);
 
         // Load animation từ file xml
         animation = AnimationUtils.loadAnimation(this, R.anim.animation);
         // Áp dụng animation vào ImageView
         imageView_songs.startAnimation(animation);
+    }
+    // Đọc file LRC và lưu lời bài hát theo thời gian
+    private void readLRCFile() {
+        List<LyricsSyncManager.LyricLine> lyrics;
+        try {
+            InputStream inputStream = getResources().openRawResource(R.raw.badbyelrc);
+            lyrics = LRCParser.parse(inputStream);
+            LyricsSyncManager lyricsSyncManager = new LyricsSyncManager(myMusic, txt_lyric);
+            lyricsSyncManager.setLyrics(lyrics);
+            lyricsSyncManager.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Xử lý lỗi ở đây
+            return;
+        }
+    }
+
+    // Chuyển đổi thời gian từ định dạng [mm:ss.xx] sang milliseconds
+    private int convertTimeToMillis(String time) {
+        String[] timeParts = time.split(":");
+        String[] secondsParts = timeParts[1].split("\\.");
+        int minutes = Integer.parseInt(timeParts[0]);
+        int seconds = Integer.parseInt(secondsParts[0]);
+        int millis = Integer.parseInt(secondsParts[1]) * 10;
+
+        return (minutes * 60 * 1000) + (seconds * 1000) + millis;
+    }
+    // Cập nhật lời bài hát dựa theo thời gian phát nhạc
+    private void updateLyrics() {
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                int currentPosition = myMusic.getCurrentPosition();
+                String lyric = getLyricAtTime(currentPosition);
+                if (lyric != null) {
+                    txt_lyric.setText(lyric);
+                }
+
+                if (myMusic.isPlaying()) {
+                    handler.postDelayed(this, 100);
+                }
+            }
+        }, 100);
+    }
+
+    // Lấy lời bài hát tương ứng với thời gian
+    private String getLyricAtTime(int timeInMillis) {
+        for (Map.Entry<Integer, String> entry : lyricsMap.entrySet()) {
+            if (timeInMillis >= entry.getKey()) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (myMusic != null) {
+            myMusic.release();
+            myMusic = null;
+        }
     }
 }
