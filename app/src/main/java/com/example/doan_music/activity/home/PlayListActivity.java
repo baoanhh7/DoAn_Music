@@ -3,7 +3,10 @@ package com.example.doan_music.activity.home;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -16,9 +19,20 @@ import com.example.doan_music.R;
 import com.example.doan_music.adapter.home.PlayListAdapter;
 import com.example.doan_music.data.DatabaseManager;
 import com.example.doan_music.data.DbHelper;
+import com.example.doan_music.database.ConnectionClass;
 import com.example.doan_music.m_interface.OnItemClickListener;
 import com.example.doan_music.model.Playlists;
+import com.example.doan_music.model.Song;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +44,11 @@ public class PlayListActivity extends AppCompatActivity {
     Playlists playlists;
     DbHelper dbHelper;
     SQLiteDatabase database = null;
+
+    Connection connection;
+    String query;
+    Statement smt;
+    ResultSet resultSet;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,20 +66,30 @@ public class PlayListActivity extends AppCompatActivity {
     private List<Playlists> getPlaylists() {
         List<Playlists> list = new ArrayList<>();
 
-        DbHelper dbHelper = DatabaseManager.dbHelper(this);
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        ConnectionClass sql = new ConnectionClass();
+        connection = sql.conClass();
+        if (connection != null) {
+            try {
+                query = "SELECT * FROM Playlist";
+                smt = connection.createStatement();
+                resultSet = smt.executeQuery(query);
 
-        Cursor cursor = db.rawQuery("Select * from Playlists", null);
-        while (cursor.moveToNext()) {
-            int id = cursor.getInt(0);
-            String name = cursor.getString(1);
-            byte[] img = cursor.getBlob(2);
-
-            playlists = new Playlists(id, name, img);
-            list.add(playlists);
+                while (resultSet.next()) {
+                    Integer PlaylistID = resultSet.getInt(1);
+                    String PlaylistName = resultSet.getString(2);
+                    String PlaylistImage = resultSet.getString(3);
+                    // Chuyển đổi linkImage thành byte[]
+                    byte[] img = getImageBytesFromURL(PlaylistImage);
+                    Playlists playlists = new Playlists(PlaylistID, PlaylistName, img);
+                    list.add(playlists);
+                }
+                connection.close();
+            } catch (Exception e) {
+                Log.e("Error: ", e.getMessage());
+            }
+        } else {
+            Log.e("Error: ", "Connection null");
         }
-        cursor.close();
-        db.close();
 
         return list;
     }
@@ -76,24 +105,46 @@ public class PlayListActivity extends AppCompatActivity {
         playListAdapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(String data) {
-                dbHelper = DatabaseManager.dbHelper(PlayListActivity.this);
-                database = dbHelper.getReadableDatabase();
+                ConnectionClass sql = new ConnectionClass();
+                Connection connection = sql.conClass();
+                PreparedStatement preparedStatement = null;
+                ResultSet resultSet = null;
 
-                Cursor cursor = database.rawQuery("select * from Playlists", null);
-                while (cursor.moveToNext()) {
-                    int id = cursor.getInt(0);
-                    String songPlayList = cursor.getString(1);
+                if (connection != null) {
+                    try {
+                        // Câu truy vấn để lấy tất cả các playlist
+                        String query = "SELECT PlaylistID, PlaylistName FROM Playlist WHERE PlaylistName = ?";
+                        preparedStatement = connection.prepareStatement(query);
+                        preparedStatement.setString(1, data);
+                        resultSet = preparedStatement.executeQuery();
 
-                    if (data.equals(songPlayList)) {
-                        Intent intent = new Intent(PlayListActivity.this, SongsPlayListActivity.class);
-                        intent.putExtra("PlayListID", id);
+                        if (resultSet.next()) {
+                            int id = resultSet.getInt(1);
 
-                        startActivity(intent);
-                        break;
+                            // Chuyển sang màn hình danh sách bài hát trong playlist
+                            Intent intent = new Intent(PlayListActivity.this, SongsPlayListActivity.class);
+                            intent.putExtra("PlayListID", id);
+                            startActivity(intent);
+                        }
+
+                    } catch (Exception e) {
+                        Log.e("Error: ", e.getMessage());
+                    } finally {
+                        // Đảm bảo đóng tài nguyên
+                        try {
+                            if (resultSet != null) resultSet.close();
+                            if (preparedStatement != null) preparedStatement.close();
+                            if (connection != null) connection.close();
+                        } catch (Exception e) {
+                            Log.e("Error closing: ", e.getMessage());
+                        }
                     }
+                } else {
+                    Log.e("Error: ", "Connection null");
                 }
             }
         });
+
     }
 
     private void addControls() {
@@ -106,5 +157,22 @@ public class PlayListActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         txt_playlist.setText(intent.getStringExtra("c"));
+    }
+
+    private byte[] getImageBytesFromURL(String imageUrl) {
+        try {
+            URL url = new URL(imageUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            InputStream input = connection.getInputStream();
+            Bitmap bitmap = BitmapFactory.decodeStream(input);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            return stream.toByteArray();
+        } catch (IOException e) {
+            Log.e("Error: ", "Failed to load image from URL: " + e.getMessage());
+            return null; // Hoặc có thể trả về mảng byte rỗng nếu muốn
+        }
     }
 }

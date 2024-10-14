@@ -108,20 +108,50 @@ public class SongsAlbumActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Integer idSong = arr.get(0);
-                database = openOrCreateDatabase("doanmusic.db", MODE_PRIVATE, null);
-                Cursor cursor = database.rawQuery("select * from Songs", null);
-                while (cursor.moveToNext()) {
-                    Integer Id = cursor.getInt(0);
+                ConnectionClass sql = new ConnectionClass();
+                connection = sql.conClass();
+                PreparedStatement preparedStatement = null;
+                ResultSet resultSet = null;
 
-                    if (idSong.equals(Id)) {
-                        intent = new Intent(SongsAlbumActivity.this, PlayMusicActivity.class);
-                        intent.putExtra("SongID", Id);
-                        intent.putExtra("arrIDSongs", arr);
-                        break;
+                if (connection != null) {
+                    try {
+                        // Sử dụng PreparedStatement để tránh SQL Injection
+                        String query = "SELECT * FROM Song WHERE SongID = ?";
+                        preparedStatement = connection.prepareStatement(query);
+                        preparedStatement.setInt(1, idSong);
+                        resultSet = preparedStatement.executeQuery();
+
+                        if (resultSet.next()) {
+                            Integer songId = resultSet.getInt("SongID");
+
+                            // Chuyển qua Activity PlayMusicActivity trên Main Thread
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Intent intent = new Intent(SongsAlbumActivity.this, PlayMusicActivity.class);
+                                    intent.putExtra("SongID", songId);
+                                    intent.putExtra("arrIDSongs", arr);
+                                    startActivity(intent);
+                                }
+                            });
+                        }
+
+                    } catch (Exception e) {
+                        Log.e("Error: ", e.getMessage());
+                    } finally {
+                        // Đảm bảo đóng các tài nguyên
+                        try {
+                            if (resultSet != null) resultSet.close();
+                            if (preparedStatement != null) preparedStatement.close();
+                            if (connection != null) connection.close();
+                        } catch (Exception e) {
+                            Log.e("Error closing: ", e.getMessage());
+                        }
                     }
+                } else {
+                    Log.e("Error: ", "Connection null");
                 }
-                cursor.close();
-                startActivity(intent);
+
             }
         });
 
@@ -149,7 +179,7 @@ public class SongsAlbumActivity extends AppCompatActivity {
                             view++;
 
                             // Prepare the update statement to increment the view count
-                            String updateQuery = "UPDATE Song SET View = ? WHERE SongID = ?";
+                            String updateQuery = "UPDATE Song SET Views = ? WHERE SongID = ?";
                             PreparedStatement updateStatement = connection.prepareStatement(updateQuery);
                             updateStatement.setInt(1, view);
                             updateStatement.setInt(2, id);

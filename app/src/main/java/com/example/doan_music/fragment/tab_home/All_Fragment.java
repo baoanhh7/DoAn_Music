@@ -158,24 +158,31 @@ public class All_Fragment extends Fragment {
     private List<Category> getlistuserBottom() {
         List<Playlists> list = new ArrayList<>();
 
-        dbHelper = DatabaseManager.dbHelper(requireContext());
-        database = dbHelper.getReadableDatabase();
+        ConnectionClass sql = new ConnectionClass();
+        connection = sql.conClass();
+        if (connection != null) {
+            try {
+                query = "SELECT * FROM Playlist";
+                smt = connection.createStatement();
+                resultSet = smt.executeQuery(query);
 
-        list.clear();
-        Cursor cursor = database.rawQuery("Select * from Playlists", null);
-
-        int count = 0;
-        while (cursor.moveToNext() && count < 4) {
-            int id = cursor.getInt(0);
-            String name = cursor.getString(1);
-            byte[] img = cursor.getBlob(2);
-
-            Playlists playlists = new Playlists(id, name, img);
-            list.add(playlists);
-
-            count++;
+                while (resultSet.next()) {
+                    Integer PlaylistID = resultSet.getInt(1);
+                    String PlaylistName = resultSet.getString(2);
+                    String PlaylistImage = resultSet.getString(3);
+                    // Chuyển đổi linkImage thành byte[]
+                    byte[] img = getImageBytesFromURL(PlaylistImage);
+                    Playlists playlists = new Playlists(PlaylistID, PlaylistName, img);
+                    list.add(playlists);
+                }
+                connection.close();
+            } catch (Exception e) {
+                Log.e("Error: ", e.getMessage());
+            }
+        } else {
+            Log.e("Error: ", "Connection null");
         }
-        cursor.close();
+
         allCateAdapter_bottom.notifyDataSetChanged();
 
         List<Category> categoryList = new ArrayList<>();
