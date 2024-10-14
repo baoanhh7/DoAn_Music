@@ -56,7 +56,7 @@ public class RegisterPremiumActivity extends AppCompatActivity {
         userID = sharedPreferences.getInt("userID", -1);  // Lấy userID
         Log.e("UserID", String.valueOf(userID));
         addControls();
-        //zaloPay();
+//        zaloPay();
         addEvents();
     }
 

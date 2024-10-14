@@ -27,9 +27,13 @@ public class SuccessfulPremiumActivity extends AppCompatActivity {
         Intent intent = getIntent();
         txt_notification.setText(intent.getStringExtra("resultPremium"));
         if(txt_notification.getText().toString().equals("Thanh toan thanh cong")){
-            intent =new Intent(SuccessfulPremiumActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    startActivity(new Intent(SuccessfulPremiumActivity.this, MainActivity.class));
+                    finish();
+                }
+            }, 5555);
         }else {
             new Handler().postDelayed(new Runnable() {
                 @Override

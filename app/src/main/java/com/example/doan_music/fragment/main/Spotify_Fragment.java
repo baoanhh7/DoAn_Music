@@ -19,7 +19,7 @@ import com.example.doan_music.R;
 import com.example.doan_music.adapter.spotify.SpotifyAdapter;
 import com.example.doan_music.database.ConnectionClass;
 import com.example.doan_music.model.Spotifyitem;
-//import com.example.doan_music.registerpremium.RegisterPremiumActivity;
+import com.example.doan_music.registerpremium.RegisterPremiumActivity;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -59,8 +59,8 @@ public class Spotify_Fragment extends Fragment {
         btn_registerpremium.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                Intent intent = new Intent(getActivity(), RegisterPremiumActivity.class);
-//                startActivity(intent);
+                Intent intent = new Intent(getActivity(), RegisterPremiumActivity.class);
+                startActivity(intent);
             }
         });
     }
