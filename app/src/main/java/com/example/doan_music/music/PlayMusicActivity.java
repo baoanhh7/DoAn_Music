@@ -29,7 +29,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 
-import com.example.doan_music.LoadImage.ImagetoBitmap;
 import com.example.doan_music.LoadImage.LoadImageTask;
 import com.example.doan_music.Lyric.LRCParser;
 import com.example.doan_music.Lyric.LyricsSyncManager;
@@ -45,10 +44,11 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -64,7 +64,7 @@ public class PlayMusicActivity extends AppCompatActivity {
 
     ImageButton btn_home, btn_play, btn_back, btn_next, btn_pre, btn_toggle, btn_shuffle, btn_volume, btn_heart;
     SeekBar seekBar, seekbar1;
-    TextView txt_time, txt_time_first, txt_view_playmusic,txt_lyric;
+    TextView txt_time, txt_time_first, txt_view_playmusic, txt_lyric;
     MediaPlayer myMusic;
     AudioManager audioManager;
     ArrayList<Integer> arr;
@@ -96,6 +96,8 @@ public class PlayMusicActivity extends AppCompatActivity {
     private Handler handler = new Handler();
     private Runnable refreshRunnable;
     private static final long REFRESH_INTERVAL = 1000;
+    String linkLRC;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -128,9 +130,9 @@ public class PlayMusicActivity extends AppCompatActivity {
         txt_time.setText(duration);
         loadNameArtist(IDSong);
         sendNotification();
-
+        loadLRC(IDSong);
         addEvents();
-
+        txt_lyric.setText("");
         updateHeartButtonUI();
 
         volume();
@@ -145,8 +147,7 @@ public class PlayMusicActivity extends AppCompatActivity {
 //                handler.postDelayed(this, REFRESH_INTERVAL);
 //            }
 //        };
-        if(Role.equalsIgnoreCase("member"))
-        {
+        if (Role.equalsIgnoreCase("member")) {
             createADS();
         }
         // Bắt đầu cập nhật lời bài hát
@@ -158,6 +159,27 @@ public class PlayMusicActivity extends AppCompatActivity {
                     sendNotification();
                 }
             });
+        }
+    }
+
+    private void loadLRC(Integer idSong) {
+        ConnectionClass sql = new ConnectionClass();
+        connection = sql.conClass();
+        if (connection != null) {
+            try {
+                // Truy vấn SQL Server để lấy dữ liệu
+                query = "SELECT LinkLRC FROM Song WHERE SongID = " + idSong;
+                smt = connection.createStatement();
+                resultSet = smt.executeQuery(query);
+                if (resultSet.next()) {
+                    linkLRC = resultSet.getString(1);
+                }
+                connection.close();
+            } catch (Exception e) {
+                Log.e("Error: ", e.getMessage());
+            }
+        } else {
+            Log.e("Error: ", "Connection null");
         }
     }
 //    @Override
@@ -179,7 +201,7 @@ public class PlayMusicActivity extends AppCompatActivity {
                 query = "SELECT * FROM Users WHERE UserID = " + userID;
                 smt = connection.createStatement();
                 resultSet = smt.executeQuery(query);
-                if(resultSet.next()) {
+                if (resultSet.next()) {
                     Role = resultSet.getString(5);
                 }
                 connection.close();
@@ -197,12 +219,13 @@ public class PlayMusicActivity extends AppCompatActivity {
         new Thread(
                 () -> {
                     // Initialize the Google Mobile Ads SDK on a background thread.
-                    MobileAds.initialize(this, initializationStatus -> {});
+                    MobileAds.initialize(this, initializationStatus -> {
+                    });
                 })
                 .start();
         AdRequest adRequest = new AdRequest.Builder().build();
 
-        InterstitialAd.load(this,"ca-app-pub-3940256099942544/1033173712", adRequest,
+        InterstitialAd.load(this, "ca-app-pub-3940256099942544/1033173712", adRequest,
                 new InterstitialAdLoadCallback() {
                     @Override
                     public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
@@ -213,7 +236,7 @@ public class PlayMusicActivity extends AppCompatActivity {
                         if (mInterstitialAd != null) {
                             myMusic.pause();
                             mInterstitialAd.show(PlayMusicActivity.this);
-                            mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback(){
+                            mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
                                 @Override
                                 public void onAdClicked() {
                                     // Called when a click is recorded for an ad.
@@ -551,17 +574,17 @@ public class PlayMusicActivity extends AppCompatActivity {
                     loadNameArtist(idSong);
                     updateHistorySong(idSong);
                     updateViewSong(idSong);
-
-
+                    txt_lyric.setText("");
                     sendNotification();
                     String duration = timeSeekbar(myMusic.getDuration());
                     txt_time.setText(duration);
                     seekBar.setMax(myMusic.getDuration());
                     myMusic.start();
                     updateHeartButtonUI();
+                    loadLRC(idSong);
+                    readLRCFile();
                     imageView_songs.startAnimation(animation);
-                    if(Role.equalsIgnoreCase("member"))
-                    {
+                    if (Role.equalsIgnoreCase("member")) {
                         createADS();
                     }
                 } else {
@@ -578,7 +601,10 @@ public class PlayMusicActivity extends AppCompatActivity {
                     loadNameArtist(idSong);
                     updateHistorySong(idSong);
                     updateViewSong(idSong);
+                    txt_lyric.setText("");
+                    loadLRC(idSong);
                     sendNotification();
+                    readLRCFile();
                     String duration = timeSeekbar(myMusic.getDuration());
                     txt_time.setText(duration);
                     seekBar.setMax(myMusic.getDuration());
@@ -586,8 +612,7 @@ public class PlayMusicActivity extends AppCompatActivity {
 
                     updateHeartButtonUI();
                     imageView_songs.startAnimation(animation);
-                    if(Role.equalsIgnoreCase("member"))
-                    {
+                    if (Role.equalsIgnoreCase("member")) {
                         createADS();
                     }
                 }
@@ -621,6 +646,9 @@ public class PlayMusicActivity extends AppCompatActivity {
                     loadNameArtist(idSong);
                     updateHistorySong(idSong);
                     updateViewSong(idSong);
+                    txt_lyric.setText("");
+                    loadLRC(idSong);
+                    readLRCFile();
                     updateHeartButtonUI();
                     sendNotification();
                     String duration = timeSeekbar(myMusic.getDuration());
@@ -628,8 +656,7 @@ public class PlayMusicActivity extends AppCompatActivity {
                     seekBar.setMax(myMusic.getDuration());
                     myMusic.start();
                     imageView_songs.startAnimation(animation);
-                    if(Role.equalsIgnoreCase("member"))
-                    {
+                    if (Role.equalsIgnoreCase("member")) {
                         createADS();
                     }
                 } else {
@@ -646,6 +673,9 @@ public class PlayMusicActivity extends AppCompatActivity {
                     loadDataSong(idSong);
                     loadNameArtist(idSong);
                     updateHistorySong(idSong);
+                    txt_lyric.setText("");
+                    loadLRC(idSong);
+                    readLRCFile();
                     updateViewSong(idSong);
                     updateHeartButtonUI();
                     sendNotification();
@@ -654,8 +684,7 @@ public class PlayMusicActivity extends AppCompatActivity {
                     seekBar.setMax(myMusic.getDuration());
                     myMusic.start();
                     imageView_songs.startAnimation(animation);
-                    if(Role.equalsIgnoreCase("member"))
-                    {
+                    if (Role.equalsIgnoreCase("member")) {
                         createADS();
                     }
                 }
@@ -907,13 +936,14 @@ public class PlayMusicActivity extends AppCompatActivity {
         updateHeartButtonUI();
         updateViewSong(idSong);
         updateHistorySong(idSong);
-
+        txt_lyric.setText("");
+        loadLRC(idSong);
+        readLRCFile();
         String duration = timeSeekbar(myMusic.getDuration());
         txt_time.setText(duration);
         seekBar.setMax(myMusic.getDuration());
         myMusic.start();
-        if(Role.equalsIgnoreCase("member"))
-        {
+        if (Role.equalsIgnoreCase("member")) {
             createADS();
         }
     }
@@ -943,66 +973,28 @@ public class PlayMusicActivity extends AppCompatActivity {
         // Áp dụng animation vào ImageView
         imageView_songs.startAnimation(animation);
     }
+
     // Đọc file LRC và lưu lời bài hát theo thời gian
     private void readLRCFile() {
         List<LyricsSyncManager.LyricLine> lyrics;
+        LyricsSyncManager lyricsSyncManager = new LyricsSyncManager(myMusic, txt_lyric);
         try {
-            InputStream inputStream = getResources().openRawResource(R.raw.badbyelrc);
-            lyrics = LRCParser.parse(inputStream);
-            LyricsSyncManager lyricsSyncManager = new LyricsSyncManager(myMusic, txt_lyric);
-            lyricsSyncManager.setLyrics(lyrics);
-            lyricsSyncManager.start();
+            // InputStream inputStream = getResources().openRawResource(R.raw.badbyelrc);
+            // Thay thế đường dẫn URL vào đây
+            if (linkLRC == null || linkLRC.equalsIgnoreCase("null")|| linkLRC.equalsIgnoreCase("")) {
+                txt_lyric.setText("Lyric đang câp nhât");
+            } else {
+                URL url = new URL(linkLRC);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+                lyrics = LRCParser.parse(inputStream);
+                lyricsSyncManager.setLyrics(lyrics);
+                lyricsSyncManager.start();
+            }
         } catch (IOException e) {
             e.printStackTrace();
             // Xử lý lỗi ở đây
             return;
-        }
-    }
-
-    // Chuyển đổi thời gian từ định dạng [mm:ss.xx] sang milliseconds
-    private int convertTimeToMillis(String time) {
-        String[] timeParts = time.split(":");
-        String[] secondsParts = timeParts[1].split("\\.");
-        int minutes = Integer.parseInt(timeParts[0]);
-        int seconds = Integer.parseInt(secondsParts[0]);
-        int millis = Integer.parseInt(secondsParts[1]) * 10;
-
-        return (minutes * 60 * 1000) + (seconds * 1000) + millis;
-    }
-    // Cập nhật lời bài hát dựa theo thời gian phát nhạc
-    private void updateLyrics() {
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                int currentPosition = myMusic.getCurrentPosition();
-                String lyric = getLyricAtTime(currentPosition);
-                if (lyric != null) {
-                    txt_lyric.setText(lyric);
-                }
-
-                if (myMusic.isPlaying()) {
-                    handler.postDelayed(this, 100);
-                }
-            }
-        }, 100);
-    }
-
-    // Lấy lời bài hát tương ứng với thời gian
-    private String getLyricAtTime(int timeInMillis) {
-        for (Map.Entry<Integer, String> entry : lyricsMap.entrySet()) {
-            if (timeInMillis >= entry.getKey()) {
-                return entry.getValue();
-            }
-        }
-        return null;
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (myMusic != null) {
-            myMusic.release();
-            myMusic = null;
         }
     }
 }
