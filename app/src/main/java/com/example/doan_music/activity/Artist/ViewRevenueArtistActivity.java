@@ -2,6 +2,7 @@ package com.example.doan_music.activity.Artist;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -44,6 +45,10 @@ public class ViewRevenueArtistActivity extends AppCompatActivity {
         lineChart.getViewport().setXAxisBoundsManual(true);
         lineChart.getViewport().setMinX(0);
         lineChart.getViewport().setMaxX(11);
+        // Thiết lập giới hạn thủ công cho trục y
+        lineChart.getViewport().setYAxisBoundsManual(true);
+        lineChart.getViewport().setMinY(0);  // Ví dụ: Bắt đầu từ 0 lượt xem
+        lineChart.getViewport().setMaxY(150);  // Ví dụ: Giới hạn đến 150 lượt xem, tùy chỉnh theo dữ liệu của bạn
         lineChart.getGridLabelRenderer().setHorizontalAxisTitle("Months");
         lineChart.getGridLabelRenderer().setVerticalAxisTitle("Views");
         lineChart.getGridLabelRenderer().setHorizontalLabelsColor(Color.WHITE);
@@ -66,33 +71,35 @@ public class ViewRevenueArtistActivity extends AppCompatActivity {
         Connection connection = connectionClass.conClass();
         if (connection != null) {
             try {
-                String query = "SELECT MONTH(GETDATE()) as CurrentMonth, MONTH(DATEADD(MONTH, number, GETDATE())) as Month, " +
-                        "COALESCE(SUM(Views), 0) as TotalViews " +
+                String query = "SELECT MONTH(DATEADD(MONTH, number, GETDATE())) AS Month, " +
+                        "COALESCE(SUM(Views), 0) AS TotalViews " +
                         "FROM master.dbo.spt_values " +
-                        "LEFT JOIN Song ON MONTH(DATEADD(MONTH, number, GETDATE())) = MONTH(GETDATE()) AND ArtistID = ? " +
+                        "LEFT JOIN Song ON Song.ArtistID = ? " +
                         "WHERE type = 'P' AND number BETWEEN 0 AND 11 " +
                         "GROUP BY MONTH(DATEADD(MONTH, number, GETDATE())) " +
                         "ORDER BY MONTH(DATEADD(MONTH, number, GETDATE()))";
 
                 PreparedStatement preparedStatement = connection.prepareStatement(query);
-                preparedStatement.setInt(1, userID);
+                preparedStatement.setInt(1, userID);  // Đặt ArtistID
                 ResultSet resultSet = preparedStatement.executeQuery();
 
                 List<DataPoint> dataPoints = new ArrayList<>();
                 int totalViews = 0;
-                int currentMonth = Calendar.getInstance().get(Calendar.MONTH) + 1; // Adding 1 because Calendar.MONTH is zero-based
 
                 while (resultSet.next()) {
                     int month = resultSet.getInt("Month");
                     int views = resultSet.getInt("TotalViews");
+
+                    Log.d("DBResult", "Month: " + month + ", Views: " + views);  // Log kết quả từ DB
+
                     totalViews += views;
 
-                    // Adjust the x-value to match the chart's month order
-                    double xValue = (month - currentMonth + 12) % 12;
+                    // Sử dụng trực tiếp giá trị tháng (1-12) làm xValue
+                    double xValue = month;
                     dataPoints.add(new DataPoint(xValue, views));
                 }
 
-                // Convert the list to array and create the series for GraphView
+                // Chuyển đổi danh sách thành mảng và tạo series cho biểu đồ
                 DataPoint[] dataPointsArray = dataPoints.toArray(new DataPoint[0]);
                 LineGraphSeries<DataPoint> series = new LineGraphSeries<>(dataPointsArray);
                 series.setColor(Color.WHITE);
@@ -101,10 +108,13 @@ public class ViewRevenueArtistActivity extends AppCompatActivity {
                 series.setDataPointsRadius(10);
                 series.setAnimated(true);
 
-                // Add the series to the graph
+                // Cấu hình biểu đồ
+                lineChart.getViewport().setXAxisBoundsManual(false);  // Tắt giới hạn thủ công trục X
+                lineChart.getViewport().setYAxisBoundsManual(false);  // Tắt giới hạn thủ công trục Y
                 lineChart.addSeries(series);
+                lineChart.onDataChanged(true, true);  // Cập nhật dữ liệu biểu đồ
 
-                long totalRevenue = totalViews * 300;
+                long totalRevenue = totalViews * 300;  // Tính tổng doanh thu
                 tvTotalRevenue.setText(String.format("Số tiền đã thu được: %,d đ", totalRevenue));
 
                 preparedStatement.close();

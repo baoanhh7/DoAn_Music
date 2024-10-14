@@ -8,7 +8,7 @@ import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import com.example.doan_music.activity.Artist.fragment.ListSongArtistFragment;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -57,13 +57,13 @@ public class HomeArtistActivity extends AppCompatActivity {
         if (userID != -1) {
             getUsernameByUserId(userID);
         }
-
+        loadDefaultFragment();
         // Xử lý sự kiện click từng nút
         btnHome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 changeIcon(R.id.btn_home);
-                // Chuyển tới trang Home (giữ nguyên Activity này)
+                loadDefaultFragment();
             }
         });
 
@@ -181,5 +181,11 @@ public class HomeArtistActivity extends AppCompatActivity {
         transaction.replace(R.id.fragment_container, fragment);
         transaction.commit();
     }
-
+    private void loadDefaultFragment() {
+        Fragment defaultFragment = new ListSongArtistFragment();
+        loadFragment(defaultFragment);
+    }
+    public int getUserID() {
+        return userID;
+    }
 }

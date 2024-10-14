@@ -10,21 +10,20 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_height="match_parent">
 
         <ImageView
             android:id="@+id/img_song"
             android:layout_width="70dp"
             android:layout_height="70dp"
-            android:scaleType="centerCrop" />
+            android:scaleType="centerCrop"
+            android:src="@drawable/nhungloihuaboquen" />
 
         <TextView
             android:id="@+id/txt_nameSong"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="70dp"
-            android:layout_weight="1"
-            android:gravity="center_vertical"
+            android:gravity="center|left"
             android:paddingLeft="10dp"
             android:text="Nhung loi hua bo quen - Vu"
             android:textColor="@color/white"

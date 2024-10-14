@@ -91,5 +91,6 @@ dependencies {
     implementation("net.sourceforge.jtds:jtds:1.3.1")
     implementation ("com.jjoe64:graphview:4.2.2")
     implementation("com.google.android.gms:play-services-ads:23.3.0")
-
+    implementation ("com.github.bumptech.glide:glide:4.12.0")
+    annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
 }
