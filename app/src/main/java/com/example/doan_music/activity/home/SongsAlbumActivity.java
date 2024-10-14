@@ -179,8 +179,6 @@ public class SongsAlbumActivity extends AppCompatActivity {
 
     private List<Song> getList() {
         List<Song> list = new ArrayList<>();
-        List<Integer> arr = new ArrayList<>();
-
         int albumID = getIntent().getIntExtra("albumID", -1);
 
         // Initialize the SQL Server connection using your custom ConnectionClass
