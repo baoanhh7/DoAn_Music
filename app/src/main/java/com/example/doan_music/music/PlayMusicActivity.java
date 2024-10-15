@@ -31,6 +31,7 @@ import androidx.core.app.NotificationCompat;
 
 import com.example.doan_music.LoadImage.LoadImageTask;
 import com.example.doan_music.Lyric.LRCParser;
+import com.example.doan_music.Lyric.LyricsManager;
 import com.example.doan_music.Lyric.LyricsSyncManager;
 import com.example.doan_music.R;
 import com.example.doan_music.activity.MainActivity;
@@ -97,7 +98,7 @@ public class PlayMusicActivity extends AppCompatActivity {
     private Runnable refreshRunnable;
     private static final long REFRESH_INTERVAL = 1000;
     String linkLRC;
-
+    private LyricsManager lyricsManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -137,8 +138,9 @@ public class PlayMusicActivity extends AppCompatActivity {
 
         volume();
         // Đọc file LRC và lưu trữ lời bài hát
-        readLRCFile();
-
+        lyricsManager = new LyricsManager(myMusic, txt_lyric);
+//        readLRCFile();
+        lyricsManager.loadLyrics(linkLRC);
 //        refreshRunnable = new Runnable() {
 //            @Override
 //            public void run() {
@@ -582,7 +584,8 @@ public class PlayMusicActivity extends AppCompatActivity {
                     myMusic.start();
                     updateHeartButtonUI();
                     loadLRC(idSong);
-                    readLRCFile();
+                    //readLRCFile();
+                    lyricsManager.loadLyrics(linkLRC);
                     imageView_songs.startAnimation(animation);
                     if (Role.equalsIgnoreCase("member")) {
                         createADS();
@@ -604,7 +607,8 @@ public class PlayMusicActivity extends AppCompatActivity {
                     txt_lyric.setText("");
                     loadLRC(idSong);
                     sendNotification();
-                    readLRCFile();
+                    //readLRCFile();
+                    lyricsManager.loadLyrics(linkLRC);
                     String duration = timeSeekbar(myMusic.getDuration());
                     txt_time.setText(duration);
                     seekBar.setMax(myMusic.getDuration());
@@ -648,7 +652,8 @@ public class PlayMusicActivity extends AppCompatActivity {
                     updateViewSong(idSong);
                     txt_lyric.setText("");
                     loadLRC(idSong);
-                    readLRCFile();
+                    //readLRCFile();
+                    lyricsManager.loadLyrics(linkLRC);
                     updateHeartButtonUI();
                     sendNotification();
                     String duration = timeSeekbar(myMusic.getDuration());
@@ -675,7 +680,8 @@ public class PlayMusicActivity extends AppCompatActivity {
                     updateHistorySong(idSong);
                     txt_lyric.setText("");
                     loadLRC(idSong);
-                    readLRCFile();
+                    //readLRCFile();
+                    lyricsManager.loadLyrics(linkLRC);
                     updateViewSong(idSong);
                     updateHeartButtonUI();
                     sendNotification();
@@ -938,7 +944,8 @@ public class PlayMusicActivity extends AppCompatActivity {
         updateHistorySong(idSong);
         txt_lyric.setText("");
         loadLRC(idSong);
-        readLRCFile();
+        //readLRCFile();
+        lyricsManager.loadLyrics(linkLRC);
         String duration = timeSeekbar(myMusic.getDuration());
         txt_time.setText(duration);
         seekBar.setMax(myMusic.getDuration());
