@@ -61,11 +61,12 @@ public class ListSongArtistFragment extends Fragment {
                 if (connection != null) {
                     try {
                         // Truy vấn SQL để lấy bài hát của nghệ sĩ dựa trên userID
-                        String query = "SELECT s.SongID, s.SongName, s.SongImage " +
-                                "FROM Song s " +
-                                "WHERE ArtistID = UserID";
+                        String query = "SELECT SongID, SongName, SongImage " +
+                                "FROM Song " +
+                                "WHERE ArtistID = ? AND ArtistID = ?";
                         PreparedStatement preparedStatement = connection.prepareStatement(query);
                         preparedStatement.setInt(1, userID);
+                        preparedStatement.setInt(2, userID);  // Set ArtistID to be the same as userID
                         ResultSet resultSet = preparedStatement.executeQuery();
 
                         final List<Song> tempList = new ArrayList<>();

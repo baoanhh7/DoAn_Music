@@ -10,14 +10,14 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
+import com.squareup.picasso.Picasso;
 import com.example.doan_music.R;
 import com.example.doan_music.model.Song;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder> {
-
     private List<Song> songs;
     private Context context;
 
@@ -40,8 +40,8 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
             holder.txtNameSong.setText(song.getSongName());
         }
         if (holder.imgSong != null && context != null) {
-            Glide.with(context)
-                    .load(song.getSongImage())
+            Picasso.get()
+                    .load(Arrays.toString(song.getSongImage()))
                     .placeholder(R.drawable.nhungloihuaboquen)
                     .into(holder.imgSong);
         }
