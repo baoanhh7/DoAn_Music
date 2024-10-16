@@ -8,6 +8,7 @@ import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.doan_music.R;
+import com.example.doan_music.activity.admin.accept.AcceptActivity;
 import com.example.doan_music.activity.admin.album.AlbumActivity;
 import com.example.doan_music.activity.admin.artist.ArtistActivity;
 import com.example.doan_music.activity.admin.playlist.PlayListActivity;
@@ -15,7 +16,7 @@ import com.example.doan_music.activity.admin.song.SongActivity;
 import com.example.doan_music.loginPackage.Login_userActivity;
 
 public class AdminActivity extends AppCompatActivity {
-    Button btn_add_album, btn_add_artists, btn_add_playlists, btn_add_types, btn_add_song, btn_logout;
+    Button btn_add_album, btn_add_artists, btn_add_playlists, btn_add_types, btn_add_song, btn_logout,btn_accept;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +56,13 @@ public class AdminActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+        btn_accept.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AdminActivity.this, AcceptActivity.class);
+                startActivity(intent);
+            }
+        });
         btn_logout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -70,7 +78,7 @@ public class AdminActivity extends AppCompatActivity {
         btn_add_playlists = findViewById(R.id.btn_playlists);
         btn_add_types = findViewById(R.id.btn_types);
         btn_add_song = findViewById(R.id.btn_song);
-
+        btn_accept = findViewById(R.id.PheDuyet);
         btn_logout = findViewById(R.id.btn_logout);
 
     }

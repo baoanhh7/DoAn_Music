@@ -1,0 +1,119 @@
+package com.example.doan_music.activity.admin.accept.adapter;
+
+import android.content.Context;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.TextView;
+
+import com.example.doan_music.R;
+import com.example.doan_music.database.ConnectionClass;
+import com.example.doan_music.model.Users;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.List;
+
+public class user_item_Adapter extends ArrayAdapter<Users> {
+    private Context context;
+
+    public user_item_Adapter(Context context, List<Users> users) {
+        super(context, 0, users);
+        this.context = context;
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        if (convertView == null) {
+            convertView = LayoutInflater.from(context).inflate(R.layout.user_item_layout, parent, false);
+        }
+
+        Users user = getItem(position);
+
+        TextView tvUsername = convertView.findViewById(R.id.tvUsername);
+        Button btnAccept = convertView.findViewById(R.id.btnAccept);
+        Button btnCancel = convertView.findViewById(R.id.btnCancel);
+
+        if (user != null) {
+            tvUsername.setText(user.getUsername());
+            // Xử lý khi nhấn nút Accept
+            btnAccept.setOnClickListener(v -> {
+                // Cập nhật trạng thái thành "active" và vai trò thành "artist"
+                user.setStatus("active");
+                user.setRole("artist");
+                updateUserStatusInDatabase(user.getUserID(), "active", "artist");
+
+                notifyDataSetChanged(); // Cập nhật giao diện
+            });
+            // Xử lý khi nhấn nút Cancel
+            btnCancel.setOnClickListener(v -> {
+                // Xóa user khỏi database
+                deleteUserFromDatabase(user.getUserID());
+
+                // Xóa user khỏi adapter
+                remove(user);
+                notifyDataSetChanged();
+            });
+        }
+
+        return convertView;
+    }
+
+    // Hàm cập nhật trạng thái user trong database
+    private void updateUserStatusInDatabase(int userID, String status, String role) {
+        ConnectionClass connectionClass = new ConnectionClass();
+        Connection connection = connectionClass.conClass();
+
+        if (connection != null) {
+            try {
+                // Cập nhật cả Status và Role
+                String query = "UPDATE Users SET Status = ?, Role = ? WHERE UserID = ?";
+                PreparedStatement preparedStatement = connection.prepareStatement(query);
+                preparedStatement.setString(1, status);
+                preparedStatement.setString(2, role);  // Thêm Role vào câu lệnh
+                preparedStatement.setInt(3, userID);
+
+                preparedStatement.executeUpdate(); // Thực thi câu lệnh
+                preparedStatement.close();
+            } catch (SQLException e) {
+                Log.e("UserAdapter", "Error updating user status and role: " + e.getMessage());
+            } finally {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    Log.e("UserAdapter", "Error closing connection: " + e.getMessage());
+                }
+            }
+        }
+    }
+
+
+    // Hàm xóa user khỏi database
+    private void deleteUserFromDatabase(int userID) {
+        ConnectionClass connectionClass = new ConnectionClass();
+        Connection connection = connectionClass.conClass();
+
+        if (connection != null) {
+            try {
+                String query = "DELETE FROM Users WHERE UserID = ?";
+                PreparedStatement preparedStatement = connection.prepareStatement(query);
+                preparedStatement.setInt(1, userID);
+
+                preparedStatement.executeUpdate();
+                preparedStatement.close();
+            } catch (SQLException e) {
+                Log.e("UserAdapter", "Error deleting user: " + e.getMessage());
+            } finally {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    Log.e("UserAdapter", "Error closing connection: " + e.getMessage());
+                }
+            }
+        }
+    }
+}

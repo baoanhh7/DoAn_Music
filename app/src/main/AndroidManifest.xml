@@ -162,6 +162,9 @@
         <activity
             android:name=".activity.home.PlayListActivity"
             android:exported="true" />
+        <activity
+            android:name=".activity.admin.accept.AcceptActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
