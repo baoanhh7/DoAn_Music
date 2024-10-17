@@ -96,7 +96,7 @@ public class SongsPlayListActivity extends AppCompatActivity {
                 if (connection != null) {
                     try {
                         // Sử dụng PreparedStatement để tránh SQL Injection
-                        String query = "SELECT * FROM PlayList WHERE SongID = ?";
+                        String query = "SELECT * FROM Playlist_Song WHERE SongID = ?";
                         preparedStatement = connection.prepareStatement(query);
                         preparedStatement.setInt(1, idSong);
                         resultSet = preparedStatement.executeQuery();
@@ -153,7 +153,7 @@ public class SongsPlayListActivity extends AppCompatActivity {
 
                         if (resultSet.next()) {
                             int id = resultSet.getInt(1);
-                            int view = resultSet.getInt(8);
+                            int view = resultSet.getInt(2);
 
                             // Tăng số lần xem
                             view++;
@@ -193,7 +193,7 @@ public class SongsPlayListActivity extends AppCompatActivity {
     }
 
     private void loadInfoPlayList() {
-        int albumID = getIntent().getIntExtra("PlayListID", -1);
+        int playListID = getIntent().getIntExtra("PlayListID", -1);
 
         ConnectionClass sql = new ConnectionClass();
         Connection connection = sql.conClass();
@@ -205,15 +205,17 @@ public class SongsPlayListActivity extends AppCompatActivity {
                 // Sử dụng PreparedStatement để thực hiện truy vấn SQL Server
                 String query = "SELECT * FROM PlayList WHERE PlayListID = ?";
                 preparedStatement = connection.prepareStatement(query);
-                preparedStatement.setInt(1, albumID);
+                preparedStatement.setInt(1, playListID);
                 resultSet = preparedStatement.executeQuery();
 
                 if (resultSet.next()) {
                     String name = resultSet.getString(2);
-                    byte[] img = resultSet.getBytes(3);
+                    String image = resultSet.getString(3);
+                    // Chuyển đổi linkImage thành byte[]
+                    byte[] imgBytes = getImageBytesFromURL(image);
 
                     // Chuyển đổi byte[] thành Bitmap
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(img, 0, img.length);
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(imgBytes, 0, imgBytes.length);
 
                     // Cập nhật UI ngay lập tức trên Main Thread (không cần runOnUiThread)
                     txt_songPlayList.setText(name);
@@ -248,30 +250,32 @@ public class SongsPlayListActivity extends AppCompatActivity {
 
         if (connection != null) {
             try {
-                // Câu truy vấn để lấy tất cả các bài hát có PlayListID phù hợp
-                String query = "SELECT s.SongID, s.SongName, s.SongImage, s.Views" +
+                // Truy vấn để lấy SongID từ Playlist_Song dựa trên PlaylistID
+                String query = "SELECT s.SongID, s.SongName, s.SongImage, s.Views " +
                         "FROM Song s " +
                         "INNER JOIN Playlist_Song ps ON s.SongID = ps.SongID " +
                         "WHERE ps.PlaylistID = ?";
                 preparedStatement = connection.prepareStatement(query);
-                preparedStatement.setInt(1, playListID);
+                preparedStatement.setInt(1, playListID);  // Gán PlayListID nhận từ Intent
 
                 resultSet = preparedStatement.executeQuery();
                 list.clear(); // Xóa danh sách cũ để thêm dữ liệu mới
 
+                // Lặp qua kết quả truy vấn để lấy thông tin bài hát
                 while (resultSet.next()) {
-                    Integer id = resultSet.getInt(1);
-                    String name = resultSet.getString(2);
-                    String img = resultSet.getString(3);
-                    byte[] imgBytes = getImageBytesFromURL(img);
-                    int view = resultSet.getInt(8);
+                    Integer id = resultSet.getInt(1);          // SongID
+                    String name = resultSet.getString(2);      // SongName
+                    String img = resultSet.getString(3);       // SongImage URL
+                    byte[] imgBytes = getImageBytesFromURL(img); // Chuyển URL ảnh thành byte[]
+                    int view = resultSet.getInt(4);            // Views
 
                     // Tạo đối tượng Song và thêm vào danh sách
-                    Song song = new Song(id, name, playListID, imgBytes, img, view);
+                    Song song = new Song(id, name, playListID, imgBytes, view);
                     arr.add(id);
                     list.add(song);
                 }
 
+                // Cập nhật adapter
                 songsPlayListAdapter.notifyDataSetChanged();
 
                 // Sắp xếp danh sách theo thứ tự giảm dần của trường view
