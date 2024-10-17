@@ -53,6 +53,15 @@
         android:layout_gravity="center"
         android:layout_marginTop="20dp"
         android:text="Phê duyệt đăng kí" />
+    <Button
+        android:id="@+id/btn_revenue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:text="Thống kê doanh thu"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
     <Button
         android:id="@+id/btn_logout"
