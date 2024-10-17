@@ -62,7 +62,6 @@ import java.util.Map;
 import java.util.Random;
 
 public class PlayMusicActivity extends AppCompatActivity {
-
     ImageButton btn_home, btn_play, btn_back, btn_next, btn_pre, btn_toggle, btn_shuffle, btn_volume, btn_heart;
     SeekBar seekBar, seekbar1;
     TextView txt_time, txt_time_first, txt_view_playmusic, txt_lyric;
@@ -99,6 +98,7 @@ public class PlayMusicActivity extends AppCompatActivity {
     private static final long REFRESH_INTERVAL = 1000;
     String linkLRC;
     private LyricsManager lyricsManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -132,7 +132,6 @@ public class PlayMusicActivity extends AppCompatActivity {
         loadNameArtist(IDSong);
         sendNotification();
         loadLRC(IDSong);
-        addEvents();
         txt_lyric.setText("");
         updateHeartButtonUI();
 
@@ -162,6 +161,8 @@ public class PlayMusicActivity extends AppCompatActivity {
                 }
             });
         }
+
+        addEvents();
     }
 
     private void loadLRC(Integer idSong) {
@@ -429,7 +430,7 @@ public class PlayMusicActivity extends AppCompatActivity {
             try {
                 // Truy vấn SQL Server để lấy dữ liệu
                 query = "select * from Artist" +
-                        " JOIN Song ON Artist.ArtistID =Song.ArtistID " +
+                        " JOIN Song ON Artist.ArtistID = Song.ArtistID " +
                         " WHERE Song.SongID =  " + id;
                 smt = connection.createStatement();
                 resultSet = smt.executeQuery(query);
@@ -437,6 +438,10 @@ public class PlayMusicActivity extends AppCompatActivity {
                 while (resultSet.next()) {
                     String ten = resultSet.getString(2);
                     txt_artist_song.setText(ten);
+                    SharedPreferences sharedPreferences = getSharedPreferences("musicData", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString("ArtistName", ten); // Lưu tên nghệ sĩ
+                    editor.apply(); // Lưu thay đổi
                 }
                 connection.close();
             } catch (Exception e) {
@@ -474,6 +479,12 @@ public class PlayMusicActivity extends AppCompatActivity {
                     Drawable drawable = imageView_songs.getDrawable();
                     bitmap = ((BitmapDrawable) drawable).getBitmap();
                     txt_name_song.setText(ten);
+
+                    SharedPreferences sharedPreferences = getSharedPreferences("musicData", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString("SongName", ten); // Lưu tên bài hát
+                    editor.apply(); // Lưu thay đổi
+
                     txt_view_playmusic.setText(view + "");
                     try {
                         myMusic.setDataSource(linkSong);
@@ -716,7 +727,6 @@ public class PlayMusicActivity extends AppCompatActivity {
                 finish();
             }
         });
-
 
         btn_heart.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -988,7 +998,7 @@ public class PlayMusicActivity extends AppCompatActivity {
         try {
             // InputStream inputStream = getResources().openRawResource(R.raw.badbyelrc);
             // Thay thế đường dẫn URL vào đây
-            if (linkLRC == null || linkLRC.equalsIgnoreCase("null")|| linkLRC.equalsIgnoreCase("")) {
+            if (linkLRC == null || linkLRC.equalsIgnoreCase("null") || linkLRC.equalsIgnoreCase("")) {
                 txt_lyric.setText("Lyric đang câp nhât");
             } else {
                 URL url = new URL(linkLRC);

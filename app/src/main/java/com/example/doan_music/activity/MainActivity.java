@@ -3,8 +3,11 @@ package com.example.doan_music.activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -15,7 +18,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
 import com.example.doan_music.R;
-import com.example.doan_music.data.DbHelper;
 import com.example.doan_music.fragment.drawer.AllSongs_Fragment;
 import com.example.doan_music.fragment.main.Home_Fragment;
 import com.example.doan_music.fragment.main.Library_Fragment;
@@ -33,7 +35,8 @@ public class MainActivity extends AppCompatActivity {
     NavigationView navigationView;
     Integer maU;
     String tenU;
-    DbHelper dbHelper = null;
+    ImageView mini_player_play_pause;
+    TextView mini_player_song_name, mini_player_artist_name;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,6 +127,18 @@ public class MainActivity extends AppCompatActivity {
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.navigation_drawer);
 
+        mini_player_play_pause = findViewById(R.id.mini_player_play_pause);
+        mini_player_artist_name = findViewById(R.id.mini_player_artist_name);
+        mini_player_song_name = findViewById(R.id.mini_player_song_name);
+
+        SharedPreferences sharedPreferences = getSharedPreferences("musicData", MODE_PRIVATE);
+        String songName = sharedPreferences.getString("SongName", "Unknown Song");
+        String artistName = sharedPreferences.getString("ArtistName", "Unknown Artist");
+
+        // Cập nhật giao diện mini player
+        mini_player_song_name.setText(songName);
+        mini_player_artist_name.setText(artistName);
+
         // Lấy Intent đã được chuyển từ Login_userActivity
         Intent intent = getIntent();
 
@@ -135,6 +150,23 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Lấy lại thông tin mới nhất từ SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences("musicData", MODE_PRIVATE);
+        String songName = sharedPreferences.getString("SongName", "Unknown Song");
+        String artistName = sharedPreferences.getString("ArtistName", "Unknown Artist");
+
+        // Cập nhật giao diện mini player
+        TextView miniSongName = findViewById(R.id.mini_player_song_name);
+        TextView miniArtistName = findViewById(R.id.mini_player_artist_name);
+        miniSongName.setText(songName);
+        miniArtistName.setText(artistName);
+    }
+
 
     // Nhấn nút back device để trở về(sử dụng nút trong device)
     @Override
