@@ -56,8 +56,8 @@ public class RegisterPremiumActivity extends AppCompatActivity {
         userID = sharedPreferences.getInt("userID", -1);  // Lấy userID
         Log.e("UserID", String.valueOf(userID));
         addControls();
-//        zaloPay();
-        addEvents();
+        //zaloPay();
+        //addEvents();
     }
 
 //    private void zaloPay() {
@@ -69,8 +69,8 @@ public class RegisterPremiumActivity extends AppCompatActivity {
 //        ZaloPaySDK.init(2553, Environment.SANDBOX);
 //    }
 
-    private void addEvents() {
-        String totalText = total.getText().toString().replaceAll("[^0-9]", ""); // Loại bỏ tất cả ký tự không phải số
+//    private void addEvents() {
+//        String totalText = total.getText().toString().replaceAll("[^0-9]", ""); // Loại bỏ tất cả ký tự không phải số
 //        zpay.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View v) {
@@ -114,7 +114,7 @@ public class RegisterPremiumActivity extends AppCompatActivity {
 //                    }
 //                }
 //        });
-    }
+//    }
 
     // Phương thức chèn dữ liệu vào bảng HoaDonAdmin
     public void insertDataHoaDonAdmin(int userID) {

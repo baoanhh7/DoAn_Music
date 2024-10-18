@@ -139,7 +139,7 @@ public class PlayMusicActivity extends AppCompatActivity {
         // Đọc file LRC và lưu trữ lời bài hát
         lyricsManager = new LyricsManager(myMusic, txt_lyric);
 //        readLRCFile();
-        lyricsManager.loadLyrics(linkLRC);
+
 //        refreshRunnable = new Runnable() {
 //            @Override
 //            public void run() {
@@ -150,6 +150,10 @@ public class PlayMusicActivity extends AppCompatActivity {
 //        };
         if (Role.equalsIgnoreCase("member")) {
             createADS();
+            txt_lyric.setText("premium de mo tinh nang");
+        }
+        if (Role.equalsIgnoreCase("premium")) {
+            lyricsManager.loadLyrics(linkLRC);
         }
         // Bắt đầu cập nhật lời bài hát
         if (frag) {
@@ -596,7 +600,9 @@ public class PlayMusicActivity extends AppCompatActivity {
                     updateHeartButtonUI();
                     loadLRC(idSong);
                     //readLRCFile();
-                    lyricsManager.loadLyrics(linkLRC);
+                    if (Role.equalsIgnoreCase("premium")) {
+                        lyricsManager.loadLyrics(linkLRC);
+                    }
                     imageView_songs.startAnimation(animation);
                     if (Role.equalsIgnoreCase("member")) {
                         createADS();
@@ -619,7 +625,9 @@ public class PlayMusicActivity extends AppCompatActivity {
                     loadLRC(idSong);
                     sendNotification();
                     //readLRCFile();
-                    lyricsManager.loadLyrics(linkLRC);
+                    if (Role.equalsIgnoreCase("premium")) {
+                        lyricsManager.loadLyrics(linkLRC);
+                    }
                     String duration = timeSeekbar(myMusic.getDuration());
                     txt_time.setText(duration);
                     seekBar.setMax(myMusic.getDuration());
@@ -664,7 +672,9 @@ public class PlayMusicActivity extends AppCompatActivity {
                     txt_lyric.setText("");
                     loadLRC(idSong);
                     //readLRCFile();
-                    lyricsManager.loadLyrics(linkLRC);
+                    if (Role.equalsIgnoreCase("premium")) {
+                        lyricsManager.loadLyrics(linkLRC);
+                    }
                     updateHeartButtonUI();
                     sendNotification();
                     String duration = timeSeekbar(myMusic.getDuration());
@@ -692,7 +702,9 @@ public class PlayMusicActivity extends AppCompatActivity {
                     txt_lyric.setText("");
                     loadLRC(idSong);
                     //readLRCFile();
-                    lyricsManager.loadLyrics(linkLRC);
+                    if (Role.equalsIgnoreCase("premium")) {
+                        lyricsManager.loadLyrics(linkLRC);
+                    }
                     updateViewSong(idSong);
                     updateHeartButtonUI();
                     sendNotification();
@@ -955,7 +967,9 @@ public class PlayMusicActivity extends AppCompatActivity {
         txt_lyric.setText("");
         loadLRC(idSong);
         //readLRCFile();
-        lyricsManager.loadLyrics(linkLRC);
+        if (Role.equalsIgnoreCase("premium")) {
+            lyricsManager.loadLyrics(linkLRC);
+        }
         String duration = timeSeekbar(myMusic.getDuration());
         txt_time.setText(duration);
         seekBar.setMax(myMusic.getDuration());
