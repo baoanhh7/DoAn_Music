@@ -1,9 +1,5 @@
 package com.example.doan_music.fragment.library;
 
-import static android.content.Context.MODE_PRIVATE;
-
-import android.content.ContentValues;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -15,20 +11,16 @@ import android.view.ViewGroup;
 import android.widget.SearchView;
 
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.doan_music.R;
 import com.example.doan_music.activity.MainActivity;
 import com.example.doan_music.adapter.thuvien.AddNgheSiAdapter;
-import com.example.doan_music.data.DatabaseManager;
 import com.example.doan_music.data.DbHelper;
 import com.example.doan_music.database.ConnectionClass;
-import com.example.doan_music.fragment.main.Library_Fragment;
 import com.example.doan_music.m_interface.OnItemClickListener;
 import com.example.doan_music.model.AddNgheSi_ThuVien;
-import com.example.doan_music.model.ThuVien;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -61,6 +53,7 @@ public class AddNgheSiFragment extends Fragment implements OnItemClickListener {
     Statement smt;
     ResultSet resultSet;
     private int userId;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -93,34 +86,34 @@ public class AddNgheSiFragment extends Fragment implements OnItemClickListener {
     }
 
     private void loadData() {
-            ConnectionClass sql = new ConnectionClass();
-            connection = sql.conClass();
-            if (connection != null) {
-                try {
-                    query ="SELECT * " +
-                            "FROM Artist " +
-                            "WHERE Artist.ArtistID NOT IN (SELECT ArtistID " +
-                            "FROM User_Artist " +
-                            "WHERE UserID = " + userId + ")";
-                    smt = connection.createStatement();
-                    resultSet = smt.executeQuery(query);
-                    arrayList.clear();
-                    while (resultSet.next()) {
-                        String ten = resultSet.getString(2);
-                        String linkImage = resultSet.getString(3);
-                        // Chuyển đổi linkImage thành byte[]
-                        byte[] img = getImageBytesFromURL(linkImage);
-                        AddNgheSi_ThuVien addNgheSiThuVien = new AddNgheSi_ThuVien(img, ten);
-                        arrayList.add(addNgheSiThuVien);
-                    }
-                    addNgheSiAdapter.notifyDataSetChanged();
-                    connection.close();
-                } catch (Exception e) {
-                    Log.e("Error: ", e.getMessage());
+        ConnectionClass sql = new ConnectionClass();
+        connection = sql.conClass();
+        if (connection != null) {
+            try {
+                query = "SELECT * " +
+                        "FROM Artist " +
+                        "WHERE Artist.ArtistID NOT IN (SELECT ArtistID " +
+                        "FROM User_Artist " +
+                        "WHERE UserID = " + userId + ")";
+                smt = connection.createStatement();
+                resultSet = smt.executeQuery(query);
+                arrayList.clear();
+                while (resultSet.next()) {
+                    String ten = resultSet.getString(2);
+                    String linkImage = resultSet.getString(3);
+                    // Chuyển đổi linkImage thành byte[]
+                    byte[] img = getImageBytesFromURL(linkImage);
+                    AddNgheSi_ThuVien addNgheSiThuVien = new AddNgheSi_ThuVien(img, ten);
+                    arrayList.add(addNgheSiThuVien);
                 }
-            } else {
-                Log.e("Error: ", "Connection null");
+                addNgheSiAdapter.notifyDataSetChanged();
+                connection.close();
+            } catch (Exception e) {
+                Log.e("Error: ", e.getMessage());
             }
+        } else {
+            Log.e("Error: ", "Connection null");
+        }
     }
 
     // Phương thức để tải ảnh từ URL và chuyển thành byte[]
@@ -180,13 +173,14 @@ public class AddNgheSiFragment extends Fragment implements OnItemClickListener {
 //                    fragmentTransaction.replace(R.id.frame_container, fragment);
 //                    fragmentTransaction.commit();
 //                }
-                insertUserArtist(data,userId);
+                insertUserArtist(data, userId);
             }
         });
         recycler_Artists_thuvien_add.setAdapter(addNgheSiAdapter);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(requireContext(), 3);
         recycler_Artists_thuvien_add.setLayoutManager(gridLayoutManager);
     }
+
     private void insertUserArtist(String data, Integer maU) {
         ConnectionClass sql = new ConnectionClass();
         Connection connection = sql.conClass();

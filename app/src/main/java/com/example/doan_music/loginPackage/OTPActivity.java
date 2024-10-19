@@ -2,7 +2,6 @@ package com.example.doan_music.loginPackage;
 
 import static android.content.ContentValues.TAG;
 
-import android.content.ContentValues;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -17,7 +16,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.doan_music.R;
-import com.example.doan_music.data.DatabaseManager;
 import com.example.doan_music.data.DbHelper;
 import com.example.doan_music.database.ConnectionClass;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -51,6 +49,7 @@ public class OTPActivity extends AppCompatActivity {
     String query;
     Statement smt;
     ResultSet resultSet;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -142,6 +141,7 @@ public class OTPActivity extends AppCompatActivity {
                     }
                 });
     }
+
     private void goToLogin() {
         // Tạo kết nối SQL Server
         ConnectionClass sql = new ConnectionClass();

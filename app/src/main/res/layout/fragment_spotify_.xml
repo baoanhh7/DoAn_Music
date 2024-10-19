@@ -1,23 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#131313"
-    android:orientation="vertical"
     android:gravity="center_horizontal"
+    android:orientation="vertical"
     tools:context=".fragment.main.Spotify_Fragment">
 
     <!-- TODO: Update blank fragment layout -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
         android:text="Trải nghiệm âm nhạc đỉnh cao với Premium"
         android:textAlignment="center"
         android:textColor="@color/white"
-        android:textSize="35sp"
-        android:layout_marginTop="20dp" />
+        android:textSize="35sp" />
 
     <LinearLayout
         android:id="@+id/LNL_member"
@@ -43,14 +42,15 @@
             android:textColor="@color/white"
             android:textSize="15sp" />
     </LinearLayout>
+
     <LinearLayout
-        android:visibility="gone"
         android:id="@+id/LNL_premium"
         android:layout_width="370dp"
         android:layout_height="70dp"
         android:layout_marginTop="50dp"
         android:background="#838383"
-        android:gravity="center">
+        android:gravity="center"
+        android:visibility="gone">
 
         <TextView
             android:layout_width="wrap_content"
@@ -72,15 +72,16 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
         android:text="Nghe không quảng cáo. Dùng premium với giá 100.000đ/tháng"
         android:textAlignment="center"
         android:textColor="@color/white"
-        android:textSize="25sp"
-        android:layout_marginTop="50dp" />
+        android:textSize="25sp" />
+
     <Button
         android:id="@+id/btn_registerpremium"
-        android:layout_marginTop="50dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Đăng ký premium"/>
+        android:layout_marginTop="50dp"
+        android:text="Đăng ký premium" />
 </LinearLayout>

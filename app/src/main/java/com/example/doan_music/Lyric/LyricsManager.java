@@ -26,12 +26,10 @@ public class LyricsManager {
         if (lrcUrl == null || lrcUrl.equalsIgnoreCase("null") || lrcUrl.isEmpty()) {
             lyricsTextView.setText("Lyric đang cập nhật");
             return;
-        }
-        else if (!lrcUrl.equals(currentLRCUrl)) {
+        } else if (!lrcUrl.equals(currentLRCUrl)) {
             resetLyrics();
             currentLRCUrl = lrcUrl;
         }
-
 
 
         new Thread(() -> {

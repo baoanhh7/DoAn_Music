@@ -2,11 +2,7 @@ package com.example.doan_music.loginPackage;
 
 import static android.content.ContentValues.TAG;
 
-import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,9 +16,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.doan_music.R;
-import com.example.doan_music.activity.MainActivity;
-import com.example.doan_music.activity.admin.AdminActivity;
-import com.example.doan_music.data.DatabaseManager;
 import com.example.doan_music.data.DbHelper;
 import com.example.doan_music.database.ConnectionClass;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -102,7 +95,7 @@ public class RegisterPhoneUserActivity extends AppCompatActivity {
             showError(EdtPassword, "Your password must be at least 8 character");
         } else if (repassword.isEmpty() || !repassword.equals(password)) {
             showError(EdtRepassword, "Your password is not match");
-        } else if (phone.length()!=12) {
+        } else if (phone.length() != 12) {
             showError(EdtPhone, "Your phone is not valid!");
         } else {
             connection = new ConnectionClass().conClass();
@@ -117,7 +110,7 @@ public class RegisterPhoneUserActivity extends AppCompatActivity {
                         if (phone.equals(Phone)) {
                             showError(EdtPhone, "Số điện thoại đã được đăng ký");
                             return;
-                        }else if(username.equals(UserName)){
+                        } else if (username.equals(UserName)) {
                             showError(EdtUsername, "Tên đăng nhập đã được dùng");
                             return;
                         }

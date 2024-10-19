@@ -1,29 +1,16 @@
 package com.example.doan_music.registerpremium;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.StrictMode;
-import androidx.annotation.RequiresApi;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.example.doan_music.R;
 import com.example.doan_music.database.ConnectionClass;
-import com.example.doan_music.zalopay.Api.CreateOrder;
-
-import org.json.JSONObject;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -47,7 +34,8 @@ public class RegisterPremiumActivity extends AppCompatActivity {
     String query;
     Statement smt;
     ResultSet resultSet;
-    int  userID;
+    int userID;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -148,7 +136,7 @@ public class RegisterPremiumActivity extends AppCompatActivity {
     }
 
 
-//    @Override
+    //    @Override
 //    protected void onNewIntent(Intent intent) {
 //        super.onNewIntent(intent);
 //        ZaloPaySDK.getInstance().onResult(intent);
@@ -176,6 +164,7 @@ public class RegisterPremiumActivity extends AppCompatActivity {
             Log.e("Error", "Invalid userID");
         }
     }
+
     private void addControls() {
         total = findViewById(R.id.total);
         zpay = findViewById(R.id.zalo_pay_button);

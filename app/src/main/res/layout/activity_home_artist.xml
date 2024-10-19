@@ -14,10 +14,10 @@
         android:id="@+id/navbartop"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingLeft="16dp"
         android:paddingRight="16dp"
-        android:gravity="center_vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -27,25 +27,25 @@
             android:id="@+id/home_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:gravity="center_vertical"
             android:text="Hi!"
             android:textColor="@color/TextColor"
-            android:textStyle="bold"
             android:textSize="24sp"
-            android:layout_gravity="center_vertical" />
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/UserArtist_Name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_marginLeft="5dp"
+            android:layout_weight="1"
             android:gravity="center_vertical"
             android:text="Username"
             android:textColor="@color/TextColor"
-            android:textStyle="bold"
             android:textSize="24sp"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"/>
+            android:textStyle="bold" />
 
         <!-- ImageButton cho phần menu -->
         <ImageButton
@@ -54,9 +54,9 @@
             android:layout_height="wrap_content"
             android:layout_gravity="end|center_vertical"
             android:background="@null"
+            android:contentDescription="Menu"
             android:scaleType="centerInside"
-            android:src="@drawable/menu_artist"
-            android:contentDescription="Menu" />
+            android:src="@drawable/menu_artist" />
 
     </LinearLayout>
 
@@ -77,15 +77,15 @@
         android:id="@+id/navbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:background="@color/BacgroukNav"
         android:gravity="center"
+        android:orientation="horizontal"
         android:padding="12dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         android:paddingStart="38dp"
-        android:paddingEnd="38dp">
+        android:paddingEnd="38dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
         <!-- Nút Home -->
         <ImageButton
@@ -94,9 +94,9 @@
             android:layout_height="48dp"
             android:layout_weight="1"
             android:background="@null"
-            android:src="@drawable/home"
+            android:contentDescription="Home"
             android:scaleType="centerInside"
-            android:contentDescription="Home" />
+            android:src="@drawable/home" />
 
         <!-- Nút Search -->
         <ImageButton
@@ -107,9 +107,9 @@
             android:layout_marginEnd="24dp"
             android:layout_weight="1"
             android:background="@null"
-            android:src="@drawable/search"
+            android:contentDescription="Search"
             android:scaleType="centerInside"
-            android:contentDescription="Search" />
+            android:src="@drawable/search" />
 
         <!-- Nút Account -->
         <ImageButton
@@ -118,9 +118,9 @@
             android:layout_height="48dp"
             android:layout_weight="1"
             android:background="@null"
-            android:src="@drawable/user"
+            android:contentDescription="Account"
             android:scaleType="centerInside"
-            android:contentDescription="Account" />
+            android:src="@drawable/user" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

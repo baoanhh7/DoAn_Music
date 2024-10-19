@@ -19,7 +19,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.doan_music.LoadImage.LoadImageFromUrl;
-import com.example.doan_music.LoadImage.LoadImageTask;
 import com.example.doan_music.R;
 import com.example.doan_music.activity.library.ArtistSongActivity;
 import com.example.doan_music.adapter.search.SearchAdapter;
@@ -27,12 +26,10 @@ import com.example.doan_music.adapter.search.SearchItemAdapter;
 import com.example.doan_music.adapter.thuvien.ThuVienAdapter;
 import com.example.doan_music.database.ConnectionClass;
 import com.example.doan_music.m_interface.OnItemClickListener;
-import com.example.doan_music.model.AddNgheSi_ThuVien;
 import com.example.doan_music.model.ThuVien;
 import com.example.doan_music.model.User;
 import com.example.doan_music.music.PlayMusicActivity;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -47,15 +44,15 @@ public class Search_Fragment extends Fragment {
     ArrayList<ThuVien> arr;
     ArrayList<Integer> arr1 = new ArrayList<>();
     View view;
+    Connection connection;
+    String query;
+    Statement smt;
+    ResultSet resultSet;
     private RecyclerView rcv_search_header, rcv_search_bottom, rcv_searchItem;
     private SearchAdapter searchAdapter_header, searchAdapter_bottom;
     private RecyclerView rcvSearchItem;
     private SearchItemAdapter searchItemAdapter;
     private SearchView searchView;
-    Connection connection;
-    String query;
-    Statement smt;
-    ResultSet resultSet;
     private int userId;
 
     @Override
@@ -186,7 +183,7 @@ public class Search_Fragment extends Fragment {
         connection = sql.conClass();
         if (connection != null) {
             try {
-                query ="SELECT * FROM Artist ";
+                query = "SELECT * FROM Artist ";
                 smt = connection.createStatement();
                 resultSet = smt.executeQuery(query);
                 while (resultSet.next()) {

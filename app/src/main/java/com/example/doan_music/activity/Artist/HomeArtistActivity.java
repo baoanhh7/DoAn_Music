@@ -2,24 +2,18 @@ package com.example.doan_music.activity.Artist;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.PopupMenu;
 import android.widget.TextView;
-import android.widget.Toast;
-import com.example.doan_music.activity.Artist.fragment.ListSongArtistFragment;
-import androidx.activity.EdgeToEdge;
+
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.doan_music.R;
 import com.example.doan_music.activity.Artist.fragment.AccountFragment;
 import com.example.doan_music.activity.Artist.fragment.ArtistMenuDialogFragment;
+import com.example.doan_music.activity.Artist.fragment.ListSongArtistFragment;
 import com.example.doan_music.activity.Artist.fragment.SearchArtistFragment;
 import com.example.doan_music.database.ConnectionClass;
 
@@ -37,6 +31,7 @@ public class HomeArtistActivity extends AppCompatActivity {
     String query;
     ResultSet resultSet;
     int userID;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,7 +43,6 @@ public class HomeArtistActivity extends AppCompatActivity {
         btnAccount = findViewById(R.id.btn_account);
         userArtist_Name = findViewById(R.id.UserArtist_Name);
         btnMenu = findViewById(R.id.btn_menu_artist);
-
 
 
         Intent intent = getIntent();
@@ -175,16 +169,19 @@ public class HomeArtistActivity extends AppCompatActivity {
             btnAccount.setImageResource(R.drawable.user_choise);
         }
     }
+
     public void loadFragment(Fragment fragment) {
         // Replace the current fragment with the new fragment
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragment_container, fragment);
         transaction.commit();
     }
+
     private void loadDefaultFragment() {
         Fragment defaultFragment = new ListSongArtistFragment();
         loadFragment(defaultFragment);
     }
+
     public int getUserID() {
         return userID;
     }

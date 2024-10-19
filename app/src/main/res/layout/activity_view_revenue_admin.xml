@@ -2,8 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@color/Bacgrouk"
+    android:orientation="vertical"
     android:padding="16dp">
 
     <com.jjoe64.graphview.GraphView
@@ -11,6 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
+
     <TextView
         android:id="@+id/tvTotalRevenue"
         android:layout_width="wrap_content"

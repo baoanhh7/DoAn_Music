@@ -17,7 +17,6 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
@@ -48,6 +47,7 @@ public class UpdateAlbumArtistFragment extends Fragment {
     private StorageReference storageReference;
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,6 +58,7 @@ public class UpdateAlbumArtistFragment extends Fragment {
             Log.e(TAG, "onCreate: getArguments() is null");
         }
     }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -167,7 +168,7 @@ public class UpdateAlbumArtistFragment extends Fragment {
                     Log.e(TAG, "uploadImageToFirebase: Failed to upload image", e);
                     Toast.makeText(getContext(), "Tải ảnh lên thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
-}
+    }
 
     private void updateAlbumInDatabase(String albumName, String imageUrl, int userID) {
         if (albumName == null || imageUrl == null || userID == -1) {

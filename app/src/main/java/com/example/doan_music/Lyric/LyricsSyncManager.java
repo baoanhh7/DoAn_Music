@@ -24,16 +24,6 @@ public class LyricsSyncManager {
         this.currentLineIndex = 0;
     }
 
-    public static class LyricLine {
-        public final long startTime;
-        public final String text;
-
-        public LyricLine(long startTime, String text) {
-            this.startTime = startTime;
-            this.text = text;
-        }
-    }
-
     public void setLyrics(List<LyricLine> lyrics) {
         this.lyrics = new ArrayList<>(lyrics);
         Collections.sort(this.lyrics, (a, b) -> Long.compare(a.startTime, b.startTime));
@@ -65,5 +55,15 @@ public class LyricsSyncManager {
 
     public void stop() {
         handler.removeCallbacksAndMessages(null);
+    }
+
+    public static class LyricLine {
+        public final long startTime;
+        public final String text;
+
+        public LyricLine(long startTime, String text) {
+            this.startTime = startTime;
+            this.text = text;
+        }
     }
 }

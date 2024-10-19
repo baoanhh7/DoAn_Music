@@ -14,14 +14,21 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
 import com.example.doan_music.R;
-import com.example.doan_music.activity.Artist.AddSongArtisActivity;
 import com.example.doan_music.activity.Artist.HomeArtistActivity;
-import com.example.doan_music.activity.Artist.UpdateAlbumArtistActivity;
 import com.example.doan_music.activity.Artist.ViewRevenueArtistActivity;
 
 public class ArtistMenuDialogFragment extends DialogFragment {
     private static final String ARG_USER_ID = "user_id";
     private int userID;
+
+    public static ArtistMenuDialogFragment newInstance(int userID) {
+        ArtistMenuDialogFragment fragment = new ArtistMenuDialogFragment();
+        Bundle args = new Bundle();
+        args.putInt(ARG_USER_ID, userID);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,6 +36,7 @@ public class ArtistMenuDialogFragment extends DialogFragment {
             userID = getArguments().getInt(ARG_USER_ID);
         }
     }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.dialog_artist_menu, container, false);
@@ -71,13 +79,7 @@ public class ArtistMenuDialogFragment extends DialogFragment {
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         }
     }
-    public static ArtistMenuDialogFragment newInstance(int userID) {
-        ArtistMenuDialogFragment fragment = new ArtistMenuDialogFragment();
-        Bundle args = new Bundle();
-        args.putInt(ARG_USER_ID, userID);
-        fragment.setArguments(args);
-        return fragment;
-    }
+
     private void navigateToFragment(Fragment fragment, int userID) {
         Bundle args = new Bundle();
         args.putInt("UserID", userID);

@@ -1,9 +1,7 @@
 package com.example.doan_music.fragment.tab_home;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -24,7 +22,6 @@ import com.example.doan_music.activity.home.PlayListActivity;
 import com.example.doan_music.activity.home.SongsAlbumActivity;
 import com.example.doan_music.adapter.home.CategoryAdapter;
 import com.example.doan_music.adapter.home.HomeAdapter;
-import com.example.doan_music.data.DatabaseManager;
 import com.example.doan_music.data.DbHelper;
 import com.example.doan_music.database.ConnectionClass;
 import com.example.doan_music.m_interface.IClickItemCategory;
@@ -48,14 +45,13 @@ public class All_Fragment extends Fragment {
     DbHelper dbHelper;
     SQLiteDatabase database = null;
     View view;
-    private RecyclerView rcv_all_header, rcv_all_bottom;
-    private HomeAdapter allAdapter_header;
-    private CategoryAdapter allCateAdapter_bottom;
-
     Connection connection;
     String query;
     Statement smt;
     ResultSet resultSet;
+    private RecyclerView rcv_all_header, rcv_all_bottom;
+    private HomeAdapter allAdapter_header;
+    private CategoryAdapter allCateAdapter_bottom;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,

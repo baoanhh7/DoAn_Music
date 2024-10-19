@@ -12,9 +12,6 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.example.doan_music.R;
 import com.example.doan_music.database.ConnectionClass;
@@ -27,6 +24,7 @@ public class ArtistSingupActivity extends AppCompatActivity {
     Button btnBack, btnConfirm;
     TextView title;
     ImageView imagePlaceholder;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,17 +64,19 @@ public class ArtistSingupActivity extends AppCompatActivity {
             }
         });
     }
+
     private void addControls() {
-         title = findViewById(R.id.title);
-         imagePlaceholder = findViewById(R.id.imagePlaceholder);
-         username = findViewById(R.id.username);
-         email = findViewById(R.id.email);
-         phone = findViewById(R.id.phone);
-         password = findViewById(R.id.password);
-         confirmPassword = findViewById(R.id.confirm_password);
-         btnBack = findViewById(R.id.btn_back);
-         btnConfirm = findViewById(R.id.btn_confirm);
+        title = findViewById(R.id.title);
+        imagePlaceholder = findViewById(R.id.imagePlaceholder);
+        username = findViewById(R.id.username);
+        email = findViewById(R.id.email);
+        phone = findViewById(R.id.phone);
+        password = findViewById(R.id.password);
+        confirmPassword = findViewById(R.id.confirm_password);
+        btnBack = findViewById(R.id.btn_back);
+        btnConfirm = findViewById(R.id.btn_confirm);
     }
+
     private void saveAccount(String username, String email, String phone, String password, String status) {
         ConnectionClass connectionClass = new ConnectionClass(); // Lớp kết nối của bạn
         Connection con = connectionClass.conClass();

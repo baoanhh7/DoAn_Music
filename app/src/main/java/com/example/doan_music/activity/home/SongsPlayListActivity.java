@@ -1,8 +1,6 @@
 package com.example.doan_music.activity.home;
 
-import android.content.ContentValues;
 import android.content.Intent;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -33,6 +31,7 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -138,58 +137,54 @@ public class SongsPlayListActivity extends AppCompatActivity {
         songsPlayListAdapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(String data) {
-                ConnectionClass sql = new ConnectionClass();
-                Connection connection = sql.conClass();
-                PreparedStatement preparedStatement = null;
-                ResultSet resultSet = null;
+                ConnectionClass sql = new ConnectionClass();  // Assuming ConnectionClass is your helper for SQL Server connections
+                Connection connection = sql.conClass();       // Establish connection to SQL Server
 
                 if (connection != null) {
                     try {
-                        // Truy vấn để lấy thông tin bài hát theo tên
-                        String query = "SELECT SongID, Views FROM Song WHERE SongName = ?";
-                        preparedStatement = connection.prepareStatement(query);
-                        preparedStatement.setString(1, data);
-                        resultSet = preparedStatement.executeQuery();
+                        // Use a PreparedStatement to safely fetch the song by name
+                        String query = "SELECT * FROM Song WHERE SongName = ?";
+                        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                            preparedStatement.setString(1, data);  // Bind the song name to the query
 
-                        if (resultSet.next()) {
-                            int id = resultSet.getInt(1);
-                            int view = resultSet.getInt(2);
+                            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                                if (resultSet.next()) {
+                                    int id = resultSet.getInt("SongID");  // Assuming SongID is the primary key
+                                    String songName = resultSet.getString("SongName");
+                                    int view = resultSet.getInt("Views");
 
-                            // Tăng số lần xem
-                            view++;
+                                    // Increment the view count
+                                    view++;
 
-                            // Cập nhật số lần xem trong cơ sở dữ liệu
-                            String updateQuery = "UPDATE Songs SET Views = ? WHERE SongID = ?";
-                            preparedStatement = connection.prepareStatement(updateQuery);
-                            preparedStatement.setInt(1, view);
-                            preparedStatement.setInt(2, id);
-                            preparedStatement.executeUpdate();
+                                    // Prepare the update statement to increment the view count
+                                    String updateQuery = "UPDATE Song SET Views = ? WHERE SongID = ?";
+                                    try (PreparedStatement updateStatement = connection.prepareStatement(updateQuery)) {
+                                        updateStatement.setInt(1, view);
+                                        updateStatement.setInt(2, id);
+                                        updateStatement.executeUpdate();
+                                    }
 
-                            // Chuyển sang màn hình phát nhạc
-                            Intent intent = new Intent(SongsPlayListActivity.this, PlayMusicActivity.class);
-                            intent.putExtra("SongID", id);
-                            intent.putExtra("arrIDSongs", arr);
-                            startActivity(intent);
+                                    // Start the PlayMusicActivity and pass the necessary data
+                                    Intent intent = new Intent(SongsPlayListActivity.this, PlayMusicActivity.class);
+                                    intent.putExtra("SongID", id);
+                                    intent.putExtra("arrIDSongs", arr);   // Assuming arr is a list of song IDs
+
+                                    startActivity(intent);
+                                }
+                            }
                         }
 
+                        connection.close();  // Close the SQL connection
+                    } catch (SQLException e) {
+                        Log.e("SQL Error", e.getMessage());
                     } catch (Exception e) {
-                        Log.e("Error: ", e.getMessage());
-                    } finally {
-                        // Đảm bảo đóng các tài nguyên
-                        try {
-                            if (resultSet != null) resultSet.close();
-                            if (preparedStatement != null) preparedStatement.close();
-                            if (connection != null) connection.close();
-                        } catch (Exception e) {
-                            Log.e("Error closing: ", e.getMessage());
-                        }
+                        Log.e("Error", e.getMessage());
                     }
                 } else {
-                    Log.e("Error: ", "Connection null");
+                    Log.e("Error", "Connection to SQL Server failed");
                 }
             }
         });
-
     }
 
     private void loadInfoPlayList() {

@@ -1,13 +1,12 @@
 package com.example.doan_music.fragment.drawer;
 
-import static android.content.Context.MODE_PRIVATE;
-
-import android.content.ContentValues;
 import android.content.Intent;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,16 +18,22 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.doan_music.R;
-import com.example.doan_music.activity.MainActivity;
 import com.example.doan_music.adapter.home.SongAdapter;
-import com.example.doan_music.data.DatabaseManager;
 import com.example.doan_music.data.DbHelper;
+import com.example.doan_music.database.ConnectionClass;
 import com.example.doan_music.m_interface.OnItemClickListener;
 import com.example.doan_music.model.Song;
 import com.example.doan_music.music.PlayMusicActivity;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,32 +89,59 @@ public class AllSongs_Fragment extends Fragment {
         songAdapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(String data) {
-                dbHelper = new DbHelper(requireContext());
-                database = requireContext().openOrCreateDatabase("doanmusic.db", MODE_PRIVATE, null);
-                Cursor cursor = database.rawQuery("select * from Songs", null);
-                while (cursor.moveToNext()) {
-                    int id = cursor.getInt(0);
-                    String songName = cursor.getString(2);
-                    int view = cursor.getInt(8);
+                ConnectionClass sql = new ConnectionClass();  // Assuming ConnectionClass is your helper for SQL Server connections
+                Connection connection = sql.conClass();       // Establish connection to SQL Server
+                PreparedStatement preparedStatement = null;
+                ResultSet resultSet = null;
 
-                    if (data.equals(songName)) {
+                if (connection != null) {
+                    try {
+                        // Truy vấn bài hát theo tên từ SQL Server
+                        String query = "SELECT SongID, Views FROM Song WHERE SongName = ?";
+                        preparedStatement = connection.prepareStatement(query);
+                        preparedStatement.setString(1, data);  // Gán tên bài hát vào câu truy vấn
+                        resultSet = preparedStatement.executeQuery();
 
-                        view++;
-                        ContentValues values = new ContentValues();
-                        values.put("View", view);
-                        database.update("Songs", values, "SongID=?", new String[]{String.valueOf(id)});
+                        if (resultSet.next()) {  // Nếu tìm thấy bài hát
+                            int id = resultSet.getInt("SongID");  // Lấy SongID
+                            int view = resultSet.getInt("Views");  // Lấy số lượt xem hiện tại
 
-                        Intent intent = new Intent(requireContext(), PlayMusicActivity.class);
-                        intent.putExtra("SongID", id);
-                        intent.putExtra("arrIDSongs", arr);
+                            // Tăng số lần xem
+                            view++;
 
-                        startActivity(intent);
-                        break;
+                            // Cập nhật số lần xem trong cơ sở dữ liệu SQL Server
+                            String updateQuery = "UPDATE Song SET Views = ? WHERE SongID = ?";
+                            preparedStatement = connection.prepareStatement(updateQuery);
+                            preparedStatement.setInt(1, view);  // Gán giá trị lượt xem mới
+                            preparedStatement.setInt(2, id);    // Gán SongID để cập nhật bài hát cụ thể
+                            preparedStatement.executeUpdate();
+
+                            // Chuyển sang màn hình phát nhạc
+                            Intent intent = new Intent(requireContext(), PlayMusicActivity.class);
+                            intent.putExtra("SongID", id);
+                            intent.putExtra("arrIDSongs", arr);  // Assuming arr is a list of song IDs
+
+                            startActivity(intent);
+                        }
+
+                    } catch (SQLException e) {
+                        Log.e("SQL Error", e.getMessage());
+                    } finally {
+                        // Đảm bảo đóng các tài nguyên
+                        try {
+                            if (resultSet != null) resultSet.close();
+                            if (preparedStatement != null) preparedStatement.close();
+                            if (connection != null) connection.close();
+                        } catch (Exception e) {
+                            Log.e("Error closing resources", e.getMessage());
+                        }
                     }
+                } else {
+                    Log.e("Error", "Connection to SQL Server failed");
                 }
-                cursor.close();
             }
         });
+
     }
 
     // Hàm lọc dữ liệu
@@ -124,45 +156,49 @@ public class AllSongs_Fragment extends Fragment {
     }
 
     private void createData() {
+        ConnectionClass sql = new ConnectionClass();  // Giả sử ConnectionClass là lớp trợ giúp kết nối SQL Server
+        Connection connection = sql.conClass();       // Kết nối với SQL Server
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
 
-        MainActivity mainActivity = (MainActivity) getActivity();
-        int maU = mainActivity.getMyVariable();
+        if (connection != null) {
+            try {
+                songList.clear(); // Xóa danh sách trước khi thêm dữ liệu mới
+                arr.clear(); // Xóa mảng arr trước khi thêm dữ liệu mới
 
-        dbHelper = DatabaseManager.dbHelper(requireContext());
-        database = dbHelper.getReadableDatabase();
+                // Truy vấn tất cả bài hát từ bảng Songs
+                String querySongs = "SELECT SongID, SongName, ArtistID, SongImage, LinkSong FROM Song";
+                preparedStatement = connection.prepareStatement(querySongs);
+                resultSet = preparedStatement.executeQuery();
 
-        List<Integer> listFav = new ArrayList<>();
-        listFav.clear();
+                while (resultSet.next()) {
+                    int id = resultSet.getInt("SongID");
+                    String songName = resultSet.getString("SongName");
+                    int artist = resultSet.getInt("ArtistID");
+                    String image = resultSet.getString("SongImage");
+                    byte[] img = getImageBytesFromURL(image);
+                    String linkSong = resultSet.getString("LinkSong");
 
-        Cursor cursor1 = database.rawQuery("select * from User_SongLove where UserID=?", new String[]{maU + ""});
-        while (cursor1.moveToNext()) {
-            int songID = cursor1.getInt(2);
-            listFav.add(songID);
-        }
-        songAdapter.notifyDataSetChanged();
-        cursor1.close();
-
-
-        Cursor cursor = database.rawQuery("select * from Songs", null);
-        while (cursor.moveToNext()) {
-            int id = cursor.getInt(0);
-            String songName = cursor.getString(2);
-            int artist = cursor.getInt(4);
-            byte[] image = cursor.getBlob(3);
-            String linkSong = cursor.getString(5);
-
-            int fav = 0;
-
-            if (listFav.contains(id)) {
-                fav = 1;
+                    // Tạo đối tượng Song và thêm vào danh sách
+                    Song song = new Song(id, songName, artist, img, linkSong, 0); // 0 vì không có trạng thái yêu thích
+                    songList.add(song);
+                    arr.add(id);  // Thêm songID vào mảng arr
+                }
+                songAdapter.notifyDataSetChanged(); // Cập nhật giao diện sau khi thêm dữ liệu
+            } catch (SQLException e) {
+                Log.e("SQL Error", e.getMessage());
+            } finally {
+                try {
+                    if (resultSet != null) resultSet.close();
+                    if (preparedStatement != null) preparedStatement.close();
+                    if (connection != null) connection.close();
+                } catch (SQLException e) {
+                    Log.e("Error closing resources", e.getMessage());
+                }
             }
-            Song song = new Song(id, songName, artist, image, linkSong, fav);
-
-            songList.add(song);
-            arr.add(id);
+        } else {
+            Log.e("Error", "Connection to SQL Server failed");
         }
-        songAdapter.notifyDataSetChanged();
-        cursor.close();
     }
 
     private void addControls() {
@@ -180,5 +216,22 @@ public class AllSongs_Fragment extends Fragment {
         rcv_songs.setAdapter(songAdapter);
 
         rcv_songs.setLayoutManager(new LinearLayoutManager(requireContext()));
+    }
+
+    private byte[] getImageBytesFromURL(String imageUrl) {
+        try {
+            URL url = new URL(imageUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            InputStream input = connection.getInputStream();
+            Bitmap bitmap = BitmapFactory.decodeStream(input);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            return stream.toByteArray();
+        } catch (IOException e) {
+            Log.e("Error: ", "Failed to load image from URL: " + e.getMessage());
+            return null; // Hoặc có thể trả về mảng byte rỗng nếu muốn
+        }
     }
 }

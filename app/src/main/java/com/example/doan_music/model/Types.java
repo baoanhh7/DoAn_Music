@@ -25,5 +25,5 @@ public class Types implements Serializable {
     public void setNameType(String nameType) {
         NameType = nameType;
     }
-    
+
 }

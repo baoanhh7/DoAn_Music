@@ -1,7 +1,6 @@
 package com.example.doan_music.activity.library;
 
 import android.content.Intent;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-//import com.example.doan_music.LoadImage.LoadImageFromUrl;
 import com.example.doan_music.LoadImage.LoadImageFromUrl;
 import com.example.doan_music.R;
 import com.example.doan_music.adapter.thuvien.ThuVienAlbumAdapter;

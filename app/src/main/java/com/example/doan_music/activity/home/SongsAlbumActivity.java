@@ -1,11 +1,9 @@
 package com.example.doan_music.activity.home;
 
 import android.content.Intent;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -33,6 +31,7 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -165,38 +164,39 @@ public class SongsAlbumActivity extends AppCompatActivity {
                     try {
                         // Use a PreparedStatement to safely fetch the song by name
                         String query = "SELECT * FROM Song WHERE SongName = ?";
-                        PreparedStatement preparedStatement = connection.prepareStatement(query);
-                        preparedStatement.setString(1, data);  // Bind the song name to the query
+                        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                            preparedStatement.setString(1, data);  // Bind the song name to the query
 
-                        ResultSet resultSet = preparedStatement.executeQuery();
+                            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                                if (resultSet.next()) {
+                                    int id = resultSet.getInt("SongID");  // Assuming SongID is the primary key
+                                    String songName = resultSet.getString("SongName");
+                                    int view = resultSet.getInt("Views");
 
-                        if (resultSet.next()) {
-                            int id = resultSet.getInt(1);   // Assuming SongID is the primary key
-                            String songName = resultSet.getString(2);
-                            int view = resultSet.getInt(8);
+                                    // Increment the view count
+                                    view++;
 
-                            // Update the view count
-                            view++;
+                                    // Prepare the update statement to increment the view count
+                                    String updateQuery = "UPDATE Song SET Views = ? WHERE SongID = ?";
+                                    try (PreparedStatement updateStatement = connection.prepareStatement(updateQuery)) {
+                                        updateStatement.setInt(1, view);
+                                        updateStatement.setInt(2, id);
+                                        updateStatement.executeUpdate();
+                                    }
 
-                            // Prepare the update statement to increment the view count
-                            String updateQuery = "UPDATE Song SET Views = ? WHERE SongID = ?";
-                            PreparedStatement updateStatement = connection.prepareStatement(updateQuery);
-                            updateStatement.setInt(1, view);
-                            updateStatement.setInt(2, id);
-                            updateStatement.executeUpdate();
+                                    // Start the PlayMusicActivity and pass the necessary data
+                                    Intent intent = new Intent(SongsAlbumActivity.this, PlayMusicActivity.class);
+                                    intent.putExtra("SongID", id);
+                                    intent.putExtra("arrIDSongs", arr);   // Assuming arr is a list of song IDs
 
-                            // Start the PlayMusicActivity and pass the necessary data
-                            Intent intent = new Intent(SongsAlbumActivity.this, PlayMusicActivity.class);
-                            intent.putExtra("SongID", id);
-                            intent.putExtra("arrIDSongs", arr);   // Assuming arr is a list of song IDs
-
-                            startActivity(intent);
+                                    startActivity(intent);
+                                }
+                            }
                         }
 
-                        // Close the ResultSet and the PreparedStatements
-                        resultSet.close();
-                        preparedStatement.close();
                         connection.close();  // Close the SQL connection
+                    } catch (SQLException e) {
+                        Log.e("SQL Error", e.getMessage());
                     } catch (Exception e) {
                         Log.e("Error", e.getMessage());
                     }
@@ -205,6 +205,7 @@ public class SongsAlbumActivity extends AppCompatActivity {
                 }
             }
         });
+
     }
 
     private List<Song> getList() {

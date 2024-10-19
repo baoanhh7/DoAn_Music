@@ -52,12 +52,16 @@ dependencies {
     implementation("androidx.activity:activity:1.8.0")
     implementation("androidx.media3:media3-session:1.3.0")
     implementation("com.google.firebase:firebase-firestore:24.10.3")
-    implementation ("com.google.firebase:firebase-storage:20.2.1")
-    implementation(fileTree(mapOf(
-        "dir" to "E:\\ZaloPayLib",
-        "include" to listOf("*.aar", "*.jar"),
-        "exclude" to listOf("")
-    )))
+    implementation("com.google.firebase:firebase-storage:20.2.1")
+    implementation(
+        fileTree(
+            mapOf(
+                "dir" to "E:\\ZaloPayLib",
+                "include" to listOf("*.aar", "*.jar"),
+                "exclude" to listOf("")
+            )
+        )
+    )
     implementation("com.squareup.okhttp3:okhttp:4.6.0")
     implementation("commons-codec:commons-codec:1.14")
 
@@ -82,14 +86,14 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-database")
-    implementation ("androidx.recyclerview:recyclerview:1.2.1")
+    implementation("androidx.recyclerview:recyclerview:1.2.1")
 
     implementation("com.sun.mail:android-mail:1.6.0")
     implementation("com.sun.mail:android-activation:1.6.0")
-    implementation ("com.squareup.picasso:picasso:2.71828")
+    implementation("com.squareup.picasso:picasso:2.71828")
     implementation("net.sourceforge.jtds:jtds:1.3.1")
-    implementation ("com.jjoe64:graphview:4.2.2")
+    implementation("com.jjoe64:graphview:4.2.2")
     implementation("com.google.android.gms:play-services-ads:23.3.0")
-    implementation ("com.github.bumptech.glide:glide:4.12.0")
-    annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
+    implementation("com.github.bumptech.glide:glide:4.12.0")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.12.0")
 }

@@ -145,10 +145,9 @@ public class Login_userActivity extends AppCompatActivity {
                         intent.putExtra("maU", userID);
                         editor.putInt("userID", userID);
                         editor.apply();
-                    }
-                    else if ("artist".equalsIgnoreCase(Role)&&"active".equalsIgnoreCase(Status)) {
-                            intent = new Intent(Login_userActivity.this, HomeArtistActivity.class);
-                            intent.putExtra("UserID", userID);
+                    } else if ("artist".equalsIgnoreCase(Role) && "active".equalsIgnoreCase(Status)) {
+                        intent = new Intent(Login_userActivity.this, HomeArtistActivity.class);
+                        intent.putExtra("UserID", userID);
                         editor.putInt("userID", userID);
                         editor.apply();
                     }

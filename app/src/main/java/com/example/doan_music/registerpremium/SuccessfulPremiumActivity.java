@@ -7,17 +7,13 @@ import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.example.doan_music.R;
 import com.example.doan_music.activity.MainActivity;
-import com.example.doan_music.activity.SplashActivity;
-import com.example.doan_music.loginPackage.BeginActivity;
 
 public class SuccessfulPremiumActivity extends AppCompatActivity {
- TextView txt_notification;
+    TextView txt_notification;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,7 +22,7 @@ public class SuccessfulPremiumActivity extends AppCompatActivity {
         addControls();
         Intent intent = getIntent();
         txt_notification.setText(intent.getStringExtra("resultPremium"));
-        if(txt_notification.getText().toString().equals("Thanh toan thanh cong")){
+        if (txt_notification.getText().toString().equals("Thanh toan thanh cong")) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -34,7 +30,7 @@ public class SuccessfulPremiumActivity extends AppCompatActivity {
                     finish();
                 }
             }, 5555);
-        }else {
+        } else {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {

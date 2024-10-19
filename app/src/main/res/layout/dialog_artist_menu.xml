@@ -1,19 +1,19 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
     android:background="@drawable/dialog_background"
+    android:orientation="vertical"
     android:padding="16dp">
 
     <TextView
         android:id="@+id/dialog_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:paddingBottom="16dp"
         android:text="Quản lý nghệ sĩ"
-        android:textSize="20sp"
-        android:textStyle="bold"
         android:textColor="#FFFFFF"
-        android:paddingBottom="16dp"/>
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
     <LinearLayout
         android:id="@+id/btn_add_song"
@@ -25,15 +25,15 @@
         <ImageView
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@drawable/addbutton"/>
+            android:src="@drawable/addbutton" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
             android:text="Thêm bài hát"
             android:textColor="#FFFFFF"
-            android:textSize="16sp"
-            android:layout_marginLeft="16dp"/>
+            android:textSize="16sp" />
     </LinearLayout>
 
     <LinearLayout
@@ -46,15 +46,15 @@
         <ImageView
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@drawable/edit"/>
+            android:src="@drawable/edit" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
             android:text="Cập nhật album"
             android:textColor="#FFFFFF"
-            android:textSize="16sp"
-            android:layout_marginLeft="16dp"/>
+            android:textSize="16sp" />
     </LinearLayout>
 
     <LinearLayout
@@ -67,14 +67,14 @@
         <ImageView
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@drawable/chart"/>
+            android:src="@drawable/chart" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
             android:text="Xem doanh thu"
             android:textColor="#FFFFFF"
-            android:textSize="16sp"
-            android:layout_marginLeft="16dp"/>
+            android:textSize="16sp" />
     </LinearLayout>
 </LinearLayout>

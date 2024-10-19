@@ -22,7 +22,6 @@ import com.example.doan_music.model.Spotifyitem;
 import com.example.doan_music.registerpremium.RegisterPremiumActivity;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -34,13 +33,14 @@ public class Spotify_Fragment extends Fragment {
     ArrayList<Spotifyitem> arr_spot;
     Button btn_registerpremium;
     LinearLayout LNL_member, LNL_premium;
-    private RecyclerView premiumscrollview;
     View view;
     Connection connection;
     String query;
     Statement smt;
     ResultSet resultSet;
-    int  userID;
+    int userID;
+    private RecyclerView premiumscrollview;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -84,15 +84,15 @@ public class Spotify_Fragment extends Fragment {
             if (connection != null) {
                 try {
                     // Cập nhật thứ tự cho tất cả các bài hát nếu bài hát đã tồn tại
-                    String updateQuery = "Select Role from Users WHERE UserID = "+userID;
+                    String updateQuery = "Select Role from Users WHERE UserID = " + userID;
                     smt = connection.createStatement();
                     resultSet = smt.executeQuery(updateQuery);
                     while (resultSet.next()) {
                         String role = resultSet.getString(1);
-                        if (role.equals("member")&& visibilityLNL_member == View.GONE) {
+                        if (role.equals("member") && visibilityLNL_member == View.GONE) {
                             LNL_member.setVisibility(View.VISIBLE);
                             LNL_premium.setVisibility(View.GONE);
-                        } else if(role.equals("premium")&& visibilityLNL_premium == View.GONE) {
+                        } else if (role.equals("premium") && visibilityLNL_premium == View.GONE) {
                             LNL_member.setVisibility(View.GONE);
                             LNL_premium.setVisibility(View.VISIBLE);
                         }

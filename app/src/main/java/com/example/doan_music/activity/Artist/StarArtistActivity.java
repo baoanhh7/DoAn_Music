@@ -7,14 +7,9 @@ import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.example.doan_music.R;
-import com.example.doan_music.loginPackage.BeginActivity;
 import com.example.doan_music.loginPackage.Login_userActivity;
-import com.example.doan_music.loginPackage.UserActivity;
 
 public class StarArtistActivity extends AppCompatActivity {
     Button ArtistSingin, ArtistSingup;

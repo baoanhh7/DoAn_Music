@@ -2,7 +2,6 @@ package com.example.doan_music.fragment.library;
 
 import static android.content.Context.MODE_PRIVATE;
 
-import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -26,7 +25,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.doan_music.R;
 import com.example.doan_music.activity.MainActivity;
 import com.example.doan_music.adapter.thuvien.AddNgheSiAdapter;
-import com.example.doan_music.data.DatabaseManager;
 import com.example.doan_music.data.DbHelper;
 import com.example.doan_music.database.ConnectionClass;
 import com.example.doan_music.fragment.main.Library_Fragment;
@@ -92,7 +90,7 @@ public class AddPlaylistFragment extends Fragment {
             public void onClick(View v) {
                 // Tạo Fragment và đặt Bundle vào Fragment
                 String name = edt_tenPlaylist.getText().toString().trim();
-                insertPlaylist(name,userId);
+                insertPlaylist(name, userId);
 //                if (getActivity() instanceof MainActivity) {
 //                    MainActivity mainActivity = (MainActivity) getActivity();
 //                    Integer maU = mainActivity.getMyVariable();
@@ -145,6 +143,7 @@ public class AddPlaylistFragment extends Fragment {
             }
         });
     }
+
     private void insertPlaylist(String name, Integer maU) {
         ConnectionClass sql = new ConnectionClass();
         Connection connection = sql.conClass();
@@ -195,20 +194,21 @@ public class AddPlaylistFragment extends Fragment {
 
 
     private void loadData() {
-            database = getActivity().openOrCreateDatabase("doanmusic.db", MODE_PRIVATE, null);
-            Cursor cursor = database.rawQuery("SELECT * " +
-                    "FROM Songs ", null);
+        database = getActivity().openOrCreateDatabase("doanmusic.db", MODE_PRIVATE, null);
+        Cursor cursor = database.rawQuery("SELECT * " +
+                "FROM Songs ", null);
 
-            arrayList.clear();
-            while (cursor.moveToNext()) {
-                String ten = cursor.getString(2);
-                byte[] img = cursor.getBlob(3);
-                AddNgheSi_ThuVien addNgheSiThuVien = new AddNgheSi_ThuVien(img, ten);
-                arrayList.add(addNgheSiThuVien);
-            }
-            addNgheSiAdapter.notifyDataSetChanged();
-            cursor.close();
+        arrayList.clear();
+        while (cursor.moveToNext()) {
+            String ten = cursor.getString(2);
+            byte[] img = cursor.getBlob(3);
+            AddNgheSi_ThuVien addNgheSiThuVien = new AddNgheSi_ThuVien(img, ten);
+            arrayList.add(addNgheSiThuVien);
+        }
+        addNgheSiAdapter.notifyDataSetChanged();
+        cursor.close();
     }
+
     private void loadDataFromSQLServer() {
         ConnectionClass sql = new ConnectionClass();
         Connection connection = sql.conClass();
@@ -245,6 +245,7 @@ public class AddPlaylistFragment extends Fragment {
             Log.e("Error: ", "Connection null");
         }
     }
+
     // Phương thức để tải ảnh từ URL và chuyển thành byte[]
     private byte[] getImageBytesFromURL(String imageUrl) {
         try {
@@ -262,6 +263,7 @@ public class AddPlaylistFragment extends Fragment {
             return null; // Hoặc có thể trả về mảng byte rỗng nếu muốn
         }
     }
+
     private void addControl() {
         search_thuvien_addPlaylist = view.findViewById(R.id.search_thuvien_addPlaylist);
         recycler_Playlist_thuvien_add = view.findViewById(R.id.recycler_Playlist_thuvien_add);
@@ -275,7 +277,7 @@ public class AddPlaylistFragment extends Fragment {
         addNgheSiAdapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(String data) {
-                insertSongPlaylist(data,userId);
+                insertSongPlaylist(data, userId);
 //                if (getActivity() instanceof MainActivity) {
 //                    Integer ID = getActivity().getSharedPreferences("MyID", MODE_PRIVATE).getInt("ID", 0);
 //                    MainActivity mainActivity = (MainActivity) getActivity();

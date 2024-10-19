@@ -1,12 +1,12 @@
 package com.example.doan_music.adapter.home;
 
-import android.content.ContentValues;
+import static android.content.Context.MODE_PRIVATE;
+
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,11 +18,14 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.doan_music.R;
-import com.example.doan_music.data.DatabaseManager;
-import com.example.doan_music.data.DbHelper;
+import com.example.doan_music.database.ConnectionClass;
 import com.example.doan_music.m_interface.OnItemClickListener;
 import com.example.doan_music.model.Song;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 public class FavoriteSongAdapter extends RecyclerView.Adapter<FavoriteSongAdapter.SongViewHolder> {
@@ -45,6 +48,9 @@ public class FavoriteSongAdapter extends RecyclerView.Adapter<FavoriteSongAdapte
 
     @Override
     public void onBindViewHolder(@NonNull SongViewHolder holder, int position) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences("data", MODE_PRIVATE);
+        int userID = sharedPreferences.getInt("userID", -1);  // Lấy userID từ SharedPreferences
+
         Song song = songList.get(position);
 
         holder.txt_nameFav.setText(song.getSongName());
@@ -61,110 +67,94 @@ public class FavoriteSongAdapter extends RecyclerView.Adapter<FavoriteSongAdapte
             }
         });
 
-        if (song.getIsFavorite() == 1) {
-            holder.btn_heartFav.setImageResource(R.drawable.ic_red_heart);
-        } else {
-            holder.btn_heartFav.setImageResource(R.drawable.ic_heart);
-        }
+        // Kết nối tới SQL Server
+        ConnectionClass sql = new ConnectionClass();
+        Connection connection = sql.conClass();
 
-        holder.btn_heartFav.setOnClickListener(v -> {
+        if (connection != null) {
+            try {
+                // Truy vấn SQL kiểm tra xem bài hát có trong danh sách yêu thích hay không
+                String queryCheck = "SELECT * FROM User_SongLove WHERE UserID = ? AND SongID = ?";
+                PreparedStatement preparedStatementCheck = connection.prepareStatement(queryCheck);
+                preparedStatementCheck.setInt(1, userID);
+                preparedStatementCheck.setInt(2, song.getSongID());
 
-            DbHelper dbHelper = DatabaseManager.dbHelper(context);
-            SQLiteDatabase database = dbHelper.getReadableDatabase();
-            Cursor cursor = database.rawQuery("select * from Songs where SongID=?", new String[]{song.getSongID() + ""});
+                ResultSet resultSet = preparedStatementCheck.executeQuery();
 
-            int newState = song.getIsFavorite();
-
-            if (newState == 1) {
-                newState = 0;
-                song.setIsFavorite(newState);
-
-                removeSongFromLoveList(song.getSongID());
-            } else {
-                newState = 1;
-                song.setIsFavorite(newState);
-
-                ContentValues values = new ContentValues();
-                values.put("StateFavorite", song.getIsFavorite());
-                database.update("Songs", values, "SongID=?", new String[]{song.getSongID() + ""});
-
-                addSongToLoveList(song.getSongID());
-            }
-            song.setIsFavorite(newState);
-
-            notifyItemChanged(position); // Cập nhật lại giao diện
-            cursor.close();
-        });
-
-    }
-
-    private void addSongToLoveList(int songID) {
-        SharedPreferences preferences = context.getSharedPreferences("data", Context.MODE_PRIVATE);
-        int maU = preferences.getInt("maU1", -1);
-
-        DbHelper dbHelper = DatabaseManager.dbHelper(context);
-        SQLiteDatabase database = dbHelper.getWritableDatabase();
-        database.beginTransaction();
-
-        try {
-            // Lặp qua các bản ghi trong bảng Songs
-            Cursor cursor = database.rawQuery("SELECT * FROM Songs" + " where SongID=?", new String[]{String.valueOf(songID)});
-            while (cursor.moveToNext()) {
-                int favorite = cursor.getInt(6);
-
-                // Xây dựng ContentValues mới
-                ContentValues values = new ContentValues();
-
-                // Đặt giá trị cho cột Favorite
-                values.put("Favorite", favorite);
-                // Đặt giá trị cho cột UserID
-                values.put("UserID", maU);
-                // Đặt giá trị cho cột SongID
-                values.put("SongID", songID);
-
-                // Thực hiện thêm dòng vào bảng User_SongLove
-                long kq = database.insert("User_SongLove", null, values);
-                if (kq > 0) {
-                    break;
+                if (resultSet.next()) {
+                    // Nếu bài hát đã yêu thích, đặt nút tim màu đỏ
+                    holder.btn_heartFav.setImageResource(R.drawable.ic_red_heart);
+                } else {
+                    // Nếu bài hát chưa yêu thích, đặt nút tim màu xám
+                    holder.btn_heartFav.setImageResource(R.drawable.ic_heart);
                 }
+
+                resultSet.close();
+                preparedStatementCheck.close();
+
+            } catch (SQLException e) {
+                Log.e("Error", e.getMessage());
             }
-            cursor.close();
-
-            // Đánh dấu giao dịch thành công nếu không có lỗi xảy ra
-            database.setTransactionSuccessful();
-        } finally {
-            // Kết thúc giao dịch, đảm bảo rằng dữ liệu được lưu trữ an toàn
-            database.endTransaction();
+        } else {
+            Log.e("Error", "Connection is null");
         }
-    }
 
-    private void removeSongFromLoveList(int songID) {
-        SharedPreferences preferences = context.getSharedPreferences("data", Context.MODE_PRIVATE);
-        int maU = preferences.getInt("maU1", -1);
+        // Xử lý khi người dùng nhấn vào nút thả tim
+        holder.btn_heartFav.setOnClickListener(v -> {
+            if (connection != null) {
+                try {
+                    // Truy vấn SQL kiểm tra bài hát có trong danh sách yêu thích hay chưa
+                    String queryCheck = "SELECT * FROM User_SongLove WHERE UserID = ? AND SongID = ?";
+                    PreparedStatement preparedStatementCheck = connection.prepareStatement(queryCheck);
+                    preparedStatementCheck.setInt(1, userID);
+                    preparedStatementCheck.setInt(2, song.getSongID());
 
-        DbHelper dbHelper = DatabaseManager.dbHelper(context);
-        SQLiteDatabase database = dbHelper.getWritableDatabase();
-        database.beginTransaction();
+                    ResultSet resultSet = preparedStatementCheck.executeQuery();
 
-        try {
-            // Xóa bài hát khỏi bảng User_SongLove dựa trên UserID và SongID
-            int kq = database.delete("User_SongLove", "UserID = ? AND SongID = ?", new String[]{String.valueOf(maU), String.valueOf(songID)});
+                    if (resultSet.next()) {
+                        // Nếu bài hát đã có trong danh sách yêu thích, xóa bài hát khỏi danh sách
+                        String queryDelete = "DELETE FROM User_SongLove WHERE UserID = ? AND SongID = ?";
+                        PreparedStatement preparedStatementDelete = connection.prepareStatement(queryDelete);
+                        preparedStatementDelete.setInt(1, userID);
+                        preparedStatementDelete.setInt(2, song.getSongID());
 
-            if (kq > 0) {
-                // Cập nhật trạng thái yêu thích của bài hát trong bảng Songs
-                ContentValues values = new ContentValues();
-                values.put("StateFavorite", 0);
+                        int rowsDeleted = preparedStatementDelete.executeUpdate();
+                        if (rowsDeleted > 0) {
+                            holder.btn_heartFav.setImageResource(R.drawable.ic_heart);  // Đặt màu nút thả tim thành xám
+                            Log.i("Info", "Song removed from love list successfully!");
+                        } else {
+                            Log.e("Error", "Failed to remove song from love list.");
+                        }
+                        preparedStatementDelete.close();
 
-                // Cập nhật bảng Songs dựa trên SongID
-                database.update("Songs", values, "SongID = ?", new String[]{String.valueOf(songID)});
+                    } else {
+                        // Nếu bài hát chưa có trong danh sách yêu thích, thêm bài hát vào danh sách
+                        String queryInsert = "INSERT INTO User_SongLove (UserID, SongID) VALUES (?, ?)";
+                        PreparedStatement preparedStatementInsert = connection.prepareStatement(queryInsert);
+                        preparedStatementInsert.setInt(1, userID);
+                        preparedStatementInsert.setInt(2, song.getSongID());
+
+                        int rowsInserted = preparedStatementInsert.executeUpdate();
+                        if (rowsInserted > 0) {
+                            holder.btn_heartFav.setImageResource(R.drawable.ic_red_heart);  // Đặt màu nút thả tim thành đỏ
+                            Log.i("Info", "Song added to love list successfully!");
+                        } else {
+                            Log.e("Error", "Failed to add song to love list.");
+                        }
+                        preparedStatementInsert.close();
+                    }
+                    resultSet.close();
+                    preparedStatementCheck.close();
+
+                    connection.close();  // Đóng kết nối
+
+                } catch (SQLException e) {
+                    Log.e("Error", e.getMessage());
+                }
+            } else {
+                Log.e("Error", "Connection is null");
             }
-
-            // Đánh dấu giao dịch thành công nếu không có lỗi xảy ra
-            database.setTransactionSuccessful();
-        } finally {
-            // Kết thúc giao dịch, đảm bảo rằng dữ liệu được lưu trữ an toàn
-            database.endTransaction();
-        }
+        });
     }
 
     public void setOnItemClickListener(OnItemClickListener listener) {

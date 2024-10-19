@@ -62,6 +62,7 @@ import java.util.Map;
 import java.util.Random;
 
 public class PlayMusicActivity extends AppCompatActivity {
+    private static final long REFRESH_INTERVAL = 1000;
     ImageButton btn_home, btn_play, btn_back, btn_next, btn_pre, btn_toggle, btn_shuffle, btn_volume, btn_heart;
     SeekBar seekBar, seekbar1;
     TextView txt_time, txt_time_first, txt_view_playmusic, txt_lyric;
@@ -78,8 +79,6 @@ public class PlayMusicActivity extends AppCompatActivity {
     SQLiteDatabase database = null;
     DbHelper dbHelper;
     Animation animation;
-    private boolean frag = true;
-    private boolean frag_heart = false;
     // Tạo một biến Bitmap để lưu hình ảnh
 //    Bitmap bitmapResult;
 //    Drawable drawable;
@@ -90,22 +89,25 @@ public class PlayMusicActivity extends AppCompatActivity {
     Statement smt;
     ResultSet resultSet;
     int userID;
-    private InterstitialAd mInterstitialAd;
     String Role;
+    String linkLRC;
+    private boolean frag = true;
+    private boolean frag_heart = false;
+    private InterstitialAd mInterstitialAd;
     private Map<Integer, String> lyricsMap = new HashMap<>();
     private Handler handler = new Handler();
     private Runnable refreshRunnable;
-    private static final long REFRESH_INTERVAL = 1000;
-    String linkLRC;
     private LyricsManager lyricsManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play_music);
+
         SharedPreferences sharedPreferences = getSharedPreferences("data", MODE_PRIVATE);
         userID = sharedPreferences.getInt("userID", -1);  // Lấy userID
         Log.e("UserID", String.valueOf(userID));
+
         IDSong = getIntent().getIntExtra("SongID", -1);
         addControls();
         arr = (ArrayList<Integer>) getIntent().getSerializableExtra("arrIDSongs");

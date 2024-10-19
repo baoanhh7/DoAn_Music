@@ -14,6 +14,7 @@ import com.example.doan_music.activity.Artist.StarArtistActivity;
 public class BeginActivity extends AppCompatActivity {
 
     Button Artist, User;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
