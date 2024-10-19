@@ -69,8 +69,6 @@ public class PlayMusicActivity extends AppCompatActivity {
     MediaPlayer myMusic;
     AudioManager audioManager;
     ArrayList<Integer> arr;
-    ArrayList<Integer> arr1 = new ArrayList<>();
-    ArrayList<Integer> shuffle = new ArrayList<>();
     ImageView imageView_songs;
     TextView txt_artist_song, txt_name_song;
     Integer currentPosition = -1;
@@ -489,6 +487,7 @@ public class PlayMusicActivity extends AppCompatActivity {
                     SharedPreferences sharedPreferences = getSharedPreferences("musicData", MODE_PRIVATE);
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putString("SongName", ten); // Lưu tên bài hát
+                    editor.putInt("SongID", id);
                     editor.apply(); // Lưu thay đổi
 
                     txt_view_playmusic.setText(view + "");

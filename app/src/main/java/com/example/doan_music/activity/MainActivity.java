@@ -4,7 +4,10 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -18,6 +21,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
 import com.example.doan_music.R;
+import com.example.doan_music.database.ConnectionClass;
 import com.example.doan_music.fragment.drawer.AllSongs_Fragment;
 import com.example.doan_music.fragment.main.Home_Fragment;
 import com.example.doan_music.fragment.main.Library_Fragment;
@@ -27,7 +31,15 @@ import com.example.doan_music.loginPackage.UserActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
-//public class BeginActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
 public class MainActivity extends AppCompatActivity {
     DrawerLayout drawerLayout;
     Toolbar toolbar;
@@ -35,13 +47,18 @@ public class MainActivity extends AppCompatActivity {
     NavigationView navigationView;
     Integer maU;
     String tenU;
-    ImageView mini_player_play_pause;
+    ImageView mini_player_play_pause, mini_player_image;
     TextView mini_player_song_name, mini_player_artist_name;
+    int userID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        SharedPreferences sharedPreferences = getSharedPreferences("data", MODE_PRIVATE);
+        userID = sharedPreferences.getInt("userID", -1);  // Lấy userID
+        Log.e("UserID", String.valueOf(userID));
 
         addControls();
 
@@ -130,10 +147,39 @@ public class MainActivity extends AppCompatActivity {
         mini_player_play_pause = findViewById(R.id.mini_player_play_pause);
         mini_player_artist_name = findViewById(R.id.mini_player_artist_name);
         mini_player_song_name = findViewById(R.id.mini_player_song_name);
+        mini_player_image = findViewById(R.id.mini_player_image);
 
         SharedPreferences sharedPreferences = getSharedPreferences("musicData", MODE_PRIVATE);
         String songName = sharedPreferences.getString("SongName", "Unknown Song");
         String artistName = sharedPreferences.getString("ArtistName", "Unknown Artist");
+        Integer songID = sharedPreferences.getInt("SongID", -1);
+
+        // Initialize the SQL Server connection using your custom ConnectionClass
+        ConnectionClass sql = new ConnectionClass();
+        Connection connection = sql.conClass();  // Assuming conClass() returns a Connection object
+
+        if (connection != null) {
+            try {
+                // SQL query to get songs from the Songs table for a specific album
+                String query = "SELECT SongImage FROM Song WHERE SongID = " + songID;
+                Statement smt = connection.createStatement();
+                ResultSet resultSet = smt.executeQuery(query);
+
+                if (resultSet.next()) {
+                    String img = resultSet.getString("SongImage");
+                    byte[] imageBytes = getImageBytesFromURL(img);
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+                    mini_player_image.setImageBitmap(bitmap);
+                }
+                resultSet.close();  // Đóng ResultSet
+                smt.close();  // Đóng Statement
+                connection.close();
+            } catch (Exception e) {
+                Log.e("Error: ", e.getMessage());
+            }
+        } else {
+            Log.e("Error: ", "Connection is null");
+        }
 
         // Cập nhật giao diện mini player
         mini_player_song_name.setText(songName);
@@ -165,6 +211,35 @@ public class MainActivity extends AppCompatActivity {
         TextView miniArtistName = findViewById(R.id.mini_player_artist_name);
         miniSongName.setText(songName);
         miniArtistName.setText(artistName);
+
+        Integer songID = sharedPreferences.getInt("SongID", -1);
+
+        // Initialize the SQL Server connection using your custom ConnectionClass
+        ConnectionClass sql = new ConnectionClass();
+        Connection connection = sql.conClass();  // Assuming conClass() returns a Connection object
+
+        if (connection != null) {
+            try {
+                // SQL query to get songs from the Songs table for a specific album
+                String query = "SELECT SongImage FROM Song WHERE SongID = " + songID;
+                Statement smt = connection.createStatement();
+                ResultSet resultSet = smt.executeQuery(query);
+
+                if (resultSet.next()) {
+                    String img = resultSet.getString("SongImage");
+                    byte[] imageBytes = getImageBytesFromURL(img);
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+                    mini_player_image.setImageBitmap(bitmap);
+                }
+                resultSet.close();  // Đóng ResultSet
+                smt.close();  // Đóng Statement
+                connection.close();
+            } catch (Exception e) {
+                Log.e("Error: ", e.getMessage());
+            }
+        } else {
+            Log.e("Error: ", "Connection is null");
+        }
     }
 
 
@@ -181,4 +256,20 @@ public class MainActivity extends AppCompatActivity {
         getSupportFragmentManager().beginTransaction().replace(R.id.frame_container, fragment).commit();
     }
 
+    private byte[] getImageBytesFromURL(String imageUrl) {
+        try {
+            URL url = new URL(imageUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            InputStream input = connection.getInputStream();
+            Bitmap bitmap = BitmapFactory.decodeStream(input);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            return stream.toByteArray();
+        } catch (IOException e) {
+            Log.e("Error: ", "Failed to load image from URL: " + e.getMessage());
+            return null; // Hoặc có thể trả về mảng byte rỗng nếu muốn
+        }
+    }
 }

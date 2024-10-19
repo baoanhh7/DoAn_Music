@@ -47,7 +47,7 @@
         android:id="@+id/User"
         android:layout_width="330dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="570dp"
+        android:layout_marginTop="550dp"
         android:background="@drawable/rounded_button"
         android:text="NGƯỜI NGHE"
         android:textSize="15sp"
