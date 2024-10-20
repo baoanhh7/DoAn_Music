@@ -6,10 +6,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -28,6 +30,7 @@ import com.example.doan_music.fragment.main.Library_Fragment;
 import com.example.doan_music.fragment.main.Search_Fragment;
 import com.example.doan_music.fragment.main.Spotify_Fragment;
 import com.example.doan_music.loginPackage.UserActivity;
+import com.example.doan_music.music.PlayMusicActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
@@ -38,7 +41,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     DrawerLayout drawerLayout;
@@ -50,17 +55,27 @@ public class MainActivity extends AppCompatActivity {
     ImageView mini_player_play_pause, mini_player_image;
     TextView mini_player_song_name, mini_player_artist_name;
     int userID;
+    MediaPlayer myMusic;
+    String songLink;
+    int playbackTime;
+    LinearLayout clickToSong;
+    SharedPreferences sharedPreferences;
+    ArrayList<Integer> arr = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        myMusic = new MediaPlayer();
+        addControls();
+        // Khởi động ở trạng thái pause
+        myMusic.pause();
+        mini_player_play_pause.setImageResource(R.drawable.ic_play); // Đặt hình ảnh thành nút Play
+
         SharedPreferences sharedPreferences = getSharedPreferences("data", MODE_PRIVATE);
         userID = sharedPreferences.getInt("userID", -1);  // Lấy userID
         Log.e("UserID", String.valueOf(userID));
-
-        addControls();
 
         // Drawer
         setSupportActionBar(toolbar);
@@ -125,8 +140,32 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+
+        addEvents();
     }
 
+    private void addEvents() {
+        sharedPreferences = getSharedPreferences("musicData", MODE_PRIVATE);
+        Integer songID = sharedPreferences.getInt("SongID", -1);
+
+        mini_player_play_pause.setOnClickListener(v -> {
+            // Bắt đầu hoặc tạm dừng phát nhạc
+            if (myMusic.isPlaying()) {
+                myMusic.pause(); // Dừng phát nhạc
+                mini_player_play_pause.setImageResource(R.drawable.ic_play); // Đặt hình ảnh thành nút Play
+            } else {
+                myMusic.start(); // Phát nhạc
+                mini_player_play_pause.setImageResource(R.drawable.ic_pause); // Đặt hình ảnh thành nút Pause
+            }
+        });
+
+        clickToSong.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, PlayMusicActivity.class);
+            intent.putExtra("SongID", songID);
+            intent.putExtra("arrIDSongs", arr);
+            startActivity(intent);
+        });
+    }
 
     public Integer getMyVariable() {
         return maU;
@@ -149,41 +188,7 @@ public class MainActivity extends AppCompatActivity {
         mini_player_song_name = findViewById(R.id.mini_player_song_name);
         mini_player_image = findViewById(R.id.mini_player_image);
 
-        SharedPreferences sharedPreferences = getSharedPreferences("musicData", MODE_PRIVATE);
-        String songName = sharedPreferences.getString("SongName", "Unknown Song");
-        String artistName = sharedPreferences.getString("ArtistName", "Unknown Artist");
-        Integer songID = sharedPreferences.getInt("SongID", -1);
-
-        // Initialize the SQL Server connection using your custom ConnectionClass
-        ConnectionClass sql = new ConnectionClass();
-        Connection connection = sql.conClass();  // Assuming conClass() returns a Connection object
-
-        if (connection != null) {
-            try {
-                // SQL query to get songs from the Songs table for a specific album
-                String query = "SELECT SongImage FROM Song WHERE SongID = " + songID;
-                Statement smt = connection.createStatement();
-                ResultSet resultSet = smt.executeQuery(query);
-
-                if (resultSet.next()) {
-                    String img = resultSet.getString("SongImage");
-                    byte[] imageBytes = getImageBytesFromURL(img);
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
-                    mini_player_image.setImageBitmap(bitmap);
-                }
-                resultSet.close();  // Đóng ResultSet
-                smt.close();  // Đóng Statement
-                connection.close();
-            } catch (Exception e) {
-                Log.e("Error: ", e.getMessage());
-            }
-        } else {
-            Log.e("Error: ", "Connection is null");
-        }
-
-        // Cập nhật giao diện mini player
-        mini_player_song_name.setText(songName);
-        mini_player_artist_name.setText(artistName);
+        clickToSong = findViewById(R.id.clickToSong);
 
         // Lấy Intent đã được chuyển từ Login_userActivity
         Intent intent = getIntent();
@@ -195,6 +200,33 @@ public class MainActivity extends AppCompatActivity {
             tenU = intent.getStringExtra("tenU");
 
         }
+
+        ConnectionClass sql = new ConnectionClass();
+        Connection connection = sql.conClass();  // Kết nối tới SQL Server
+
+        if (connection != null) {
+            try {
+                // Truy vấn SQL để lấy tất cả các bài hát
+                String query = "SELECT * FROM Song";
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(query);
+
+                while (resultSet.next()) {
+                    int id = resultSet.getInt("SongID");  // Lấy ID bài hát
+
+                    arr.add(id);
+                }
+
+                resultSet.close();
+                statement.close();
+                connection.close();  // Đóng kết nối
+
+            } catch (SQLException e) {
+                Log.e("SQL Error", e.getMessage());
+            }
+        } else {
+            Log.e("Error", "Connection is null");
+        }
     }
 
     @Override
@@ -202,17 +234,15 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 
         // Lấy lại thông tin mới nhất từ SharedPreferences
-        SharedPreferences sharedPreferences = getSharedPreferences("musicData", MODE_PRIVATE);
+        sharedPreferences = getSharedPreferences("musicData", MODE_PRIVATE);
         String songName = sharedPreferences.getString("SongName", "Unknown Song");
         String artistName = sharedPreferences.getString("ArtistName", "Unknown Artist");
+//        playbackTime = sharedPreferences.getInt("playbackTime", 0); // Thời gian mặc định là 0
+        Integer songID = sharedPreferences.getInt("SongID", -1);
 
         // Cập nhật giao diện mini player
-        TextView miniSongName = findViewById(R.id.mini_player_song_name);
-        TextView miniArtistName = findViewById(R.id.mini_player_artist_name);
-        miniSongName.setText(songName);
-        miniArtistName.setText(artistName);
-
-        Integer songID = sharedPreferences.getInt("SongID", -1);
+        mini_player_song_name.setText(songName);
+        mini_player_artist_name.setText(artistName);
 
         // Initialize the SQL Server connection using your custom ConnectionClass
         ConnectionClass sql = new ConnectionClass();
@@ -220,13 +250,27 @@ public class MainActivity extends AppCompatActivity {
 
         if (connection != null) {
             try {
-                // SQL query to get songs from the Songs table for a specific album
-                String query = "SELECT SongImage FROM Song WHERE SongID = " + songID;
+                // SQL query to get link song from the Songs table for a specific SongID
+                String query = "SELECT LinkSong, SongImage FROM Song WHERE SongID = " + songID;
                 Statement smt = connection.createStatement();
                 ResultSet resultSet = smt.executeQuery(query);
 
                 if (resultSet.next()) {
+                    songLink = resultSet.getString("LinkSong");
                     String img = resultSet.getString("SongImage");
+
+                    // Phát bài hát
+                    if (myMusic == null) {
+                        myMusic = new MediaPlayer();
+                    } else {
+                        myMusic.reset();  // Reset MediaPlayer nếu đã khởi tạo trước đó
+                    }
+
+                    myMusic.setDataSource(songLink);
+                    myMusic.prepare();
+                    myMusic.seekTo(playbackTime); // Đặt thời gian phát lại
+
+                    // Lấy ảnh bài hát và cập nhật
                     byte[] imageBytes = getImageBytesFromURL(img);
                     Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
                     mini_player_image.setImageBitmap(bitmap);
@@ -242,6 +286,28 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (myMusic != null) {
+            myMusic.release(); // Giải phóng tài nguyên
+            myMusic = null;
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (myMusic != null && myMusic.isPlaying()) {
+            // Lưu thời gian phát nhạc
+//            SharedPreferences sharedPreferences = getSharedPreferences("musicData", MODE_PRIVATE);
+//            SharedPreferences.Editor editor = sharedPreferences.edit();
+//            editor.putInt("playbackTime", myMusic.getCurrentPosition());
+//            editor.apply();
+
+            myMusic.pause(); // Dừng phát nhạc
+        }
+    }
 
     // Nhấn nút back device để trở về(sử dụng nút trong device)
     @Override
