@@ -20,7 +20,18 @@ import java.util.List;
 
 public class user_item_Adapter extends ArrayAdapter<Users> {
     private Context context;
+    private OnUserStatusChangedListener listener;
 
+    // Tạo interface để callback
+    public interface OnUserStatusChangedListener {
+        void onUserAccepted();
+        void onUserDeleted();
+    }
+
+    // Thêm setter cho listener
+    public void setOnUserStatusChangedListener(OnUserStatusChangedListener listener) {
+        this.listener = listener;
+    }
     public user_item_Adapter(Context context, List<Users> users) {
         super(context, 0, users);
         this.context = context;
@@ -48,6 +59,10 @@ public class user_item_Adapter extends ArrayAdapter<Users> {
                 updateUserStatusInDatabase(user.getUserID(), "active", "artist");
 
                 notifyDataSetChanged(); // Cập nhật giao diện
+                // Gọi callback khi user được accept
+                if (listener != null) {
+                    listener.onUserAccepted();
+                }
             });
             // Xử lý khi nhấn nút Cancel
             btnCancel.setOnClickListener(v -> {
@@ -57,6 +72,10 @@ public class user_item_Adapter extends ArrayAdapter<Users> {
                 // Xóa user khỏi adapter
                 remove(user);
                 notifyDataSetChanged();
+                // Gọi callback khi user bị xóa
+                if (listener != null) {
+                    listener.onUserDeleted();
+                }
             });
         }
 
