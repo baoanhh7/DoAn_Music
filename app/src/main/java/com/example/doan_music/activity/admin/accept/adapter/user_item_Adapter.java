@@ -70,19 +70,48 @@ public class user_item_Adapter extends ArrayAdapter<Users> {
 
         if (connection != null) {
             try {
-                // Cập nhật cả Status và Role
-                String query = "UPDATE Users SET Status = ?, Role = ? WHERE UserID = ?";
-                PreparedStatement preparedStatement = connection.prepareStatement(query);
-                preparedStatement.setString(1, status);
-                preparedStatement.setString(2, role);  // Thêm Role vào câu lệnh
-                preparedStatement.setInt(3, userID);
+                connection.setAutoCommit(false); // Bắt đầu transaction
 
-                preparedStatement.executeUpdate(); // Thực thi câu lệnh
-                preparedStatement.close();
+                try {
+                    // 1. Cập nhật Users
+                    String updateUserQuery = "UPDATE Users SET Status = ?, Role = ? WHERE UserID = ?";
+                    PreparedStatement userStatement = connection.prepareStatement(updateUserQuery);
+                    userStatement.setString(1, status);
+                    userStatement.setString(2, role);
+                    userStatement.setInt(3, userID);
+                    userStatement.executeUpdate();
+                    userStatement.close();
+
+                    // 2. Lấy username từ bảng Users
+                    String getUsernameQuery = "SELECT Username FROM Users WHERE UserID = ?";
+                    PreparedStatement usernameStatement = connection.prepareStatement(getUsernameQuery);
+                    usernameStatement.setInt(1, userID);
+                    String username = "";
+                    java.sql.ResultSet resultSet = usernameStatement.executeQuery();
+                    if (resultSet.next()) {
+                        username = resultSet.getString("Username");
+                    }
+                    usernameStatement.close();
+
+                    // 3. Insert vào bảng Artist (không chỉ định ArtistID vì đã auto-increment)
+                    String insertArtistQuery = "INSERT INTO Artist (ArtistName) VALUES (?)";
+                    PreparedStatement artistStatement = connection.prepareStatement(insertArtistQuery);
+                    artistStatement.setString(1, username);
+                    artistStatement.executeUpdate();
+                    artistStatement.close();
+
+                    connection.commit(); // Commit transaction nếu tất cả thành công
+                } catch (SQLException e) {
+                    connection.rollback(); // Rollback nếu có lỗi
+                    Log.e("UserAdapter", "Error in transaction: " + e.getMessage());
+                    throw e;
+                }
+
             } catch (SQLException e) {
-                Log.e("UserAdapter", "Error updating user status and role: " + e.getMessage());
+                Log.e("UserAdapter", "Error updating user status and creating artist: " + e.getMessage());
             } finally {
                 try {
+                    connection.setAutoCommit(true); // Reset auto-commit về true
                     connection.close();
                 } catch (SQLException e) {
                     Log.e("UserAdapter", "Error closing connection: " + e.getMessage());
