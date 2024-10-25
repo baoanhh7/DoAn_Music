@@ -95,17 +95,32 @@
     <!-- Confirm Button -->
 
     <Button
+        android:id="@+id/buttonSelectFiletext"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/rounded_button_regiter"
+        android:padding="12dp"
+        android:text="Chọn file lời bài hát"
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.487"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonSelectFile"
+        app:layout_constraintWidth_percent="0.8" />
+
+    <Button
         android:id="@+id/btn_back"
         android:layout_width="120dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="40dp"
+        android:layout_marginStart="36dp"
         android:layout_marginTop="24dp"
         android:background="@drawable/rounded_button_regiter"
         android:paddingHorizontal="24dp"
         android:text="Back"
         android:textColor="@color/white"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonSelectFile" />
+        app:layout_constraintTop_toBottomOf="@+id/buttonSelectFiletext" />
 
     <Button
         android:id="@+id/btn_confirm"
@@ -118,7 +133,7 @@
         android:text="Xác nhận"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonSelectFile" />
+        app:layout_constraintTop_toBottomOf="@+id/buttonSelectFiletext" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

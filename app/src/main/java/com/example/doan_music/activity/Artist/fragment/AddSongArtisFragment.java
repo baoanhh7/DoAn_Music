@@ -38,14 +38,15 @@ public class AddSongArtisFragment extends Fragment {
     private static final String TAG = "AddSongArtisFragment";
     private static final int PICK_IMAGE_REQUEST = 1;
     private static final int PICK_AUDIO_REQUEST = 2;
-
+    private static final int PICK_TEXT_REQUEST = 3;
     private ImageButton imageButton;
     private EditText songNameEditText;
     private Spinner albumSpinner, typeSpinner;
-    private Button selectFileButton, confirmButton;
+    private Button selectFileButton, confirmButton,selectFileTextButton;
 
     private Uri imageUri;
     private Uri audioUri;
+    private Uri textUri;
     private int userID;
 
     private StorageReference storageReference;
@@ -74,9 +75,11 @@ public class AddSongArtisFragment extends Fragment {
         typeSpinner = view.findViewById(R.id.TheLoai);
         selectFileButton = view.findViewById(R.id.buttonSelectFile);
         confirmButton = view.findViewById(R.id.btn_confirm);
+        selectFileTextButton = view.findViewById(R.id.buttonSelectFiletext);
 
         imageButton.setOnClickListener(v -> openImagePicker());
         selectFileButton.setOnClickListener(v -> openAudioPicker());
+        selectFileTextButton.setOnClickListener(v -> openTextPicker());
         confirmButton.setOnClickListener(v -> uploadSongData());
 
         loadAlbums();
@@ -96,6 +99,11 @@ public class AddSongArtisFragment extends Fragment {
         startActivityForResult(intent, PICK_AUDIO_REQUEST);
     }
 
+    private void openTextPicker() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("text/*");
+        startActivityForResult(intent, PICK_TEXT_REQUEST);
+    }
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -106,10 +114,12 @@ public class AddSongArtisFragment extends Fragment {
             } else if (requestCode == PICK_AUDIO_REQUEST) {
                 audioUri = data.getData();
                 Toast.makeText(getContext(), "Audio file selected", Toast.LENGTH_SHORT).show();
+            } else if (requestCode == PICK_TEXT_REQUEST) {
+                textUri = data.getData();
+                Toast.makeText(getContext(), "Text file selected", Toast.LENGTH_SHORT).show();
             }
         }
     }
-
     private void loadAlbums() {
         ConnectionClass connectionClass = new ConnectionClass();
         Connection connection = connectionClass.conClass();
@@ -200,8 +210,25 @@ public class AddSongArtisFragment extends Fragment {
                             .addOnSuccessListener(audioTaskSnapshot -> audioRef.getDownloadUrl().addOnSuccessListener(audioUri -> {
                                 String audioUrl = audioUri.toString();
 
-                                // Save song data to SQL Server
-                                saveSongToDatabase(songName, imageUrl, audioUrl, selectedAlbum, selectedType);
+                                // If text file is selected, upload it
+                                if (textUri != null) {
+                                    String textFileName = UUID.randomUUID().toString();
+                                    StorageReference textRef = storageReference.child("songLyrics/" + textFileName);
+
+                                    textRef.putFile(textUri)
+                                            .addOnSuccessListener(textTaskSnapshot -> textRef.getDownloadUrl().addOnSuccessListener(textUri -> {
+                                                String textUrl = textUri.toString();
+                                                // Save song data with LRC link
+                                                saveSongToDatabase(songName, imageUrl, audioUrl, selectedAlbum, selectedType, textUrl);
+                                            }))
+                                            .addOnFailureListener(e -> {
+                                                Log.e(TAG, "Failed to upload text file: " + e.getMessage());
+                                                Toast.makeText(getContext(), "Failed to upload text file", Toast.LENGTH_SHORT).show();
+                                            });
+                                } else {
+                                    // Save song data without LRC link
+                                    saveSongToDatabase(songName, imageUrl, audioUrl, selectedAlbum, selectedType, null);
+                                }
                             }))
                             .addOnFailureListener(e -> {
                                 Log.e(TAG, "Failed to upload audio: " + e.getMessage());
@@ -214,12 +241,15 @@ public class AddSongArtisFragment extends Fragment {
                 });
     }
 
-    private void saveSongToDatabase(String songName, String imageUrl, String audioUrl, String selectedAlbum, String selectedType) {
+
+    private void saveSongToDatabase(String songName, String imageUrl, String audioUrl,
+                                    String selectedAlbum, String selectedType, String lrcUrl) {
         ConnectionClass connectionClass = new ConnectionClass();
         Connection connection = connectionClass.conClass();
         if (connection != null) {
             try {
-                String query = "INSERT INTO Song (SongName, SongImage, LinkSong, AlbumID, TypeID, ArtistID, Views) VALUES (?, ?, ?, ?, ?, ?, 0)";
+                String query = "INSERT INTO Song (SongName, SongImage, LinkSong, AlbumID, TypeID, ArtistID, Views, LinkLRC) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, 0, ?)";
                 PreparedStatement preparedStatement = connection.prepareStatement(query);
                 preparedStatement.setString(1, songName);
                 preparedStatement.setString(2, imageUrl);
@@ -243,6 +273,13 @@ public class AddSongArtisFragment extends Fragment {
 
                 preparedStatement.setInt(6, userID);
 
+                // Set LinkLRC (can be null)
+                if (lrcUrl == null) {
+                    preparedStatement.setNull(7, java.sql.Types.VARCHAR);
+                } else {
+                    preparedStatement.setString(7, lrcUrl);
+                }
+
                 int rowsAffected = preparedStatement.executeUpdate();
                 if (rowsAffected > 0) {
                     Toast.makeText(getContext(), "Song added successfully", Toast.LENGTH_SHORT).show();
@@ -258,6 +295,7 @@ public class AddSongArtisFragment extends Fragment {
             }
         }
     }
+
 
     private int getAlbumId(String albumName) throws SQLException {
         ConnectionClass connectionClass = new ConnectionClass();
@@ -291,6 +329,7 @@ public class AddSongArtisFragment extends Fragment {
         imageButton.setImageResource(R.drawable.ic_add_picture); // Reset to default image
         imageUri = null;
         audioUri = null;
+        textUri = null;
         albumSpinner.setSelection(0);
         typeSpinner.setSelection(0);
     }
