@@ -90,21 +90,20 @@ public class AddNgheSiFragment extends Fragment implements OnItemClickListener {
         connection = sql.conClass();
         if (connection != null) {
             try {
-                query = "SELECT * " +
-                        "FROM Artist " +
-                        "WHERE Artist.ArtistID NOT IN (SELECT ArtistID " +
-                        "FROM User_Artist " +
-                        "WHERE UserID = " + userId + ")";
-                smt = connection.createStatement();
-                resultSet = smt.executeQuery(query);
+                query = "SELECT * FROM Artist WHERE Artist.ArtistID NOT IN (SELECT ArtistID FROM User_Artist WHERE UserID = ?)";
+                PreparedStatement pstmt = connection.prepareStatement(query);
+                pstmt.setInt(1, userId);
+                resultSet = pstmt.executeQuery();
                 arrayList.clear();
                 while (resultSet.next()) {
                     String ten = resultSet.getString(2);
                     String linkImage = resultSet.getString(3);
                     // Chuyển đổi linkImage thành byte[]
                     byte[] img = getImageBytesFromURL(linkImage);
-                    AddNgheSi_ThuVien addNgheSiThuVien = new AddNgheSi_ThuVien(img, ten);
-                    arrayList.add(addNgheSiThuVien);
+                    if (img != null) {
+                        AddNgheSi_ThuVien addNgheSiThuVien = new AddNgheSi_ThuVien(img, ten);
+                        arrayList.add(addNgheSiThuVien);
+                    }
                 }
                 addNgheSiAdapter.notifyDataSetChanged();
                 connection.close();

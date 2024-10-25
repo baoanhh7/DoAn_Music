@@ -49,7 +49,7 @@ public class Search_Fragment extends Fragment {
     Statement smt;
     ResultSet resultSet;
     private RecyclerView rcv_search_header, rcv_search_bottom, rcv_searchItem;
-    private SearchAdapter searchAdapter_header, searchAdapter_bottom;
+    private SearchAdapter searchAdapter;
     private RecyclerView rcvSearchItem;
     private SearchItemAdapter searchItemAdapter;
     private SearchView searchView;
@@ -71,9 +71,9 @@ public class Search_Fragment extends Fragment {
         GridLayoutManager gridLayoutManager = new GridLayoutManager(requireContext(), 2);
         rcv_search_bottom.setLayoutManager(gridLayoutManager);
 
-        // set data cho recyclerView
-        searchAdapter_header.setData(getlistuserHeader());
-        searchAdapter_bottom.setData(getlistuserBottom());
+//        // set data cho recyclerView
+//        searchAdapter_header.setData(getlistuserHeader());
+//        searchAdapter_bottom.setData(getlistuserBottom());
         addEvents();
         //loadData();
         loadDataArtist();
@@ -109,13 +109,13 @@ public class Search_Fragment extends Fragment {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                thuVienAdapter.getFilter().filter(query);
+                searchAdapter.getFilter().filter(query);
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                thuVienAdapter.getFilter().filter(newText);
+                searchAdapter.getFilter().filter(newText);
                 return false;
             }
         });
@@ -133,7 +133,7 @@ public class Search_Fragment extends Fragment {
             arr.add(thuVien);
 
         }
-        thuVienAdapter.notifyDataSetChanged();
+        searchAdapter.notifyDataSetChanged();
         cursor.close();
         cursor = database.rawQuery("select * from Songs", null);
         while (cursor.moveToNext()) {
@@ -144,7 +144,7 @@ public class Search_Fragment extends Fragment {
             arr.add(thuVien);
 
         }
-        thuVienAdapter.notifyDataSetChanged();
+        searchAdapter.notifyDataSetChanged();
         cursor.close();
     }
 
@@ -168,7 +168,7 @@ public class Search_Fragment extends Fragment {
                     arr.add(thuVien);
                     arr1.add(id);
                 }
-                thuVienAdapter.notifyDataSetChanged();
+                searchAdapter.notifyDataSetChanged();
                 connection.close();
             } catch (Exception e) {
                 Log.e("Error: ", e.getMessage());
@@ -194,7 +194,7 @@ public class Search_Fragment extends Fragment {
                     ThuVien thuVien = new ThuVien(img, ten);
                     arr.add(thuVien);
                 }
-                thuVienAdapter.notifyDataSetChanged();
+                searchAdapter.notifyDataSetChanged();
                 connection.close();
             } catch (Exception e) {
                 Log.e("Error: ", e.getMessage());
@@ -239,75 +239,70 @@ public class Search_Fragment extends Fragment {
 //        return super.onOptionsItemSelected(item);
 //    }
 
-    private List<User> getlistuserHeader() {
-        List<User> list = new ArrayList<>();
+//    private List<User> getlistuserHeader() {
+//        List<User> list = new ArrayList<>();
+//
+//        list.add(new User(R.drawable.nhac, "Nhạc", true));
+//        list.add(new User(R.drawable.sukientructiep, "Sự kiện trực tiếp", true));
+//        list.add(new User(R.drawable.podcast, "Podcast", true));
+//        list.add(new User(R.drawable.danhchoban, "Dành cho bạn", true));
+//
+//        list.add(new User(R.drawable.nhac, "Nhạc", true));
+//        list.add(new User(R.drawable.sukientructiep, "Sự kiện trực tiếp", true));
+//        list.add(new User(R.drawable.podcast, "Podcast", true));
+//        list.add(new User(R.drawable.danhchoban, "Dành cho bạn", true));
+//
+//        list.add(new User(R.drawable.nhac, "Nhạc", true));
+//        list.add(new User(R.drawable.sukientructiep, "Sự kiện trực tiếp", true));
+//        list.add(new User(R.drawable.podcast, "Podcast", true));
+//        list.add(new User(R.drawable.danhchoban, "Dành cho bạn", true));
+//
+//        list.add(new User(R.drawable.nhac, "Nhạc", true));
+//        list.add(new User(R.drawable.sukientructiep, "Sự kiện trực tiếp", true));
+//        list.add(new User(R.drawable.podcast, "Podcast", true));
+//        list.add(new User(R.drawable.danhchoban, "Dành cho bạn", true));
+//
+//        return list;
+//    }
 
-        list.add(new User(R.drawable.nhac, "Nhạc", true));
-        list.add(new User(R.drawable.sukientructiep, "Sự kiện trực tiếp", true));
-        list.add(new User(R.drawable.podcast, "Podcast", true));
-        list.add(new User(R.drawable.danhchoban, "Dành cho bạn", true));
-
-        list.add(new User(R.drawable.nhac, "Nhạc", true));
-        list.add(new User(R.drawable.sukientructiep, "Sự kiện trực tiếp", true));
-        list.add(new User(R.drawable.podcast, "Podcast", true));
-        list.add(new User(R.drawable.danhchoban, "Dành cho bạn", true));
-
-        list.add(new User(R.drawable.nhac, "Nhạc", true));
-        list.add(new User(R.drawable.sukientructiep, "Sự kiện trực tiếp", true));
-        list.add(new User(R.drawable.podcast, "Podcast", true));
-        list.add(new User(R.drawable.danhchoban, "Dành cho bạn", true));
-
-        list.add(new User(R.drawable.nhac, "Nhạc", true));
-        list.add(new User(R.drawable.sukientructiep, "Sự kiện trực tiếp", true));
-        list.add(new User(R.drawable.podcast, "Podcast", true));
-        list.add(new User(R.drawable.danhchoban, "Dành cho bạn", true));
-
-        return list;
-    }
-
-    private List<User> getlistuserBottom() {
-        List<User> list = new ArrayList<>();
-
-        list.add(new User(R.drawable.nhac, "Nhạc", false));
-        list.add(new User(R.drawable.sukientructiep, "Sự kiện trực tiếp", false));
-        list.add(new User(R.drawable.podcast, "Podcast", false));
-        list.add(new User(R.drawable.danhchoban, "Dành cho bạn", false));
-
-        list.add(new User(R.drawable.nhac, "Nhạc", false));
-        list.add(new User(R.drawable.sukientructiep, "Sự kiện trực tiếp", false));
-        list.add(new User(R.drawable.podcast, "Podcast", false));
-        list.add(new User(R.drawable.danhchoban, "Dành cho bạn", false));
-
-        list.add(new User(R.drawable.nhac, "Nhạc", false));
-        list.add(new User(R.drawable.sukientructiep, "Sự kiện trực tiếp", false));
-        list.add(new User(R.drawable.podcast, "Podcast", false));
-        list.add(new User(R.drawable.danhchoban, "Dành cho bạn", false));
-
-        list.add(new User(R.drawable.nhac, "Nhạc", false));
-        list.add(new User(R.drawable.sukientructiep, "Sự kiện trực tiếp", false));
-        list.add(new User(R.drawable.podcast, "Podcast", false));
-        list.add(new User(R.drawable.danhchoban, "Dành cho bạn", false));
-
-        return list;
-    }
+//    private List<User> getlistuserBottom() {
+//        List<User> list = new ArrayList<>();
+//
+//        list.add(new User(R.drawable.nhac, "Nhạc", false));
+//        list.add(new User(R.drawable.sukientructiep, "Sự kiện trực tiếp", false));
+//        list.add(new User(R.drawable.podcast, "Podcast", false));
+//        list.add(new User(R.drawable.danhchoban, "Dành cho bạn", false));
+//
+//        list.add(new User(R.drawable.nhac, "Nhạc", false));
+//        list.add(new User(R.drawable.sukientructiep, "Sự kiện trực tiếp", false));
+//        list.add(new User(R.drawable.podcast, "Podcast", false));
+//        list.add(new User(R.drawable.danhchoban, "Dành cho bạn", false));
+//
+//        list.add(new User(R.drawable.nhac, "Nhạc", false));
+//        list.add(new User(R.drawable.sukientructiep, "Sự kiện trực tiếp", false));
+//        list.add(new User(R.drawable.podcast, "Podcast", false));
+//        list.add(new User(R.drawable.danhchoban, "Dành cho bạn", false));
+//
+//        list.add(new User(R.drawable.nhac, "Nhạc", false));
+//        list.add(new User(R.drawable.sukientructiep, "Sự kiện trực tiếp", false));
+//        list.add(new User(R.drawable.podcast, "Podcast", false));
+//        list.add(new User(R.drawable.danhchoban, "Dành cho bạn", false));
+//
+//        return list;
+//    }
 
     private void addControls() {
         rcv_search_header = view.findViewById(R.id.rcv_search_header);
         rcv_search_bottom = view.findViewById(R.id.rcv_search_bottom);
 
         // Đối với fragment thì Context sẽ là requireContext()
-        searchAdapter_header = new SearchAdapter();
-        searchAdapter_bottom = new SearchAdapter();
-
-        rcv_search_header.setAdapter(searchAdapter_header);
-        rcv_search_bottom.setAdapter(searchAdapter_bottom);
         searchView = view.findViewById(R.id.searchView);
         txt_searchlibrary2 = view.findViewById(R.id.txt_searchlibrary2);
         txt_searchlibrary1 = view.findViewById(R.id.txt_searchlibrary1);
         rcv_searchItem = view.findViewById(R.id.rcv_searchItem);
         arr = new ArrayList<>();
-        thuVienAdapter = new ThuVienAdapter(this, arr);
-        thuVienAdapter.setOnItemClickListener(new OnItemClickListener() {
+        searchAdapter = new SearchAdapter(this, arr);
+        searchAdapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(String data) {
                 Intent intent = null;
@@ -343,7 +338,7 @@ public class Search_Fragment extends Fragment {
 //
             }
         });
-        rcv_searchItem.setAdapter(thuVienAdapter);
+        rcv_searchItem.setAdapter(searchAdapter);
 
     }
 

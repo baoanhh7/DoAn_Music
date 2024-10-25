@@ -2,13 +2,20 @@ package com.example.doan_music.fragment.main;
 
 import static android.content.Context.MODE_PRIVATE;
 
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +29,7 @@ import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -64,6 +72,9 @@ public class Library_Fragment extends Fragment implements OnItemClickListener {
     String query;
     Statement smt;
     ResultSet resultSet;
+    private Handler handler;
+    private Runnable refreshRunnable;
+    private static final long REFRESH_INTERVAL = 1000;
     private int userId;
 
     public static byte[] convertDrawableToByteArray(Context context, int drawableId) {
@@ -83,14 +94,27 @@ public class Library_Fragment extends Fragment implements OnItemClickListener {
             userId = mainActivity.getMyVariable();
             Log.e("userId", String.valueOf(userId));
         }
+        handler = new Handler(Looper.getMainLooper());
+//        refreshRunnable = new Runnable() {
+//            @Override
+//            public void run() {
+//
+//                handler.postDelayed(this, REFRESH_INTERVAL);
+//            }
+//        };
         addControl();
         addEvents();
         return view;
     }
 
+//    private void startAutoRefresh() {
+//        handler.postDelayed(refreshRunnable, REFRESH_INTERVAL);
+//    }
+
     @Override
     public void onResume() {
         super.onResume();
+        //startAutoRefresh();
         loadDataSQLServer();
     }
 
@@ -153,6 +177,7 @@ public class Library_Fragment extends Fragment implements OnItemClickListener {
         bottomSheetDialog.show();
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void loadDataSQLServer() {
         ConnectionClass sql = new ConnectionClass();
         connection = sql.conClass();
@@ -174,6 +199,7 @@ public class Library_Fragment extends Fragment implements OnItemClickListener {
                     ThuVien thuVien = new ThuVien(img, ten);
                     arr.add(thuVien);
                 }
+                thuVienAdapter.notifyDataSetChanged();
                 query = "SELECT * " +
                         "FROM  Playlist_User " +
                         "WHERE Playlist_User.UserID = " + userId;
@@ -315,6 +341,54 @@ public class Library_Fragment extends Fragment implements OnItemClickListener {
         });
         //recyclerViewNV.setLayoutManager(new StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.HORIZONTAL));
         // Lấy Bundle từ Fragment
+        ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false; // Không cần xử lý kéo thả
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                // Lấy vị trí item bị vuốt
+                int position = viewHolder.getAdapterPosition();
+
+                // Hiển thị hộp thoại xác nhận xóa
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Xác nhận xóa")
+                        .setMessage("Bạn có chắc chắn muốn xóa mục này?")
+                        .setPositiveButton("Xóa", (dialog, which) -> {
+                            // Nếu chọn "Xóa", xóa item khỏi danh sách
+                            thuVienAdapter.removeItem(position);
+                        })
+                        .setNegativeButton("Hủy", (dialog, which) -> {
+                            // Nếu chọn "Hủy", khôi phục item bị vuốt
+                            thuVienAdapter.notifyItemChanged(position);
+                        })
+                        .setOnCancelListener(dialog -> {
+                            // Nếu hộp thoại bị hủy, khôi phục item
+                            thuVienAdapter.notifyItemChanged(position);
+                        })
+                        .show();
+            }
+
+            @Override
+            public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+                // Thay đổi màu nền khi vuốt
+                if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+                    View itemView = viewHolder.itemView;
+
+                    Paint paint = new Paint();
+                    paint.setColor(Color.RED); // Màu nền đỏ
+                    c.drawRect((float) itemView.getRight() + dX, (float) itemView.getTop(),
+                            (float) itemView.getRight(), (float) itemView.getBottom(), paint);
+                }
+
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+            }
+        };
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
+        itemTouchHelper.attachToRecyclerView(recyclerView);
+
     }
 
     private void loadDataPlaylistUser(String data) {
@@ -366,6 +440,7 @@ public class Library_Fragment extends Fragment implements OnItemClickListener {
             }
         }
     }
+
 
     @Override
     public void onItemClick(String data) {

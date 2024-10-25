@@ -2,6 +2,7 @@ package com.example.doan_music.adapter.thuvien;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,9 +16,13 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.doan_music.R;
+import com.example.doan_music.database.ConnectionClass;
 import com.example.doan_music.m_interface.OnItemClickListener;
 import com.example.doan_music.model.ThuVien;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 
 public class ThuVienAdapter extends RecyclerView.Adapter<ThuVienAdapter.ViewHolder> implements Filterable {
@@ -31,7 +36,14 @@ public class ThuVienAdapter extends RecyclerView.Adapter<ThuVienAdapter.ViewHold
         this.arr = arr;
         this.arr1 = arr;
     }
-
+    public void removeItem(int position) {
+        String tensp = arr.get(position).getTensp();
+        Log.d("Tên Playlist", tensp); // Kiểm tra tên trước khi xóa
+        arr.remove(position);
+        DeleteDataPlaylist(position);
+        DeleteDataArtist(position);
+        notifyItemRemoved(position); // Thông báo RecyclerView cập nhật
+    }
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -105,6 +117,56 @@ public class ThuVienAdapter extends RecyclerView.Adapter<ThuVienAdapter.ViewHold
             super(itemView);
             img = itemView.findViewById(R.id.img_thuvien);
             txtTen = itemView.findViewById(R.id.txtTen_thuvien);
+        }
+    }
+    private void DeleteDataPlaylist(int position) {
+        // Tạo CallableStatement để gọi stored procedure
+        ConnectionClass sql = new ConnectionClass();
+        Connection connection = sql.conClass();
+        Log.e("SQL", "DeletePlaylistByName");
+        if (connection != null) {
+            try {
+                String query = "EXEC DeletePlaylistByName ?"; // Thay thế tên stored procedure và tham số tương ứng
+                PreparedStatement stmt = connection.prepareStatement(query);
+                Log.d("SQL", query);
+                stmt.setString(1, arr.get(position).getTensp());
+                // Thực thi câu lệnh và lấy số lượng bản ghi đã bị xóa
+                int affectedRows = stmt.executeUpdate();
+                if (affectedRows > 0) {
+                    Log.d("SQL", "Playlist deleted successfully.");
+                } else {
+                    Log.d("SQL", "No Playlist found with that name.");
+                }
+            } catch (Exception e) {
+                Log.e("Error: ", e.getMessage());
+            }
+        } else {
+            Log.e("Error: ", "Connection null");
+        }
+    }
+    private void DeleteDataArtist(int position) {
+        // Tạo CallableStatement để gọi stored procedure
+        ConnectionClass sql = new ConnectionClass();
+        Connection connection = sql.conClass();
+        Log.e("SQL", "DeleteUserArtistByName");
+        if (connection != null) {
+            try {
+                String query = "EXEC DeleteUserArtistByName ?"; // Thay thế tên stored procedure và tham số tương ứng
+                PreparedStatement stmt = connection.prepareStatement(query);
+                Log.d("SQL", query);
+                stmt.setString(1, arr.get(position).getTensp());
+                // Thực thi câu lệnh và lấy số lượng bản ghi đã bị xóa
+                int affectedRows = stmt.executeUpdate();
+                if (affectedRows > 0) {
+                    Log.d("SQL", "Artist deleted successfully.");
+                } else {
+                    Log.d("SQL", "No Artist found with that name.");
+                }
+            } catch (Exception e) {
+                Log.e("Error: ", e.getMessage());
+            }
+        } else {
+            Log.e("Error: ", "Connection null");
         }
     }
 }

@@ -34,7 +34,7 @@ public class ThuVienAlbumAdapter extends RecyclerView.Adapter<ThuVienAlbumAdapte
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-        View view = layoutInflater.inflate(R.layout.items_thuvien, parent, false);
+        View view = layoutInflater.inflate(R.layout.item_search, parent, false);
         ViewHolder viewHolder = new ViewHolder(view);
         return viewHolder;
     }
