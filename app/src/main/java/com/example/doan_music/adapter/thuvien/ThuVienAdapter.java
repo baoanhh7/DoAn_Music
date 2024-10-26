@@ -39,7 +39,6 @@ public class ThuVienAdapter extends RecyclerView.Adapter<ThuVienAdapter.ViewHold
     public void removeItem(int position) {
         String tensp = arr.get(position).getTensp();
         Log.d("Tên Playlist", tensp); // Kiểm tra tên trước khi xóa
-        arr.remove(position);
         DeleteDataPlaylist(position);
         DeleteDataArtist(position);
         notifyItemRemoved(position); // Thông báo RecyclerView cập nhật
@@ -133,6 +132,7 @@ public class ThuVienAdapter extends RecyclerView.Adapter<ThuVienAdapter.ViewHold
                 // Thực thi câu lệnh và lấy số lượng bản ghi đã bị xóa
                 int affectedRows = stmt.executeUpdate();
                 if (affectedRows > 0) {
+                    arr.remove(position);
                     Log.d("SQL", "Playlist deleted successfully.");
                 } else {
                     Log.d("SQL", "No Playlist found with that name.");
@@ -152,12 +152,15 @@ public class ThuVienAdapter extends RecyclerView.Adapter<ThuVienAdapter.ViewHold
         if (connection != null) {
             try {
                 String query = "EXEC DeleteUserArtistByName ?"; // Thay thế tên stored procedure và tham số tương ứng
+                //String query = "DELETE ua FROM User_Artist ua JOIN Artist a ON ua.ArtistID = a.ArtistID WHERE a.ArtistName = ?";
+
                 PreparedStatement stmt = connection.prepareStatement(query);
                 Log.d("SQL", query);
                 stmt.setString(1, arr.get(position).getTensp());
                 // Thực thi câu lệnh và lấy số lượng bản ghi đã bị xóa
                 int affectedRows = stmt.executeUpdate();
                 if (affectedRows > 0) {
+                    arr.remove(position);
                     Log.d("SQL", "Artist deleted successfully.");
                 } else {
                     Log.d("SQL", "No Artist found with that name.");
