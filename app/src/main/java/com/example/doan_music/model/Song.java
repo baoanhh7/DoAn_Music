@@ -12,6 +12,18 @@ public class Song implements Serializable {
     private String LinkSong;
     private int TypeID;
     private int isFavorite;
+   private  String LinkLrc;
+
+    public Song() {
+    }
+
+    public String getLinkLrc() {
+        return LinkLrc;
+    }
+
+    public void setLinkLrc(String linkLrc) {
+        LinkLrc = linkLrc;
+    }
 
     private int view;
 
