@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.doan_music.R;
 import com.example.doan_music.activity.Artist.StarArtistActivity;
+import com.example.doan_music.offline.LoginOfflineActivity;
 
 
 public class BeginActivity extends AppCompatActivity {
@@ -93,7 +94,7 @@ public class BeginActivity extends AppCompatActivity {
             // Xử lý khi mất kết nối internet
             Toast.makeText(this, "Mất kết nối internet", Toast.LENGTH_LONG).show();
             // Chuyển sang chế độ offline
-            startActivity(new Intent(BeginActivity.this,Login_userActivity.class));
+            startActivity(new Intent(BeginActivity.this, LoginOfflineActivity.class));
         }
     }
     @Override

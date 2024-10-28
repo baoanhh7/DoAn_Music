@@ -62,7 +62,6 @@ dependencies {
             )
         )
     )
-    implementation("com.squareup.okhttp3:okhttp:4.6.0")
     implementation("commons-codec:commons-codec:1.14")
 
     testImplementation("junit:junit:4.13.2")
@@ -96,4 +95,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-ads:23.3.0")
     implementation("com.github.bumptech.glide:glide:4.12.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.12.0")
+    implementation ("org.conscrypt:conscrypt-android:2.5.2")
+    implementation ("com.squareup.okhttp3:okhttp:4.9.0")
+
 }

@@ -17,21 +17,21 @@ import java.util.List;
 public class OfflineMusicManager {
     private Context context;
     private DatabaseHelper dbHelper;
-    private UserOffline currentUser;
+    private int userID;;
 
-    public OfflineMusicManager(Context context, UserOffline user) {
+    public OfflineMusicManager(Context context, int userID) {
         this.context = context;
         this.dbHelper = new DatabaseHelper(context);
-        this.currentUser = user;
+        this.userID = userID;
     }
 
     public List<SongOffline> getDownloadedSongs() {
         List<SongOffline> songs = new ArrayList<>();
 
         // Chỉ lấy bài hát nếu user còn premium
-        if (!currentUser.isPremiumValid()) {
-            return songs; // Return empty list if not premium
-        }
+//        if (!currentUser.isPremiumValid()) {
+//            return songs; // Return empty list if not premium
+//        }
 
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
@@ -40,7 +40,7 @@ public class OfflineMusicManager {
         };
 
         String selection = "user_id = ?";
-        String[] selectionArgs = { String.valueOf(currentUser.getUserID()) };
+        String[] selectionArgs = { String.valueOf(userID) };
 
         Cursor cursor = db.query(
                 "downloaded_songs",
@@ -71,13 +71,13 @@ public class OfflineMusicManager {
 
     // Xóa bài hát khi hết premium
     public void cleanupExpiredDownloads() {
-        if (!currentUser.isPremiumValid()) {
+//        if (!currentUser.isPremiumValid()) {
             SQLiteDatabase db = dbHelper.getWritableDatabase();
 
             // Lấy danh sách file cần xóa
             String[] projection = { "local_path_song",  "local_path_lrc" };
             String selection = "user_id = ?";
-            String[] selectionArgs = { String.valueOf(currentUser.getUserID()) };
+            String[] selectionArgs = { String.valueOf(userID) };
 
             Cursor cursor = db.query(
                     "downloaded_songs",
@@ -106,6 +106,6 @@ public class OfflineMusicManager {
 
             // Xóa records trong database
             db.delete("downloaded_songs", selection, selectionArgs);
-        }
+//        }
     }
 }

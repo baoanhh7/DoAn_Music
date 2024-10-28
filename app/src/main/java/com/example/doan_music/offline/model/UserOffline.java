@@ -10,6 +10,16 @@ public class UserOffline {
     private boolean isPremium;
     private long premiumExpireDate; // Thời gian hết hạn premium
 
+    public UserOffline() {
+    }
+
+    public UserOffline(String username, String password, boolean isPremium, long premiumExpireDate) {
+        this.username = username;
+        this.password = password;
+        this.isPremium = isPremium;
+        this.premiumExpireDate = premiumExpireDate;
+    }
+
     public int getUserID() {
         return userID;
     }

@@ -1,9 +1,13 @@
 package com.example.doan_music.activity;
 
 import android.app.AlertDialog;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
@@ -13,6 +17,7 @@ import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -23,15 +28,18 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
 import com.example.doan_music.R;
+import com.example.doan_music.activity.admin.AdminActivity;
 import com.example.doan_music.database.ConnectionClass;
 import com.example.doan_music.fragment.drawer.AllSongs_Fragment;
 import com.example.doan_music.fragment.main.Home_Fragment;
 import com.example.doan_music.fragment.main.Library_Fragment;
 import com.example.doan_music.fragment.main.Search_Fragment;
 import com.example.doan_music.fragment.main.Spotify_Fragment;
+import com.example.doan_music.loginPackage.Login_userActivity;
 import com.example.doan_music.loginPackage.UserActivity;
 import com.example.doan_music.music.PlayMusicActivity;
 import com.example.doan_music.offline.database.DatabaseHelper;
+import com.example.doan_music.offline.model.UserOffline;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
@@ -44,7 +52,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
     DrawerLayout drawerLayout;
@@ -55,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     String tenU;
     ImageView mini_player_play_pause, mini_player_image;
     TextView mini_player_song_name, mini_player_artist_name;
-    int userID;
+    int userID,userIDOFF;
     MediaPlayer myMusic;
     String songLink;
     int playbackTime;
@@ -63,6 +73,14 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences sharedPreferences;
     ArrayList<Integer> arr = new ArrayList<>();
     DatabaseHelper databaseHelper;
+    Connection connection;
+    String query;
+    Statement smt;
+    ResultSet resultSet;
+    String Role;
+    String UserName,Password;
+    SQLiteDatabase database = null;
+    UserOffline userOffline;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,7 +95,25 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences("data", MODE_PRIVATE);
         userID = sharedPreferences.getInt("userID", -1);  // Lấy userID
         Log.e("UserID", String.valueOf(userID));
-
+        loadRoleUser(userID);
+        loadDataOff(userID);
+        if(Role.equalsIgnoreCase("premium") && loadDataOff(userID))
+        {
+            saveDataOntoOff(userID);
+            //databaseHelper.getReadableDatabase();
+            databaseHelper = new DatabaseHelper(this);
+            SQLiteDatabase db =  databaseHelper.getWritableDatabase();
+            ContentValues values = new ContentValues();
+            values.put("username", userOffline.getUsername());
+            values.put("password", userOffline.getPassword());
+            values.put("is_premium", userOffline.isPremium() ? 1 : 0);
+            // Chuyển long thành định dạng ngày trước khi lưu
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            String formattedDate = dateFormat.format(new Date(userOffline.getPremiumExpireDate()));
+            values.put("premium_expire_date", formattedDate);
+//            values.put("premium_expire_date",userOffline.getPremiumExpireDate());
+            db.insert("users", null, values);
+        }
         // Drawer
         setSupportActionBar(toolbar);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open_nav, R.string.close_nav);
@@ -143,6 +179,72 @@ public class MainActivity extends AppCompatActivity {
         });
 
         addEvents();
+    }
+
+    private boolean loadDataOff(int userID) {
+        database = openOrCreateDatabase("music_db", MODE_PRIVATE, null);
+        Cursor cursor = database.rawQuery("select * from users", null);
+        while (cursor.moveToNext()) {
+            userIDOFF = cursor.getInt(0);
+           if(userID == userIDOFF)
+           {
+               return  false;
+           }
+        }
+        cursor.close();
+        return  true;
+    }
+
+    private void saveDataOntoOff(int userID) {
+        ConnectionClass sql = new ConnectionClass();
+        connection = sql.conClass();
+        if (connection != null) {
+            try {
+                // Truy vấn SQL Server để lấy dữ liệu
+                query = "SELECT Username,Password FROM Users WHERE UserID = " + userID;
+                smt = connection.createStatement();
+                resultSet = smt.executeQuery(query);
+                if (resultSet.next()) {
+                     UserName= resultSet.getString(1);
+                     Password = resultSet.getString(2);
+                }
+                query = "SELECT EndDate FROM HoaDon_Admin WHERE UserID = " + userID;
+                smt = connection.createStatement();
+                resultSet = smt.executeQuery(query);
+                if (resultSet.next()) {
+                    Date endDate = resultSet.getDate(1); // Lấy kiểu Date từ CSDL
+                    long endDateLong = endDate.getTime(); // Chuyển đổi sang Unix timestamp
+                    userOffline = new UserOffline(UserName, Password, true, endDateLong);
+                }
+                connection.close();
+            } catch (Exception e) {
+                Log.e("Error: ", e.getMessage());
+            }
+        } else {
+            Log.e("Error: ", "Connection null");
+        }
+    }
+
+    private void loadRoleUser(int userID) {
+        ConnectionClass sql = new ConnectionClass();
+        connection = sql.conClass();
+        if (connection != null) {
+            try {
+                // Truy vấn SQL Server để lấy dữ liệu
+                query = "SELECT * FROM Users WHERE UserID = " + userID;
+                smt = connection.createStatement();
+                resultSet = smt.executeQuery(query);
+                if (resultSet.next()) {
+                    Role = resultSet.getString(5);
+                }
+                connection.close();
+            } catch (Exception e) {
+                Log.e("Error: ", e.getMessage());
+            }
+        } else {
+            Log.e("Error: ", "Connection null");
+        }
+
     }
 
     private void addEvents() {

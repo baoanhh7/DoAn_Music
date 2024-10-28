@@ -24,6 +24,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -37,6 +38,8 @@ import com.example.doan_music.R;
 import com.example.doan_music.activity.MainActivity;
 import com.example.doan_music.data.DbHelper;
 import com.example.doan_music.database.ConnectionClass;
+import com.example.doan_music.offline.MusicDownloadManager;
+import com.example.doan_music.offline.model.SongOffline;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.FullScreenContentCallback;
@@ -46,6 +49,7 @@ import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -63,7 +67,7 @@ import java.util.Random;
 
 public class PlayMusicActivity extends AppCompatActivity {
     private static final long REFRESH_INTERVAL = 1000;
-    ImageButton btn_home, btn_play, btn_back, btn_next, btn_pre, btn_toggle, btn_shuffle, btn_volume, btn_heart;
+    ImageButton btn_home, btn_play, btn_back, btn_next, btn_pre, btn_toggle, btn_shuffle, btn_volume, btn_heart, btn_download;
     SeekBar seekBar, seekbar1;
     TextView txt_time, txt_time_first, txt_view_playmusic, txt_lyric;
     MediaPlayer myMusic;
@@ -96,7 +100,8 @@ public class PlayMusicActivity extends AppCompatActivity {
     private Handler handler = new Handler();
     private Runnable refreshRunnable;
     private LyricsManager lyricsManager;
-
+    SongOffline songOffline;
+    MusicDownloadManager musicDownloadManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -521,6 +526,23 @@ public class PlayMusicActivity extends AppCompatActivity {
     }
 
     private void addEvents() {
+        btn_download.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (Role.equalsIgnoreCase("premium")) {
+                    saveDataSongOff(IDSong);
+                    musicDownloadManager  = new MusicDownloadManager(PlayMusicActivity.this,userID);
+                    try {
+                        if(musicDownloadManager.downloadSong(songOffline)){
+                            Toast.makeText(PlayMusicActivity.this, "Tải nhạc thành công", Toast.LENGTH_LONG).show();
+                        }
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                } else
+                    Toast.makeText(PlayMusicActivity.this, "Tài khoản premium mới có thể tải nhạc", Toast.LENGTH_LONG).show();
+            }
+        });
         btn_volume.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -837,6 +859,40 @@ public class PlayMusicActivity extends AppCompatActivity {
         }).start();
     }
 
+    private void saveDataSongOff(Integer idSong) {
+        ConnectionClass sql = new ConnectionClass();
+        connection = sql.conClass();
+        if (connection != null) {
+            try {
+                // Truy vấn SQL Server để lấy dữ liệu
+                query = "SELECT SongName,LinkSong,LinkLRC FROM Song WHERE SongID = " + idSong;
+                smt = connection.createStatement();
+                resultSet = smt.executeQuery(query);
+
+                if (resultSet.next()) {
+                    String ten = resultSet.getString(1);
+                    String linkSong = resultSet.getString(2);
+                    String linkLRC = resultSet.getString(3);
+                    //bitmap = ImagetoBitmap.getBitmapFromURL(linkSong);
+                    // Tải ảnh từ URL và hiển thị
+                    imageView_songs.setDrawingCacheEnabled(true);
+                    Bitmap bitmap = Bitmap.createBitmap(imageView_songs.getDrawingCache());
+                    imageView_songs.setDrawingCacheEnabled(false);
+
+                    // Bước 2: Chuyển đổi Bitmap thành byte[]
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                    byte[] byteArray = stream.toByteArray();
+                    songOffline = new SongOffline(idSong, linkLRC, linkSong, txt_artist_song.getText().toString().trim(), byteArray, ten);
+                }
+            } catch (Exception e) {
+                Log.e("Error: ", e.getMessage());
+            }
+        } else {
+            Log.e("Error: ", "Connection null");
+        }
+    }
+
     private void updateHeartButtonUI() {
         Integer IDSong = arr.get(currentPosition);
         ConnectionClass sql = new ConnectionClass();
@@ -999,7 +1055,7 @@ public class PlayMusicActivity extends AppCompatActivity {
         btn_heart = findViewById(R.id.btn_heart);
         txt_lyric = findViewById(R.id.txt_lyric);
         txt_view_playmusic = findViewById(R.id.txt_view_playmusic);
-
+        btn_download = findViewById(R.id.btn_download);
         // Load animation từ file xml
         animation = AnimationUtils.loadAnimation(this, R.anim.animation);
         // Áp dụng animation vào ImageView

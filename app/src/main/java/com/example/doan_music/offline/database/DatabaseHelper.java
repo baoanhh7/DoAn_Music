@@ -22,10 +22,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         // Bảng User
         String CREATE_USER_TABLE = "CREATE TABLE users (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "id INTEGER PRIMARY KEY ," +
                 "username TEXT NOT NULL," +
+                "password TEXT NOT NULL," +
                 "is_premium INTEGER DEFAULT 0," +
-                "premium_expire_date INTEGER)";
+                "premium_expire_date TEXT )";
 
         // Bảng Downloaded Songs với reference đến user
         String CREATE_DOWNLOADED_SONGS_TABLE = "CREATE TABLE downloaded_songs (" +

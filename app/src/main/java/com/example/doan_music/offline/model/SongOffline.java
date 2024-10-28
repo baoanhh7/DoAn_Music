@@ -15,6 +15,15 @@ public class SongOffline {
     public SongOffline() {
     }
 
+    public SongOffline(int songID, String linkLrc, String linkSong, String artistName, byte[] songImage, String songName) {
+        SongID = songID;
+        LinkLrc = linkLrc;
+        LinkSong = linkSong;
+        ArtistName = artistName;
+        SongImage = songImage;
+        SongName = songName;
+    }
+
     public int getId() {
         return id;
     }
