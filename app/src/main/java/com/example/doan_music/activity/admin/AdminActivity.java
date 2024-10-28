@@ -83,7 +83,7 @@ public class AdminActivity extends AppCompatActivity {
 
     private void addControls() {
         btn_add_artists = findViewById(R.id.btn_artists);
-        btn_add_album = findViewById(R.id.btn_ablum);
+        btn_add_album = findViewById(R.id.btn_album);
         btn_add_playlists = findViewById(R.id.btn_playlists);
         btn_add_types = findViewById(R.id.btn_types);
         btn_add_song = findViewById(R.id.btn_song);

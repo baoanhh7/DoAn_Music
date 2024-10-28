@@ -5,73 +5,99 @@
     android:layout_height="match_parent"
     android:gravity="center"
     android:orientation="vertical"
+    android:background="#F5F5F5"
     tools:context=".activity.admin.AdminActivity">
+    <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Quản lý Admin"
+    android:textSize="24sp"
+    android:textColor="#333333"
+    android:textStyle="bold"
+    android:layout_gravity="center"
+    android:layout_marginBottom="20dp" />
 
     <Button
         android:id="@+id/btn_song"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="20dp"
-        android:text="Song" />
+        android:layout_marginTop="10dp"
+        android:background="@drawable/rounded_button5"
+        android:text="Bài hát"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp" />
 
     <Button
         android:id="@+id/btn_artists"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="20dp"
-        android:text="Artists" />
+        android:layout_marginTop="10dp"
+        android:background="@drawable/rounded_button5"
+        android:text="Nghệ sĩ"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp" />
 
     <Button
-        android:id="@+id/btn_ablum"
-        android:layout_width="wrap_content"
+        android:id="@+id/btn_album"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="Album" />
+        android:layout_marginTop="10dp"
+        android:background="@drawable/rounded_button5"
+        android:text="Album"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp" />
 
     <Button
         android:id="@+id/btn_playlists"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="20dp"
-        android:text="Playlists" />
+        android:layout_marginTop="10dp"
+        android:background="@drawable/rounded_button5"
+        android:text="Danh sách phát"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp" />
 
     <Button
         android:id="@+id/btn_types"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="20dp"
-        android:text="Types" />
+        android:layout_marginTop="10dp"
+        android:background="@drawable/rounded_button5"
+        android:text="Thể loại"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp" />
 
     <Button
         android:id="@+id/PheDuyet"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="20dp"
-        android:text="Phê duyệt đăng kí" />
+        android:layout_marginTop="10dp"
+        android:background="@drawable/rounded_button5"
+        android:text="Phê duyệt đăng ký"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp" />
 
     <Button
         android:id="@+id/btn_revenue"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/rounded_button5"
         android:text="Thống kê doanh thu"
-        android:textColor="@color/white"
+        android:textColor="#FFFFFF"
         android:textSize="20sp"
         android:textStyle="bold" />
-
     <Button
         android:id="@+id/btn_logout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="40dp"
-        android:background="@drawable/rounded_search"
-        android:backgroundTint="#E4B5B5"
-        android:text="Đăng xuất" />
+        android:layout_marginTop="30dp"
+        android:padding="10dp"
+        android:background="@drawable/rounded_button"
+        android:backgroundTint="#E57373"
+        android:text="Đăng xuất"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:textStyle="bold" />
 
 </LinearLayout>
