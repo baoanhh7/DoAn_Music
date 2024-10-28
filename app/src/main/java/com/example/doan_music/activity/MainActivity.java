@@ -31,6 +31,7 @@ import com.example.doan_music.fragment.main.Search_Fragment;
 import com.example.doan_music.fragment.main.Spotify_Fragment;
 import com.example.doan_music.loginPackage.UserActivity;
 import com.example.doan_music.music.PlayMusicActivity;
+import com.example.doan_music.offline.database.DatabaseHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
@@ -61,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
     LinearLayout clickToSong;
     SharedPreferences sharedPreferences;
     ArrayList<Integer> arr = new ArrayList<>();
-
+    DatabaseHelper databaseHelper;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
