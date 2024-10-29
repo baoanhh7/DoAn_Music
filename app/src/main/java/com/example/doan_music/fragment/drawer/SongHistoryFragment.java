@@ -1,7 +1,6 @@
-package com.example.doan_music.fragment.tab_home;
+package com.example.doan_music.fragment.drawer;
 
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -9,17 +8,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.doan_music.R;
 import com.example.doan_music.activity.MainActivity;
-import com.example.doan_music.adapter.home.FavoriteSongAdapter;
-import com.example.doan_music.data.DbHelper;
+import com.example.doan_music.adapter.home.SongsHistoryAdapter;
 import com.example.doan_music.database.ConnectionClass;
 import com.example.doan_music.m_interface.OnItemClickListener;
 import com.example.doan_music.model.Song;
@@ -38,25 +34,22 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Song_Fragment extends Fragment {
+public class SongHistoryFragment extends Fragment {
 
-    RecyclerView rcv_lovesong;
+    View view;
+    RecyclerView rcv_songshistory;
     List<Song> songList;
     ArrayList<Integer> arr = new ArrayList<>();
-    FavoriteSongAdapter favoriteSongAdapter;
-    DbHelper dbHelper;
-    SQLiteDatabase database = null;
-    TextView txt_noidung;
-    View view;
+    SongsHistoryAdapter songsHistoryAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        view = inflater.inflate(R.layout.fragment_song_, container, false);
+        view = inflater.inflate(R.layout.fragment_song_history, container, false);
         addControls();
 
-        favoriteSongAdapter.setOnItemClickListener(new OnItemClickListener() {
+        songsHistoryAdapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(String data) {
                 ConnectionClass sql = new ConnectionClass();
@@ -95,7 +88,7 @@ public class Song_Fragment extends Fragment {
                     Log.e("Error", "Connection is null");
                 }
 
-                favoriteSongAdapter.notifyDataSetChanged();  // Cập nhật lại giao diện nếu cần
+                songsHistoryAdapter.notifyDataSetChanged();  // Cập nhật lại giao diện nếu cần
             }
         });
 
@@ -111,7 +104,7 @@ public class Song_Fragment extends Fragment {
     private void createData() {
         MainActivity mainActivity = (MainActivity) getActivity();
         Integer maU = mainActivity.getMyVariable();  // Lấy UserID từ MainActivity
-        List<Integer> listFav = new ArrayList<>();   // Danh sách các SongID yêu thích
+        List<Integer> listHistory = new ArrayList<>();   // Danh sách các SongID yêu thích
 
         // Kết nối tới SQL Server
         ConnectionClass sql = new ConnectionClass();
@@ -120,17 +113,17 @@ public class Song_Fragment extends Fragment {
         if (connection != null) {
             try {
                 // Truy vấn bảng User_SongLove để lấy danh sách bài hát yêu thích của người dùng
-                String query1 = "SELECT * FROM User_SongLove WHERE UserID = ?";
+                String query1 = "SELECT * FROM HistorySong WHERE UserID = ?";
                 PreparedStatement preparedStatement1 = connection.prepareStatement(query1);
                 preparedStatement1.setInt(1, maU);
                 ResultSet resultSet1 = preparedStatement1.executeQuery();
 
-                listFav.clear();
+                listHistory.clear();
 
                 // Lấy SongID từ kết quả truy vấn
                 while (resultSet1.next()) {
                     int songID = resultSet1.getInt("SongID");  // Cột SongID
-                    listFav.add(songID);
+                    listHistory.add(songID);
                 }
 
                 resultSet1.close();
@@ -143,7 +136,7 @@ public class Song_Fragment extends Fragment {
 
                 songList.clear();
 
-                // Duyệt qua các bài hát và kiểm tra xem có trong danh sách yêu thích không
+                // Duyệt qua các bài hát và kiểm tra xem có trong danh sách history không
                 while (resultSet2.next()) {
                     int id = resultSet2.getInt("SongID");
                     String songName = resultSet2.getString("SongName");
@@ -154,14 +147,10 @@ public class Song_Fragment extends Fragment {
                     String linkSong = resultSet2.getString("LinkSong");
 
                     // Nếu bài hát nằm trong danh sách yêu thích, thêm vào songList
-                    if (listFav.contains(id)) {
+                    if (listHistory.contains(id)) {
                         Song song = new Song(id, songName, imageBytes, linkSong);
                         songList.add(song);
                         arr.add(id);
-
-                        // Cập nhật màu văn bản (ví dụ)
-                        int color = ContextCompat.getColor(requireContext(), R.color.mauNen);
-                        txt_noidung.setTextColor(color);
                     }
                 }
 
@@ -177,19 +166,17 @@ public class Song_Fragment extends Fragment {
             Log.e("Error", "Connection is null");
         }
 
-        favoriteSongAdapter.notifyDataSetChanged();  // Cập nhật giao diện
+        songsHistoryAdapter.notifyDataSetChanged();  // Cập nhật giao diện
     }
 
     private void addControls() {
-        txt_noidung = view.findViewById(R.id.txt_noidung);
-
-        rcv_lovesong = view.findViewById(R.id.rcv_lovesong);
+        rcv_songshistory = view.findViewById(R.id.rcv_songshistory);
         songList = new ArrayList<>();
 
-        favoriteSongAdapter = new FavoriteSongAdapter(requireContext(), songList);
-        rcv_lovesong.setAdapter(favoriteSongAdapter);
+        songsHistoryAdapter = new SongsHistoryAdapter(requireContext(), songList);
+        rcv_songshistory.setAdapter(songsHistoryAdapter);
 
-        rcv_lovesong.setLayoutManager(new LinearLayoutManager(requireContext()));
+        rcv_songshistory.setLayoutManager(new LinearLayoutManager(requireContext()));
     }
 
     private byte[] getImageBytesFromURL(String imageUrl) {

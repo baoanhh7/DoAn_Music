@@ -32,7 +32,7 @@
             android:layout_marginStart="5dp"
             android:fontFamily="cursive"
             android:gravity="center"
-            android:text="Hi,"
+            android:text="Hi "
             android:textColor="#FFFFFF"
             android:textSize="18dp"
             android:textStyle="bold" />

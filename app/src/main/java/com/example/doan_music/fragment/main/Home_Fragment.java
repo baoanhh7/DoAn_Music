@@ -43,7 +43,7 @@ public class Home_Fragment extends Fragment implements TabLayoutAdapter.Fragment
 //        String value = mainActivity.getName();
 
         SharedPreferences preferences = requireContext().getSharedPreferences("data", Context.MODE_PRIVATE);
-        String value = preferences.getString("ten", "Loading..");
+        String value = preferences.getString("ten", "♥");
         txt_nameUser.setText(value);
 
         // Quản lý hiển thị các trang (Fragment) theo TabLayout

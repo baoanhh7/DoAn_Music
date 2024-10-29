@@ -12,6 +12,13 @@
 
         <item
             android:id="@+id/allSongs"
+            android:icon="@drawable/ic_spotify"
+            android:title="Tất cả bài hát">
+
+        </item>
+
+        <item
+            android:id="@+id/songHistory"
             android:icon="@drawable/ic_clock"
             android:title="Tất cả bài hát">
 
