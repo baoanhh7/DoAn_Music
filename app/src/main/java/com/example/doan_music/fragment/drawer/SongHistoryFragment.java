@@ -1,6 +1,9 @@
 package com.example.doan_music.fragment.drawer;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -14,7 +17,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.doan_music.R;
-import com.example.doan_music.activity.MainActivity;
 import com.example.doan_music.adapter.home.SongsHistoryAdapter;
 import com.example.doan_music.database.ConnectionClass;
 import com.example.doan_music.m_interface.OnItemClickListener;
@@ -102,72 +104,42 @@ public class SongHistoryFragment extends Fragment {
     }
 
     private void createData() {
-        MainActivity mainActivity = (MainActivity) getActivity();
-        Integer maU = mainActivity.getMyVariable();  // Lấy UserID từ MainActivity
-        List<Integer> listHistory = new ArrayList<>();   // Danh sách các SongID yêu thích
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("data", MODE_PRIVATE);
+        int userID = sharedPreferences.getInt("userID", -1);  // Lấy userID
 
-        // Kết nối tới SQL Server
         ConnectionClass sql = new ConnectionClass();
-        Connection connection = sql.conClass();
 
-        if (connection != null) {
-            try {
-                // Truy vấn bảng User_SongLove để lấy danh sách bài hát yêu thích của người dùng
-                String query1 = "SELECT * FROM HistorySong WHERE UserID = ?";
-                PreparedStatement preparedStatement1 = connection.prepareStatement(query1);
-                preparedStatement1.setInt(1, maU);
-                ResultSet resultSet1 = preparedStatement1.executeQuery();
+        // Chỉ lấy bài hát có lịch sử nghe của người dùng
+        String query = "SELECT s.* FROM SongHistory h JOIN Song s ON h.SongID = s.SongID WHERE h.UserID = ? ORDER BY h.PlayTime DESC";
+        try (Connection connection = sql.conClass();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
 
-                listHistory.clear();
+            stmt.setInt(1, userID);
+            ResultSet rs = stmt.executeQuery();
 
-                // Lấy SongID từ kết quả truy vấn
-                while (resultSet1.next()) {
-                    int songID = resultSet1.getInt("SongID");  // Cột SongID
-                    listHistory.add(songID);
-                }
+            songList.clear(); // Xóa danh sách trước khi thêm mới
 
-                resultSet1.close();
-                preparedStatement1.close();
+            while (rs.next()) {
+                int id = rs.getInt("SongID");
+                String songName = rs.getString("SongName");
+                String image = rs.getString("SongImage");
+                byte[] imageBytes = getImageBytesFromURL(image); // Tải ảnh từ URL
+                String linkSong = rs.getString("LinkSong");
 
-                // Truy vấn bảng Songs để lấy danh sách bài hát
-                String query2 = "SELECT * FROM Song";
-                Statement statement2 = connection.createStatement();
-                ResultSet resultSet2 = statement2.executeQuery(query2);
-
-                songList.clear();
-
-                // Duyệt qua các bài hát và kiểm tra xem có trong danh sách history không
-                while (resultSet2.next()) {
-                    int id = resultSet2.getInt("SongID");
-                    String songName = resultSet2.getString("SongName");
-
-                    String image = resultSet2.getString("SongImage");
-                    byte[] imageBytes = getImageBytesFromURL(image);
-
-                    String linkSong = resultSet2.getString("LinkSong");
-
-                    // Nếu bài hát nằm trong danh sách yêu thích, thêm vào songList
-                    if (listHistory.contains(id)) {
-                        Song song = new Song(id, songName, imageBytes, linkSong);
-                        songList.add(song);
-                        arr.add(id);
-                    }
-                }
-
-                resultSet2.close();
-                statement2.close();
-
-                connection.close();  // Đóng kết nối
-
-            } catch (SQLException e) {
-                Log.e("SQL Error", e.getMessage());
+                Song song = new Song(id, songName, imageBytes, linkSong);
+                songList.add(song);
+                arr.add(id);
             }
-        } else {
-            Log.e("Error", "Connection is null");
+
+            rs.close();
+
+        } catch (SQLException e) {
+            Log.e("Error", "Không thể lấy lịch sử bài hát: " + e.getMessage());
         }
 
-        songsHistoryAdapter.notifyDataSetChanged();  // Cập nhật giao diện
+        songsHistoryAdapter.notifyDataSetChanged();  // Cập nhật giao diện sau khi lấy dữ liệu
     }
+
 
     private void addControls() {
         rcv_songshistory = view.findViewById(R.id.rcv_songshistory);

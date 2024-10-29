@@ -20,7 +20,7 @@
         <item
             android:id="@+id/songHistory"
             android:icon="@drawable/ic_clock"
-            android:title="Tất cả bài hát">
+            android:title="Bài hát đã nghe">
 
         </item>
 

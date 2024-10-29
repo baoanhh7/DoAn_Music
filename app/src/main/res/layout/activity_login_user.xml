@@ -37,7 +37,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="serif-monospace"
                 android:gravity="center"
-                android:padding="10dp"
+                android:padding="12dp"
                 android:text="LOGIN"
                 android:textColor="#B4DFFF"
                 android:textSize="37sp"

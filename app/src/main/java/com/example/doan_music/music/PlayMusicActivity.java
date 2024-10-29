@@ -59,6 +59,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -102,6 +103,7 @@ public class PlayMusicActivity extends AppCompatActivity {
     private LyricsManager lyricsManager;
     SongOffline songOffline;
     MusicDownloadManager musicDownloadManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -140,6 +142,9 @@ public class PlayMusicActivity extends AppCompatActivity {
         txt_lyric.setText("");
         updateHeartButtonUI();
 
+        addSongToHistory(userID, IDSong);
+        updateSongHistory(userID, IDSong);
+
         volume();
         // Đọc file LRC và lưu trữ lời bài hát
         lyricsManager = new LyricsManager(myMusic, txt_lyric);
@@ -172,6 +177,62 @@ public class PlayMusicActivity extends AppCompatActivity {
         }
 
         addEvents();
+    }
+
+    private void addSongToHistory(int userID, Integer songID) {
+        ConnectionClass sql = new ConnectionClass();
+
+        String query = "INSERT INTO SongHistory (UserID, SongID) VALUES (?, ?)";
+        try (Connection connection = sql.conClass();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, userID);
+            stmt.setInt(2, songID);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            Log.e("Error", "Không thể thêm bài hát vào lịch sử: " + e.getMessage());
+        }
+    }
+
+    private void updateSongHistory(int userID, int songID) {
+        ConnectionClass sql = new ConnectionClass();
+        Connection connection = sql.conClass();
+
+        if (connection != null) {
+            try {
+                // Kiểm tra trùng lặp
+                String checkQuery = "SELECT COUNT(*) FROM SongHistory WHERE UserID = ? AND SongID = ?";
+                PreparedStatement checkStatement = connection.prepareStatement(checkQuery);
+                checkStatement.setInt(1, userID);
+                checkStatement.setInt(2, songID);
+                ResultSet resultSet = checkStatement.executeQuery();
+
+                if (resultSet.next() && resultSet.getInt(1) > 0) {
+                    // Xóa bản ghi cũ
+                    String deleteQuery = "DELETE FROM SongHistory WHERE UserID = ? AND SongID = ?";
+                    PreparedStatement deleteStatement = connection.prepareStatement(deleteQuery);
+                    deleteStatement.setInt(1, userID);
+                    deleteStatement.setInt(2, songID);
+                    deleteStatement.executeUpdate();
+                }
+
+                // Thêm bản ghi mới
+                String insertQuery = "INSERT INTO SongHistory (UserID, SongID, PlayTime) VALUES (?, ?, ?)";
+                PreparedStatement insertStatement = connection.prepareStatement(insertQuery);
+                insertStatement.setInt(1, userID);
+                insertStatement.setInt(2, songID);
+                insertStatement.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+                insertStatement.executeUpdate();
+
+                resultSet.close();
+                checkStatement.close();
+                connection.close();
+
+            } catch (SQLException e) {
+                Log.e("Error", e.getMessage());
+            }
+        } else {
+            Log.e("Error", "Connection is null");
+        }
     }
 
     private void loadLRC(Integer idSong) {
@@ -531,9 +592,9 @@ public class PlayMusicActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (Role.equalsIgnoreCase("premium")) {
                     saveDataSongOff(IDSong);
-                    musicDownloadManager  = new MusicDownloadManager(PlayMusicActivity.this,userID);
+                    musicDownloadManager = new MusicDownloadManager(PlayMusicActivity.this, userID);
                     try {
-                        if(musicDownloadManager.downloadSong(songOffline)){
+                        if (musicDownloadManager.downloadSong(songOffline)) {
                             Toast.makeText(PlayMusicActivity.this, "Tải nhạc thành công", Toast.LENGTH_LONG).show();
                         }
                     } catch (Exception e) {
