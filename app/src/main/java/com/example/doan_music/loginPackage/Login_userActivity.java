@@ -9,11 +9,14 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.biometric.BiometricPrompt;
+import androidx.core.content.ContextCompat;
 
 import com.example.doan_music.R;
 import com.example.doan_music.activity.Artist.HomeArtistActivity;
@@ -26,9 +29,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.concurrent.Executor;
 
 public class Login_userActivity extends AppCompatActivity {
     EditText EdtEmail, EdtPassword;
+    ImageButton btnFingerprint;
     TextView tvForgotPass, tvSignup;
     Button btnLogin, btn_back;
     SQLiteDatabase database = null;
@@ -37,17 +42,30 @@ public class Login_userActivity extends AppCompatActivity {
     Statement smt;
     ResultSet resultSet;
     Intent intent;
+    private BiometricPrompt biometricPrompt;
+    private BiometricPrompt.PromptInfo promptInfo;
+    private Executor executor;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_user);
         AddControl();
+        // Setup BiometricPrompt
+        setupBiometricPrompt();
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 checkCrededentials();
                 //checkArtistStatus();
+            }
+        });
+        btnFingerprint.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Hiển thị hộp thoại sinh trắc học khi nhấn btnFingerprint
+                biometricPrompt.authenticate(promptInfo);
             }
         });
         tvSignup.setOnClickListener(new View.OnClickListener() {
@@ -62,6 +80,42 @@ public class Login_userActivity extends AppCompatActivity {
                 startActivity(new Intent(Login_userActivity.this, UserActivity.class));
             }
         });
+    }
+
+    private void setupBiometricPrompt() {
+        // Tạo executor để xử lý các lệnh của BiometricPrompt
+        executor = ContextCompat.getMainExecutor(this);
+
+        // Cấu hình BiometricPrompt với các callback
+        biometricPrompt = new BiometricPrompt(Login_userActivity.this, executor, new BiometricPrompt.AuthenticationCallback() {
+            @Override
+            public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
+                super.onAuthenticationSucceeded(result);
+                // Nếu xác thực thành công, chuyển đến AdminActivity
+                Toast.makeText(Login_userActivity.this, "Biometric Authentication successful", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(Login_userActivity.this, AdminActivity.class);
+                startActivity(intent);
+            }
+
+            @Override
+            public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
+                super.onAuthenticationError(errorCode, errString);
+                Toast.makeText(Login_userActivity.this, "Authentication error: " + errString, Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onAuthenticationFailed() {
+                super.onAuthenticationFailed();
+                Toast.makeText(Login_userActivity.this, "Authentication failed", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Tạo PromptInfo cho hộp thoại sinh trắc học
+        promptInfo = new BiometricPrompt.PromptInfo.Builder()
+                .setTitle("Biometric Login")
+                .setSubtitle("Use your fingerprint to login")
+                .setNegativeButtonText("Cancel")
+                .build();
     }
 
     private void checkCrededentials() {
@@ -179,5 +233,6 @@ public class Login_userActivity extends AppCompatActivity {
         tvForgotPass = findViewById(R.id.tvForgotPass);
         tvSignup = findViewById(R.id.tvSignup);
         btn_back = findViewById(R.id.btn_back);
+        btnFingerprint = findViewById(R.id.btnFingerprint);
     }
 }
