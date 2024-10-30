@@ -5,14 +5,11 @@ import static com.example.doan_music.music.MyNoti.CHANNEL_ID;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -26,56 +23,28 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
-import com.example.doan_music.LoadImage.LoadImageTask;
-import com.example.doan_music.Lyric.LRCParser;
-import com.example.doan_music.Lyric.LyricsManager;
-import com.example.doan_music.Lyric.LyricsSyncManager;
 import com.example.doan_music.R;
-import com.example.doan_music.activity.MainActivity;
 import com.example.doan_music.data.DbHelper;
 import com.example.doan_music.database.ConnectionClass;
-import com.example.doan_music.model.ThuVien;
-import com.example.doan_music.music.PlayMusicActivity;
-import com.example.doan_music.offline.model.SongOffline;
-import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.FullScreenContentCallback;
-import com.google.android.gms.ads.LoadAdError;
-import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 public class PlaySongOffActivity extends AppCompatActivity {
 
-    ImageButton  btn_play_songoffline, btn_back_songoffline, btn_next_songoffline, btn_pre_songoffline, btn_toggle_songoffline
-            , btn_shuffle_songoffline, btn_volume_songoffline;
+    ImageButton btn_play_songoffline, btn_back_songoffline, btn_next_songoffline, btn_pre_songoffline, btn_toggle_songoffline, btn_shuffle_songoffline, btn_volume_songoffline;
     SeekBar seekBar_songoffline, seekBar_volume_songoffline;
     TextView txt_time_songoffline, txt_time_first_songoffline, txt_view_playmusic_songoffline, txt_lyric_songoffline;
     MediaPlayer myMusic;
@@ -108,6 +77,7 @@ public class PlaySongOffActivity extends AppCompatActivity {
     private Handler handler = new Handler();
     private Runnable refreshRunnable;
     private lyricManagerOffline lyricsManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -167,6 +137,7 @@ public class PlaySongOffActivity extends AppCompatActivity {
 
         addEvents();
     }
+
     private void loadLRC(Integer idSong) {
         ConnectionClass sql = new ConnectionClass();
         connection = sql.conClass();
@@ -187,11 +158,6 @@ public class PlaySongOffActivity extends AppCompatActivity {
             Log.e("Error: ", "Connection null");
         }
     }
-
-
-
-
-
 
 
     private Integer getRandom(int i) {
@@ -365,9 +331,7 @@ public class PlaySongOffActivity extends AppCompatActivity {
                     myMusic.start();
                     //loadLRC(idSong);
                     //readLRCFile();
-                    if (Role.equalsIgnoreCase("premium")) {
-                        lyricsManager.loadLyricsFromFile(linkLRC);
-                    }
+                    lyricsManager.loadLyricsFromFile(linkLRC);
                     imageView_songoffline.startAnimation(animation);
                 } else {
                     if (myMusic.isPlaying()) {
@@ -385,9 +349,7 @@ public class PlaySongOffActivity extends AppCompatActivity {
                     //loadLRC(idSong);
                     sendNotification();
                     //readLRCFile();
-                    if (Role.equalsIgnoreCase("premium")) {
-                        lyricsManager.loadLyricsFromFile(linkLRC);
-                    }
+                    lyricsManager.loadLyricsFromFile(linkLRC);
                     String duration = timeSeekbar(myMusic.getDuration());
                     txt_time_songoffline.setText(duration);
                     seekBar_songoffline.setMax(myMusic.getDuration());
@@ -426,9 +388,7 @@ public class PlaySongOffActivity extends AppCompatActivity {
                     txt_lyric_songoffline.setText("");
                     //loadLRC(idSong);
                     //readLRCFile();
-                    if (Role.equalsIgnoreCase("premium")) {
-                        lyricsManager.loadLyricsFromFile(linkLRC);
-                    }
+                    lyricsManager.loadLyricsFromFile(linkLRC);
                     sendNotification();
                     String duration = timeSeekbar(myMusic.getDuration());
                     txt_time_songoffline.setText(duration);
@@ -451,9 +411,7 @@ public class PlaySongOffActivity extends AppCompatActivity {
                     txt_lyric_songoffline.setText("");
                     //loadLRC(idSong);
                     //readLRCFile();
-                    if (Role.equalsIgnoreCase("premium")) {
-                        lyricsManager.loadLyricsFromFile(linkLRC);
-                    }
+                    lyricsManager.loadLyricsFromFile(linkLRC);
                     sendNotification();
                     String duration = timeSeekbar(myMusic.getDuration());
                     txt_time_songoffline.setText(duration);
@@ -562,9 +520,6 @@ public class PlaySongOffActivity extends AppCompatActivity {
     }
 
 
-
-
-
     private void playNextSong(@NonNull ArrayList<Integer> arr) {
         myMusic.reset();
         if (currentPosition < arr.size() - 1) {
@@ -578,9 +533,7 @@ public class PlaySongOffActivity extends AppCompatActivity {
         txt_lyric_songoffline.setText("");
         //loadLRC(idSong);
         //readLRCFile();
-        if (Role.equalsIgnoreCase("premium")) {
-            lyricsManager.loadLyricsFromFile(linkLRC);
-        }
+        lyricsManager.loadLyricsFromFile(linkLRC);
         String duration = timeSeekbar(myMusic.getDuration());
         txt_time_songoffline.setText(duration);
         seekBar_songoffline.setMax(myMusic.getDuration());

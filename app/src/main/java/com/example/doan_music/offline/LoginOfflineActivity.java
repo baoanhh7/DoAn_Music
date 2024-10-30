@@ -79,7 +79,7 @@ public class LoginOfflineActivity extends AppCompatActivity {
             String Name = cursor.getString(1);
             String Password = cursor.getString(2);
             Integer IsPremium = cursor.getInt(3);
-            if (email.equals(Name) && password.equals(Password)) {
+            if (email.equals(Name) && password.equals(Password)&& IsPremium == 1) {
                 // Xử lý đăng nhập thành công
                 Toast.makeText(LoginOfflineActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
                 // Nếu là người dùng thông thường, chuyển đến BeginActivity

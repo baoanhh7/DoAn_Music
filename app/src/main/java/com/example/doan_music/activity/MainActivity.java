@@ -1,6 +1,7 @@
 package com.example.doan_music.activity;
 
 import android.app.AlertDialog;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -48,6 +49,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -92,26 +94,66 @@ public class MainActivity extends AppCompatActivity {
         userID = sharedPreferences.getInt("userID", -1);  // Lấy userID
         Log.e("UserID", String.valueOf(userID));
 
-//        loadRoleUser(userID);
-//
-//        loadDataOff(userID);
-//        if(Role.equalsIgnoreCase("premium") && loadDataOff(userID))
-//        {
-//            saveDataOntoOff(userID);
-//            //databaseHelper.getReadableDatabase();
-//            databaseHelper = new DatabaseHelper(this);
-//            SQLiteDatabase db =  databaseHelper.getWritableDatabase();
-//            ContentValues values = new ContentValues();
-//            values.put("username", userOffline.getUsername());
-//            values.put("password", userOffline.getPassword());
-//            values.put("is_premium", userOffline.isPremium() ? 1 : 0);
-//            // Chuyển long thành định dạng ngày trước khi lưu
-//            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-//            String formattedDate = dateFormat.format(new Date(userOffline.getPremiumExpireDate()));
-//            values.put("premium_expire_date", formattedDate);
-////            values.put("premium_expire_date",userOffline.getPremiumExpireDate());
-//            db.insert("users", null, values);
-//        }
+        loadRoleUser(userID);
+
+        loadDataOff(userID);
+//        databaseHelper = new DatabaseHelper(this);
+//        database =  databaseHelper.getWritableDatabase();
+//        databaseHelper.onUpgrade(database,2,1);
+        if (Role.equalsIgnoreCase("premium") && loadDataOff(userID)) {
+            saveDataOntoOff(userID);
+            //databaseHelper.getReadableDatabase();
+            databaseHelper = new DatabaseHelper(this);
+            database = databaseHelper.getWritableDatabase();
+            ContentValues values = new ContentValues();
+            values.put("id", userID);
+            values.put("username", userOffline.getUsername());
+            values.put("password", userOffline.getPassword());
+            values.put("is_premium", userOffline.isPremium() ? 1 : 0);
+            // Chuyển long thành định dạng ngày trước khi lưu
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            String formattedDate = dateFormat.format(new Date(userOffline.getPremiumExpireDate()));
+            values.put("premium_expire_date", formattedDate);
+//            values.put("premium_expire_date",userOffline.getPremiumExpireDate());
+            database.insert("users", null, values);
+        }
+        Log.e("loaddataOff", String.valueOf(loadDataOff(userID)));
+        if (Role.equalsIgnoreCase("member") && !loadDataOff(userID)) {
+
+            databaseHelper = new DatabaseHelper(this);
+            SQLiteDatabase db = databaseHelper.getWritableDatabase();
+            ContentValues values = new ContentValues();
+            values.put("is_premium", 0); // Cập nhật is_premium thành 0
+            // Cập nhật bản ghi với userID tương ứng
+            int rowsAffected = db.update("users", values, "id = ?", new String[]{String.valueOf(userID)});
+
+            // Kiểm tra cập nhật thành công
+            if (rowsAffected > 0) {
+                // Thành công
+                Log.d("DatabaseUpdate", "Cập nhật thành công: " + rowsAffected + " bản ghi");
+            } else {
+                // Không có bản ghi nào được cập nhật
+                Log.d("DatabaseUpdate", "Cập nhật không thành công");
+            }
+        }
+        if (Role.equalsIgnoreCase("premium") && !loadDataOff(userID)) {
+
+            databaseHelper = new DatabaseHelper(this);
+            SQLiteDatabase db = databaseHelper.getWritableDatabase();
+            ContentValues values = new ContentValues();
+            values.put("is_premium", 1); // Cập nhật is_premium thành 0
+            // Cập nhật bản ghi với userID tương ứng
+            int rowsAffected = db.update("users", values, "id = ?", new String[]{String.valueOf(userID)});
+
+            // Kiểm tra cập nhật thành công
+            if (rowsAffected > 0) {
+                // Thành công
+                Log.d("DatabaseUpdate", "Cập nhật thành công: " + rowsAffected + " bản ghi");
+            } else {
+                // Không có bản ghi nào được cập nhật
+                Log.d("DatabaseUpdate", "Cập nhật không thành công");
+            }
+        }
         // Drawer
         setSupportActionBar(toolbar);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open_nav, R.string.close_nav);
