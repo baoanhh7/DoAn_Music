@@ -223,7 +223,6 @@ public class PlaySongOffActivity extends AppCompatActivity {
         // Thực hiện truy vấn
         Cursor cursor = database.rawQuery(query, new String[]{String.valueOf(id)});
         if (cursor.moveToFirst()) {
-            do {
 
                 byte[] songImage = cursor.getBlob(3);
                 String songName = cursor.getString(4);
@@ -249,9 +248,8 @@ public class PlaySongOffActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-            } while (cursor.moveToNext());
-            cursor.close();
         }
+        cursor.close();
     }
 
     public String timeSeekbar(int time) {

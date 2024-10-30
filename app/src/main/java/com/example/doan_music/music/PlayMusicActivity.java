@@ -101,7 +101,7 @@ public class PlayMusicActivity extends AppCompatActivity {
     private Handler handler = new Handler();
     private Runnable refreshRunnable;
     private LyricsManager lyricsManager;
-    SongOffline songOffline;
+    SongOffline songOffline,songOffline2;
     MusicDownloadManager musicDownloadManager;
 
     @Override
@@ -594,7 +594,9 @@ public class PlayMusicActivity extends AppCompatActivity {
                     saveDataSongOff(IDSong);
                     musicDownloadManager = new MusicDownloadManager(PlayMusicActivity.this, userID);
                     try {
-                        if (musicDownloadManager.downloadSong(songOffline)) {
+                        songOffline2 = songOffline;
+                        if (musicDownloadManager.downloadSong(songOffline2)) {
+                            Log.e("Namenghesi",songOffline2.getSongName());
                             Toast.makeText(PlayMusicActivity.this, "Tải nhạc thành công", Toast.LENGTH_LONG).show();
                         }
                     } catch (Exception e) {
