@@ -35,9 +35,9 @@
         <activity
             android:name=".offline.PlaySongOffActivity"
             android:exported="false" />
-        <activity
-            android:name=".miniplayer.MiniPlayerActivity"
-            android:exported="false" />
+<!--        <activity-->
+<!--            android:name=".miniplayer.MiniPlayerActivity"-->
+<!--            android:exported="false" />-->
         <activity
             android:name=".activity.admin.chart.ViewRevenueAdminActivity"
             android:exported="false" /> <!-- Ghi đè thuộc tính để tránh xung đột -->
