@@ -12,6 +12,9 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.provider.Settings;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -46,34 +49,34 @@ public class Login_userActivity extends AppCompatActivity {
     private BiometricPrompt.PromptInfo promptInfo;
     private Executor executor;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_user);
         AddControl();
-        // Setup BiometricPrompt
         setupBiometricPrompt();
+
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                checkCrededentials();
-                //checkArtistStatus();
+                checkCredentials();
             }
         });
+
         btnFingerprint.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Hiển thị hộp thoại sinh trắc học khi nhấn btnFingerprint
                 biometricPrompt.authenticate(promptInfo);
             }
         });
+
         tvSignup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(Login_userActivity.this, RegisterPhoneUserActivity.class));
             }
         });
+
         btn_back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -82,151 +85,224 @@ public class Login_userActivity extends AppCompatActivity {
         });
     }
 
-    private void setupBiometricPrompt() {
-        // Tạo executor để xử lý các lệnh của BiometricPrompt
-        executor = ContextCompat.getMainExecutor(this);
-
-        // Cấu hình BiometricPrompt với các callback
-        biometricPrompt = new BiometricPrompt(Login_userActivity.this, executor, new BiometricPrompt.AuthenticationCallback() {
-            @Override
-            public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
-                super.onAuthenticationSucceeded(result);
-                // Nếu xác thực thành công, chuyển đến AdminActivity
-                Toast.makeText(Login_userActivity.this, "Biometric Authentication successful", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(Login_userActivity.this, AdminActivity.class);
-                startActivity(intent);
-            }
-
-            @Override
-            public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
-                super.onAuthenticationError(errorCode, errString);
-                Toast.makeText(Login_userActivity.this, "Authentication error: " + errString, Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onAuthenticationFailed() {
-                super.onAuthenticationFailed();
-                Toast.makeText(Login_userActivity.this, "Authentication failed", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        // Tạo PromptInfo cho hộp thoại sinh trắc học
-        promptInfo = new BiometricPrompt.PromptInfo.Builder()
-                .setTitle("Biometric Login")
-                .setSubtitle("Use your fingerprint to login")
-                .setNegativeButtonText("Cancel")
-                .build();
-    }
-
-    private void checkCrededentials() {
+    private void checkCredentials() {
         String email = EdtEmail.getText().toString();
         String password = EdtPassword.getText().toString();
+
+        if (email.isEmpty()) {
+            showError(EdtEmail, "Please enter your email/phone/username");
+            return;
+        }
 
         if (password.isEmpty() || password.length() < 7) {
-            showError(EdtPassword, "Your password must be 7 character");
-        } else {
-            checkDatabase();
-            //checkDatabaseSQLite();
+            showError(EdtPassword, "Password must be at least 7 characters");
+            return;
         }
-    }
 
-    private void checkDatabaseSQLite() {
-        String email = EdtEmail.getText().toString();
-        String password = EdtPassword.getText().toString();
-        database = openOrCreateDatabase("doanmusic.db", MODE_PRIVATE, null);
-        Cursor cursor = database.rawQuery("select * from Users", null);
-        Intent intent = null;
-        while (cursor.moveToNext()) {
-            Integer ma = cursor.getInt(0);
-            String Name = cursor.getString(1);
-            String Email = cursor.getString(2);
-            String Password = cursor.getString(3);
-            String Role = cursor.getString(4);
-            if (email.equals(Email) && password.equals(Password)) {
-                // Xử lý đăng nhập thành công
-                Toast.makeText(Login_userActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
-
-                if ("admin".equalsIgnoreCase(Role)) {
-                    // Nếu là admin, chuyển đến AdminActivity
-                    intent = new Intent(Login_userActivity.this, AdminActivity.class);
-                } else {
-                    // Nếu là người dùng thông thường, chuyển đến BeginActivity
-                    intent = new Intent(Login_userActivity.this, MainActivity.class);
-                    //intent.putExtra("emailU", Email);
-                    // intent.putExtra("code",code);
-                    intent.putExtra("maU", ma);
-                    intent.putExtra("tenU", Name);
-
-                    SharedPreferences preferences = getSharedPreferences("data", Context.MODE_PRIVATE);
-                    SharedPreferences.Editor editor = preferences.edit();
-                    editor.putInt("maU1", ma);
-                    editor.putString("ten", Name);
-                    editor.apply();
-                }
-                startActivity(intent);
-                break;
-            }
-        }
-        cursor.close();
-        if (intent == null)
-            Toast.makeText(Login_userActivity.this, "Login Failed", Toast.LENGTH_SHORT).show();
+        // If credentials are valid, proceed with database check
+        checkDatabase();
     }
 
     private void checkDatabase() {
         connection = new ConnectionClass().conClass();
         SharedPreferences preferences = getSharedPreferences("data", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
+
         if (connection != null) {
             try {
-                query = "SELECT UserID, Role, Status FROM Users WHERE (Phone = ? OR Email = ? OR Username = ? AND Password = ?)";
+                query = "SELECT UserID, Role, Status, DeviceID FROM Users WHERE (Phone = ? OR Email = ? OR Username = ?) AND Password = ?";
                 PreparedStatement smt = connection.prepareStatement(query);
                 smt.setString(1, EdtEmail.getText().toString());
                 smt.setString(2, EdtEmail.getText().toString());
                 smt.setString(3, EdtEmail.getText().toString());
                 smt.setString(4, EdtPassword.getText().toString());
-                Toast.makeText(Login_userActivity.this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
+
                 resultSet = smt.executeQuery();
+
                 if (resultSet.next()) {
-                    Integer userID = resultSet.getInt(1);
-                    String Role = resultSet.getString(2);
-                    String Status = resultSet.getString(3);
-                    if ("admin".equalsIgnoreCase(Role)) {
-                        // Nếu là admin, chuyển đến AdminActivity
-                        intent = new Intent(Login_userActivity.this, AdminActivity.class);
-                    } else if ("member".equalsIgnoreCase(Role) || "premium".equalsIgnoreCase(Role)) {
-                        // Nếu là người dùng thông thường, chuyển đến MainActivity
-                        intent = new Intent(Login_userActivity.this, MainActivity.class);
-                        intent.putExtra("maU", userID);
-                        editor.putInt("userID", userID);
-                        editor.apply();
-                    } else if ("artist".equalsIgnoreCase(Role) && "active".equalsIgnoreCase(Status)) {
-                        intent = new Intent(Login_userActivity.this, HomeArtistActivity.class);
-                        intent.putExtra("UserID", userID);
-                        editor.putInt("userID", userID);
-                        editor.apply();
-                    }
-                    if (intent != null) {
-                        startActivity(intent);
-                        finish();
+                    Integer userID = resultSet.getInt("UserID");
+                    String role = resultSet.getString("Role");
+                    String status = resultSet.getString("Status");
+                    String deviceID = resultSet.getString("DeviceID");
+                    String currentDeviceID = getDeviceID();
+
+                    // Show success message
+                    Toast.makeText(Login_userActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
+
+                    // Check if DeviceID is null or empty
+                    if (deviceID == null || deviceID.isEmpty()) {
+                        // Show confirmation dialog for saving DeviceID
+                        new AlertDialog.Builder(this)
+                                .setTitle("Enable Fingerprint Login")
+                                .setMessage("Would you like to enable fingerprint login for future use?")
+                                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        try {
+                                            // Update DeviceID in database
+                                            PreparedStatement updateSmt = connection.prepareStatement(
+                                                    "UPDATE Users SET DeviceID = ? WHERE UserID = ?");
+                                            updateSmt.setString(1, currentDeviceID);
+                                            updateSmt.setInt(2, userID);
+                                            updateSmt.executeUpdate();
+
+                                            Toast.makeText(Login_userActivity.this,
+                                                    "Fingerprint login enabled", Toast.LENGTH_SHORT).show();
+
+                                            // Proceed with login
+                                            navigateByRole(role, status, userID, editor);
+                                        } catch (SQLException e) {
+                                            e.printStackTrace();
+                                            Toast.makeText(Login_userActivity.this,
+                                                    "Failed to enable fingerprint login", Toast.LENGTH_SHORT).show();
+                                            // Still proceed with login even if saving DeviceID fails
+                                            navigateByRole(role, status, userID, editor);
+                                        }
+                                    }
+                                })
+                                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        // Proceed with login without saving DeviceID
+                                        navigateByRole(role, status, userID, editor);
+                                    }
+                                })
+                                .show();
                     } else {
-                        Toast.makeText(Login_userActivity.this, "Login failed: Invalid role or inactive status", Toast.LENGTH_SHORT).show();
+                        // DeviceID exists, proceed with normal login
+                        navigateByRole(role, status, userID, editor);
                     }
+                } else {
+                    Toast.makeText(Login_userActivity.this,
+                            "Invalid email/phone/username or password", Toast.LENGTH_SHORT).show();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-                Toast.makeText(Login_userActivity.this, "Database error", Toast.LENGTH_SHORT).show();
+                Toast.makeText(Login_userActivity.this,
+                        "Database error", Toast.LENGTH_SHORT).show();
             }
         } else {
-            Toast.makeText(Login_userActivity.this, "Cannot connect to database", Toast.LENGTH_SHORT).show();
+            Toast.makeText(Login_userActivity.this,
+                    "Cannot connect to database", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void showError(@NonNull EditText Edt, String s) {
-        Edt.setError(s);
-        Edt.requestFocus();
+    private void setupBiometricPrompt() {
+        executor = ContextCompat.getMainExecutor(this);
+
+        biometricPrompt = new BiometricPrompt(Login_userActivity.this, executor,
+                new BiometricPrompt.AuthenticationCallback() {
+                    @Override
+                    public void onAuthenticationSucceeded(
+                            @NonNull BiometricPrompt.AuthenticationResult result) {
+                        super.onAuthenticationSucceeded(result);
+
+                        String currentDeviceID = getDeviceID();
+                        connection = new ConnectionClass().conClass();
+
+                        if (connection != null) {
+                            try {
+                                query = "SELECT UserID, Role, Status FROM Users WHERE DeviceID = ? AND Status = 'active'";
+                                PreparedStatement smt = connection.prepareStatement(query);
+                                smt.setString(1, currentDeviceID);
+                                resultSet = smt.executeQuery();
+
+                                if (resultSet.next()) {
+                                    Integer userID = resultSet.getInt("UserID");
+                                    String role = resultSet.getString("Role");
+                                    String status = resultSet.getString("Status");
+
+                                    SharedPreferences preferences = getSharedPreferences("data",
+                                            Context.MODE_PRIVATE);
+                                    SharedPreferences.Editor editor = preferences.edit();
+
+                                    Toast.makeText(Login_userActivity.this,
+                                            "Fingerprint authentication successful", Toast.LENGTH_SHORT).show();
+
+                                    // Navigate with the same logic as password login
+                                    navigateByRole(role, status, userID, editor);
+                                } else {
+                                    Toast.makeText(Login_userActivity.this,
+                                            "No active account found for this device",
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            } catch (SQLException e) {
+                                e.printStackTrace();
+                                Toast.makeText(Login_userActivity.this,
+                                        "Database error", Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            Toast.makeText(Login_userActivity.this,
+                                    "Cannot connect to database", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onAuthenticationError(int errorCode,
+                                                      @NonNull CharSequence errString) {
+                        super.onAuthenticationError(errorCode, errString);
+                        Toast.makeText(Login_userActivity.this,
+                                "Authentication error: " + errString, Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onAuthenticationFailed() {
+                        super.onAuthenticationFailed();
+                        Toast.makeText(Login_userActivity.this,
+                                "Fingerprint not recognized", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        promptInfo = new BiometricPrompt.PromptInfo.Builder()
+                .setTitle("Fingerprint Login")
+                .setSubtitle("Log in using your fingerprint")
+                .setNegativeButtonText("Cancel")
+                .build();
     }
 
-    public void AddControl() {
+    private void navigateByRole(String role, String status, int userID,
+                                SharedPreferences.Editor editor) {
+        intent = null;
+
+        if ("admin".equalsIgnoreCase(role)) {
+            intent = new Intent(Login_userActivity.this, AdminActivity.class);
+            editor.putInt("userID", userID);
+            editor.apply();
+        } else if (("member".equalsIgnoreCase(role) ||
+                "premium".equalsIgnoreCase(role)) &&
+                "active".equalsIgnoreCase(status)) {
+            intent = new Intent(Login_userActivity.this, MainActivity.class);
+            intent.putExtra("maU", userID);
+            editor.putInt("userID", userID);
+            editor.apply();
+        } else if ("artist".equalsIgnoreCase(role) &&
+                "active".equalsIgnoreCase(status)) {
+            intent = new Intent(Login_userActivity.this, HomeArtistActivity.class);
+            intent.putExtra("UserID", userID);
+            editor.putInt("userID", userID);
+            editor.apply();
+        }
+
+        if (intent != null) {
+            startActivity(intent);
+            finish();
+        } else {
+            Toast.makeText(Login_userActivity.this,
+                    "Login failed: Invalid role or inactive status",
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private String getDeviceID() {
+        return Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+    }
+
+    private void showError(@NonNull EditText input, String message) {
+        input.setError(message);
+        input.requestFocus();
+    }
+
+    private void AddControl() {
         EdtEmail = findViewById(R.id.EdtEmail);
         EdtPassword = findViewById(R.id.EdtPassword);
         btnLogin = findViewById(R.id.btnLogin);
@@ -236,3 +312,4 @@ public class Login_userActivity extends AppCompatActivity {
         btnFingerprint = findViewById(R.id.btnFingerprint);
     }
 }
+
