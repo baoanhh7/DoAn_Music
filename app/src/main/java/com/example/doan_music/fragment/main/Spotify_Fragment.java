@@ -95,6 +95,7 @@ public class Spotify_Fragment extends Fragment {
                         } else if (role.equals("premium") && visibilityLNL_premium == View.GONE) {
                             LNL_member.setVisibility(View.GONE);
                             LNL_premium.setVisibility(View.VISIBLE);
+                            btn_registerpremium.setVisibility(View.GONE);
                         }
                     }
                     connection.close();  // Đóng kết nối
