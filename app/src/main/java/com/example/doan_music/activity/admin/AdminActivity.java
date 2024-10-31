@@ -8,6 +8,7 @@ import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.doan_music.R;
+import com.example.doan_music.activity.admin.Types.UpdateNameTypeActivity;
 import com.example.doan_music.activity.admin.accept.AcceptActivity;
 import com.example.doan_music.activity.admin.album.AlbumActivity;
 import com.example.doan_music.activity.admin.artist.ArtistActivity;
@@ -61,6 +62,13 @@ public class AdminActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(AdminActivity.this, AcceptActivity.class);
+                startActivity(intent);
+            }
+        });
+        btn_add_types.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AdminActivity.this, UpdateNameTypeActivity.class);
                 startActivity(intent);
             }
         });

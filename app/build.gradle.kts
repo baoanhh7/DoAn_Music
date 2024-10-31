@@ -97,5 +97,6 @@ dependencies {
     annotationProcessor("com.github.bumptech.glide:compiler:4.12.0")
     implementation ("org.conscrypt:conscrypt-android:2.5.2")
     implementation ("com.squareup.okhttp3:okhttp:4.9.0")
+    implementation ("androidx.biometric:biometric:1.1.0")
 
 }
