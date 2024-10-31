@@ -126,66 +126,77 @@ public class Login_userActivity extends AppCompatActivity {
                     String deviceID = resultSet.getString("DeviceID");
                     String currentDeviceID = getDeviceID();
 
-                    // Show success message
-                    Toast.makeText(Login_userActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(Login_userActivity.this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
 
-                    // Check if DeviceID is null or empty
+                    // Kiểm tra xem DeviceID đã được đăng ký cho bất kỳ tài khoản nào chưa
                     if (deviceID == null || deviceID.isEmpty()) {
-                        // Show confirmation dialog for saving DeviceID
-                        new AlertDialog.Builder(this)
-                                .setTitle("Enable Fingerprint Login")
-                                .setMessage("Would you like to enable fingerprint login for future use?")
-                                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        try {
-                                            // Update DeviceID in database
-                                            PreparedStatement updateSmt = connection.prepareStatement(
-                                                    "UPDATE Users SET DeviceID = ? WHERE UserID = ?");
-                                            updateSmt.setString(1, currentDeviceID);
-                                            updateSmt.setInt(2, userID);
-                                            updateSmt.executeUpdate();
+                        // Kiểm tra xem DeviceID hiện tại đã được liên kết với bất kỳ người dùng nào chưa
+                        String checkDeviceQuery = "SELECT UserID FROM Users WHERE DeviceID = ?";
+                        PreparedStatement checkDeviceStmt = connection.prepareStatement(checkDeviceQuery);
+                        checkDeviceStmt.setString(1, currentDeviceID);
+                        ResultSet deviceResultSet = checkDeviceStmt.executeQuery();
 
-                                            Toast.makeText(Login_userActivity.this,
-                                                    "Fingerprint login enabled", Toast.LENGTH_SHORT).show();
+                        if (!deviceResultSet.next()) {
+                            // Nếu không có người dùng nào đã đăng ký với DeviceID này, hiển thị hộp thoại để bật đăng nhập vân tay
+                            new AlertDialog.Builder(this)
+                                    .setTitle("Bật đăng nhập vân tay")
+                                    .setMessage("Bạn có muốn bật đăng nhập bằng vân tay cho lần đăng nhập sau không?")
+                                    .setPositiveButton("Có", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            try {
+                                                // Cập nhật DeviceID trong cơ sở dữ liệu
+                                                PreparedStatement updateSmt = connection.prepareStatement(
+                                                        "UPDATE Users SET DeviceID = ? WHERE UserID = ?");
+                                                updateSmt.setString(1, currentDeviceID);
+                                                updateSmt.setInt(2, userID);
+                                                updateSmt.executeUpdate();
 
-                                            // Proceed with login
-                                            navigateByRole(role, status, userID, editor);
-                                        } catch (SQLException e) {
-                                            e.printStackTrace();
-                                            Toast.makeText(Login_userActivity.this,
-                                                    "Failed to enable fingerprint login", Toast.LENGTH_SHORT).show();
-                                            // Still proceed with login even if saving DeviceID fails
+                                                Toast.makeText(Login_userActivity.this,
+                                                        "Đã bật đăng nhập vân tay", Toast.LENGTH_SHORT).show();
+
+                                                // Tiến hành đăng nhập
+                                                navigateByRole(role, status, userID, editor);
+                                            } catch (SQLException e) {
+                                                e.printStackTrace();
+                                                Toast.makeText(Login_userActivity.this,
+                                                        "Không thể bật đăng nhập vân tay", Toast.LENGTH_SHORT).show();
+                                                // Tiến hành đăng nhập kể cả khi lưu DeviceID thất bại
+                                                navigateByRole(role, status, userID, editor);
+                                            }
+                                        }
+                                    })
+                                    .setNegativeButton("Không", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            // Đăng nhập mà không cần lưu DeviceID
                                             navigateByRole(role, status, userID, editor);
                                         }
-                                    }
-                                })
-                                .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        // Proceed with login without saving DeviceID
-                                        navigateByRole(role, status, userID, editor);
-                                    }
-                                })
-                                .show();
+                                    })
+                                    .show();
+                        } else {
+                            // DeviceID đã tồn tại, tiến hành đăng nhập bình thường
+                            navigateByRole(role, status, userID, editor);
+                        }
                     } else {
-                        // DeviceID exists, proceed with normal login
+                        // DeviceID đã tồn tại, tiến hành đăng nhập bình thường
                         navigateByRole(role, status, userID, editor);
                     }
                 } else {
                     Toast.makeText(Login_userActivity.this,
-                            "Invalid email/phone/username or password", Toast.LENGTH_SHORT).show();
+                            "Email/Số điện thoại/Tên đăng nhập hoặc mật khẩu không hợp lệ", Toast.LENGTH_SHORT).show();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
                 Toast.makeText(Login_userActivity.this,
-                        "Database error", Toast.LENGTH_SHORT).show();
+                        "Lỗi cơ sở dữ liệu", Toast.LENGTH_SHORT).show();
             }
         } else {
             Toast.makeText(Login_userActivity.this,
-                    "Cannot connect to database", Toast.LENGTH_SHORT).show();
+                    "Không thể kết nối đến cơ sở dữ liệu", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     private void setupBiometricPrompt() {
         executor = ContextCompat.getMainExecutor(this);
