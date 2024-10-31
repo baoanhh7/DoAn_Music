@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.doan_music.R;
 import com.example.doan_music.activity.MainActivity;
+import com.example.doan_music.loginPackage.Login_userActivity;
 
 public class SuccessfulPremiumActivity extends AppCompatActivity {
     TextView txt_notification;
@@ -26,7 +27,7 @@ public class SuccessfulPremiumActivity extends AppCompatActivity {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    startActivity(new Intent(SuccessfulPremiumActivity.this, MainActivity.class));
+                    startActivity(new Intent(SuccessfulPremiumActivity.this, Login_userActivity.class));
                     finish();
                 }
             }, 5555);
