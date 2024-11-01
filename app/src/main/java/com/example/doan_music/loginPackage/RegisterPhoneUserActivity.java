@@ -2,7 +2,10 @@ package com.example.doan_music.loginPackage;
 
 import static android.content.ContentValues.TAG;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,8 +17,11 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.example.doan_music.R;
+import com.example.doan_music.activity.MainActivity;
 import com.example.doan_music.data.DbHelper;
 import com.example.doan_music.database.ConnectionClass;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -59,9 +65,9 @@ public class RegisterPhoneUserActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 checkCredentials();
+
             }
         });
-
         tvLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -95,7 +101,7 @@ public class RegisterPhoneUserActivity extends AppCompatActivity {
             showError(EdtPassword, "Your password must be at least 8 character");
         } else if (repassword.isEmpty() || !repassword.equals(password)) {
             showError(EdtRepassword, "Your password is not match");
-        } else if (phone.length() != 12) {
+        } else if (phone.length() != 10) {
             showError(EdtPhone, "Your phone is not valid!");
         } else {
             connection = new ConnectionClass().conClass();
@@ -115,6 +121,8 @@ public class RegisterPhoneUserActivity extends AppCompatActivity {
                             return;
                         }
                     }
+                    connection.close();
+                    gotoOTP(EdtPhone.getText().toString().trim());
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
@@ -163,7 +171,7 @@ public class RegisterPhoneUserActivity extends AppCompatActivity {
                             @Override
                             public void onCodeSent(@NonNull String verificationId, @NonNull PhoneAuthProvider.ForceResendingToken forceResendingToken) {
                                 super.onCodeSent(verificationId, forceResendingToken);
-                                gotoOTP(phone, verificationId);
+                                //gotoOTP(phone, verificationId);
                             }
                         })          // OnVerificationStateChangedCallbacks
                         .build();
@@ -171,10 +179,10 @@ public class RegisterPhoneUserActivity extends AppCompatActivity {
 
     }
 
-    private void gotoOTP(String phone, String verificationId) {
+    private void gotoOTP(String phone) {
         Intent intent = new Intent(this, OTPActivity.class);
         intent.putExtra("phone", phone);
-        intent.putExtra("verification_Id", verificationId);
+        //intent.putExtra("verification_Id", verificationId);
         intent.putExtra("Username", EdtUsername.getText().toString());
         //intent.putExtra("Email", EdtEmail.getText().toString());
         intent.putExtra("Password", EdtPassword.getText().toString());

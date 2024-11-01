@@ -2,9 +2,13 @@ package com.example.doan_music.loginPackage;
 
 import static android.content.ContentValues.TAG;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.telephony.SmsManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -14,6 +18,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.example.doan_music.R;
 import com.example.doan_music.data.DbHelper;
@@ -34,6 +40,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 public class OTPActivity extends AppCompatActivity {
@@ -41,7 +48,7 @@ public class OTPActivity extends AppCompatActivity {
     Button verifyButton;
     TextView sendOtpAgain;
     DbHelper dbHelper;
-    String phone, verificationId, username, email, password;
+    String phone, verificationId, username, email, password,generatedOTP;
     FirebaseAuth auth;
     SQLiteDatabase database = null;
     PhoneAuthProvider.ForceResendingToken mforceResendingToken;
@@ -49,6 +56,7 @@ public class OTPActivity extends AppCompatActivity {
     String query;
     Statement smt;
     ResultSet resultSet;
+    String message = "is your verification code.";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,25 +65,64 @@ public class OTPActivity extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
         getDataIntent();
         addControls();
+        generatedOTP = generateOTP(); // Hàm tạo OTP ngẫu nhiên
+        sendOTP();
         addEvents();
+    }
+
+    private String generateOTP() {
+        // Tạo OTP ngẫu nhiên gồm 6 chữ số
+        int otp = (int)(Math.random() * 900000) + 100000;
+        return String.valueOf(otp);
     }
 
     private void addEvents() {
         verifyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String strOTP = otpEditText.getText().toString().trim();
-                onClickSendOTPCode(strOTP);
+//                String strOTP = otpEditText.getText().toString().trim();
+//                onClickSendOTPCode(strOTP);
+                String inputOTP = otpEditText.getText().toString().trim();
+
+                if (generatedOTP.equals(inputOTP)) {
+                    // OTP đúng, chèn dữ liệu vào cơ sở dữ liệu
+                    goToLogin();
+                } else {
+                    // OTP sai, hiển thị thông báo lỗi
+                    Toast.makeText(OTPActivity.this, "OTP không đúng", Toast.LENGTH_SHORT).show();
+                }
             }
         });
         sendOtpAgain.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onClickSendOTPAgain();
+                //onClickSendOTPAgain();
             }
         });
     }
 
+    @SuppressLint("MissingSuperCall")
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == 100) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                sendOTP();
+            } else {
+                Toast.makeText(this, "Không có quyền gửi SMS", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void sendOTP() {
+        if (ContextCompat.checkSelfPermission(OTPActivity.this, Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED) {
+            SmsManager smsManager = SmsManager.getDefault();
+            ArrayList<String> parts = smsManager.divideMessage(generatedOTP+" " +message);
+            smsManager.sendMultipartTextMessage(phone, null, parts, null, null);
+            Toast.makeText(this, "OTP đã được gửi", Toast.LENGTH_SHORT).show();
+        } else {
+            ActivityCompat.requestPermissions(OTPActivity.this, new String[]{Manifest.permission.SEND_SMS}, 100);
+        }
+    }
     private void onClickSendOTPAgain() {
         PhoneAuthOptions options =
                 PhoneAuthOptions.newBuilder(auth)
@@ -200,7 +247,7 @@ public class OTPActivity extends AppCompatActivity {
 
     private void getDataIntent() {
         phone = getIntent().getStringExtra("phone");
-        verificationId = getIntent().getStringExtra("verification_Id");
+        //verificationId = getIntent().getStringExtra("verification_Id");
         username = getIntent().getStringExtra("Username");
         email = getIntent().getStringExtra("Email");
         password = getIntent().getStringExtra("Password");

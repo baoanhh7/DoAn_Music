@@ -675,7 +675,8 @@ public class PlayMusicActivity extends AppCompatActivity {
                     Integer idSong = arr.get(currentPosition);
                     loadDataSong(idSong);
                     loadNameArtist(idSong);
-                    updateHistorySong(idSong);
+                    //updateHistorySong(idSong);
+                    updateSongHistory(userID, IDSong);
                     updateViewSong(idSong);
                     txt_lyric.setText("");
                     sendNotification();
@@ -705,7 +706,8 @@ public class PlayMusicActivity extends AppCompatActivity {
                     Integer idSong = arr.get(currentPosition);
                     loadDataSong(idSong);
                     loadNameArtist(idSong);
-                    updateHistorySong(idSong);
+                    //updateHistorySong(idSong);
+                    updateSongHistory(userID, IDSong);
                     updateViewSong(idSong);
                     txt_lyric.setText("");
                     loadLRC(idSong);
@@ -753,7 +755,8 @@ public class PlayMusicActivity extends AppCompatActivity {
                     Integer idSong = arr.get(currentPosition);
                     loadDataSong(idSong);
                     loadNameArtist(idSong);
-                    updateHistorySong(idSong);
+                    //updateHistorySong(idSong);
+                    updateSongHistory(userID, IDSong);
                     updateViewSong(idSong);
                     txt_lyric.setText("");
                     loadLRC(idSong);
@@ -784,7 +787,8 @@ public class PlayMusicActivity extends AppCompatActivity {
                     Integer idSong = arr.get(currentPosition);
                     loadDataSong(idSong);
                     loadNameArtist(idSong);
-                    updateHistorySong(idSong);
+                    //updateHistorySong(idSong);
+                    updateSongHistory(userID, IDSong);
                     txt_lyric.setText("");
                     loadLRC(idSong);
                     //readLRCFile();
@@ -1083,7 +1087,8 @@ public class PlayMusicActivity extends AppCompatActivity {
         loadNameArtist(idSong);
         updateHeartButtonUI();
         updateViewSong(idSong);
-        updateHistorySong(idSong);
+        //updateHistorySong(idSong);
+        updateSongHistory(userID, IDSong);
         txt_lyric.setText("");
         loadLRC(idSong);
         //readLRCFile();
