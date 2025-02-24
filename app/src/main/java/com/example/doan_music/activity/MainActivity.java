@@ -96,13 +96,13 @@ public class MainActivity extends AppCompatActivity {
 
         loadRoleUser(userID);
 
-        loadDataOff(userID);
-//        databaseHelper = new DatabaseHelper(this);
-//        database =  databaseHelper.getWritableDatabase();
-//        databaseHelper.onUpgrade(database,2,1);
+//        loadDataOff(userID);
+        databaseHelper = new DatabaseHelper(this);
+        database =  databaseHelper.getWritableDatabase();
+        databaseHelper.onUpgrade(database,2,1);
         if (Role.equalsIgnoreCase("premium") && loadDataOff(userID)) {
             saveDataOntoOff(userID);
-            //databaseHelper.getReadableDatabase();
+            databaseHelper.getReadableDatabase();
             databaseHelper = new DatabaseHelper(this);
             database = databaseHelper.getWritableDatabase();
             ContentValues values = new ContentValues();

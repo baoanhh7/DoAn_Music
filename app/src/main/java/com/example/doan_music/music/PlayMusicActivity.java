@@ -122,7 +122,9 @@ public class PlayMusicActivity extends AppCompatActivity {
             currentPosition = arr.indexOf(IDSong);
         }
         SeekBar sbTime;
-        myMusic = new MediaPlayer();
+//        myMusic = new MediaPlayer();
+        // Singleton
+        myMusic = MediaPlayerManager.getInstance().getMediaPlayer();
         //myMusic = MediaPlayer.create(this, R.raw.nhung_loi_hua_bo_quen);
         loadRoleUser(userID);
         loadData();
