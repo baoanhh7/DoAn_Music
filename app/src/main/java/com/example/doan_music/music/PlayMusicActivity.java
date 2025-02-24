@@ -71,7 +71,7 @@ public class PlayMusicActivity extends AppCompatActivity {
     ImageButton btn_home, btn_play, btn_back, btn_next, btn_pre, btn_toggle, btn_shuffle, btn_volume, btn_heart, btn_download;
     SeekBar seekBar, seekbar1;
     TextView txt_time, txt_time_first, txt_view_playmusic, txt_lyric;
-    MediaPlayer myMusic;
+    //MediaPlayer myMusic;
     AudioManager audioManager;
     ArrayList<Integer> arr;
     ImageView imageView_songs;
@@ -101,9 +101,9 @@ public class PlayMusicActivity extends AppCompatActivity {
     private Handler handler = new Handler();
     private Runnable refreshRunnable;
     private LyricsManager lyricsManager;
-    SongOffline songOffline,songOffline2;
+    SongOffline songOffline, songOffline2;
     MusicDownloadManager musicDownloadManager;
-
+    private MediaPlayerManager playerManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -121,22 +121,39 @@ public class PlayMusicActivity extends AppCompatActivity {
         } else {
             currentPosition = arr.indexOf(IDSong);
         }
-        SeekBar sbTime;
+//        SeekBar sbTime;
 //        myMusic = new MediaPlayer();
         // Singleton
-        myMusic = MediaPlayerManager.getInstance().getMediaPlayer();
+//        myMusic = MediaPlayerManager.getInstance().getMediaPlayer();
         //myMusic = MediaPlayer.create(this, R.raw.nhung_loi_hua_bo_quen);
+
         loadRoleUser(userID);
-        loadData();
+
         updateHistorySong(IDSong);
         updateViewSong(IDSong);
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        myMusic.seekTo(0);
-        myMusic.start();
-        myMusic.setLooping(false);
+
+        // Lấy instance đã được cấu hình trước đó
+        playerManager = MediaPlayerManager.getInstance();
+        // Hoặc cấu hình lại nếu cần
+        MediaPlayerManager.Builder.getInstance()
+                .setVolume(60)
+                .apply();
+//        new MediaPlayerManager.Builder()
+//                .setLooping(false) // Phát lặp lại
+//                .setSpeed(1.0f) // Tăng tốc độ phát
+//                .setVolume(80) // Âm lượng 80%
+//                .apply(); // Cập nhật cấu hình cho Singleton
+//        MediaPlayerManager playerManager = MediaPlayerManager.getInstance(); // Lấy Singleton
+        //myMusic = playerManager.getMediaPlayer(); // Lấy MediaPlayer
+        playerManager.setDataSource(loadDataSong(IDSong));
+        playerManager.play();
+//        myMusic.seekTo(0);
+//        myMusic.start();
+//        myMusic.setLooping(false);
         seekbar1.setVisibility(View.GONE);
         // tạo biến duration để lưu thời gian bài hát
-        String duration = timeSeekbar(myMusic.getDuration());
+        String duration = timeSeekbar(playerManager.getMediaPlayer().getDuration());
         txt_time.setText(duration);
         loadNameArtist(IDSong);
         sendNotification();
@@ -149,7 +166,7 @@ public class PlayMusicActivity extends AppCompatActivity {
 
         volume();
         // Đọc file LRC và lưu trữ lời bài hát
-        lyricsManager = new LyricsManager(myMusic, txt_lyric);
+        lyricsManager = new LyricsManager(playerManager.getMediaPlayer(), txt_lyric);
 //        readLRCFile();
 
 //        refreshRunnable = new Runnable() {
@@ -169,7 +186,7 @@ public class PlayMusicActivity extends AppCompatActivity {
         }
         // Bắt đầu cập nhật lời bài hát
         if (frag) {
-            myMusic.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            playerManager.getMediaPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
                     playNextSong(arr);
@@ -180,7 +197,12 @@ public class PlayMusicActivity extends AppCompatActivity {
 
         addEvents();
     }
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Giải phóng resources
+        playerManager.release();
+    }
     private void addSongToHistory(int userID, Integer songID) {
         ConnectionClass sql = new ConnectionClass();
 
@@ -309,7 +331,8 @@ public class PlayMusicActivity extends AppCompatActivity {
                         mInterstitialAd = interstitialAd;
                         Log.i("ADS", "onAdLoaded");
                         if (mInterstitialAd != null) {
-                            myMusic.pause();
+//                            myMusic.pause();
+                            playerManager.pause();
                             mInterstitialAd.show(PlayMusicActivity.this);
                             mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
                                 @Override
@@ -322,7 +345,7 @@ public class PlayMusicActivity extends AppCompatActivity {
                                 public void onAdDismissedFullScreenContent() {
                                     // Called when ad is dismissed.
                                     // Set the ad reference to null so you don't show the ad a second time.
-                                    myMusic.start();
+                                    playerManager.play();
                                     Log.d("ADS", "Ad dismissed fullscreen content.");
                                     mInterstitialAd = null;
                                 }
@@ -524,11 +547,12 @@ public class PlayMusicActivity extends AppCompatActivity {
         }
     }
 
-    private void loadData() {
-        loadDataSong(IDSong);
-    }
+//    private void loadData() {
+//        loadDataSong(IDSong);
+//    }
 
-    private void loadDataSong(int id) {
+    private String loadDataSong(int id) {
+        String source = "";
         ConnectionClass sql = new ConnectionClass();
         connection = sql.conClass();
         if (connection != null) {
@@ -559,12 +583,13 @@ public class PlayMusicActivity extends AppCompatActivity {
                     editor.apply(); // Lưu thay đổi
 
                     txt_view_playmusic.setText(view + "");
-                    try {
-                        myMusic.setDataSource(linkSong);
-                        myMusic.prepare();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                    source = linkSong;
+//                    try {
+//                        myMusic.setDataSource(linkSong);
+//                        myMusic.prepare();
+//                    } catch (IOException e) {
+//                        throw new RuntimeException(e);
+//                    }
                 }
                 connection.close();
             } catch (Exception e) {
@@ -573,6 +598,7 @@ public class PlayMusicActivity extends AppCompatActivity {
         } else {
             Log.e("Error: ", "Connection null");
         }
+        return source;
     }
 
     public String timeSeekbar(int time) {
@@ -598,7 +624,7 @@ public class PlayMusicActivity extends AppCompatActivity {
                     try {
                         songOffline2 = songOffline;
                         if (musicDownloadManager.downloadSong(songOffline2)) {
-                            Log.e("Namenghesi",songOffline2.getSongName());
+                            Log.e("Namenghesi", songOffline2.getSongName());
                             Toast.makeText(PlayMusicActivity.this, "Tải nhạc thành công", Toast.LENGTH_LONG).show();
                         }
                     } catch (Exception e) {
@@ -621,8 +647,8 @@ public class PlayMusicActivity extends AppCompatActivity {
         btn_home.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (myMusic.isPlaying()) {
-                    myMusic.stop();
+                if (playerManager.getMediaPlayer().isPlaying()) {
+                    playerManager.stop();
                     // myMusic.reset();
                 }
 
@@ -635,13 +661,13 @@ public class PlayMusicActivity extends AppCompatActivity {
         btn_play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (myMusic.isPlaying()) {
-                    myMusic.pause();
+                if (playerManager.getMediaPlayer().isPlaying()) {
+                    playerManager.pause();
                     btn_play.setImageResource(R.drawable.ic_play);
                     imageView_songs.clearAnimation();
 
                 } else {
-                    myMusic.start();
+                    playerManager.play();
                     btn_play.setImageResource(R.drawable.ic_pause);
 
                     // Áp dụng animation vào ImageView
@@ -652,7 +678,7 @@ public class PlayMusicActivity extends AppCompatActivity {
         btn_next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (myMusic != null) {
+                if (playerManager.getMediaPlayer() != null) {
                     btn_play.setImageResource(R.drawable.ic_pause);
                 }
                 if (frag) {
@@ -666,26 +692,24 @@ public class PlayMusicActivity extends AppCompatActivity {
                     }
 
 
-                    if (myMusic.isPlaying()) {
-                        myMusic.stop();
-                        myMusic.reset();
+                    if (playerManager.getMediaPlayer().isPlaying()) {
+                        playerManager.stop();
                     }
-                    if (!myMusic.isPlaying()) {
-                        myMusic.stop();
-                        myMusic.reset();
+                    if (!playerManager.getMediaPlayer().isPlaying()) {
+                        playerManager.stop();
                     }
                     Integer idSong = arr.get(currentPosition);
-                    loadDataSong(idSong);
+                    playerManager.setDataSource(loadDataSong(idSong));
                     loadNameArtist(idSong);
                     //updateHistorySong(idSong);
                     updateSongHistory(userID, IDSong);
                     updateViewSong(idSong);
                     txt_lyric.setText("");
                     sendNotification();
-                    String duration = timeSeekbar(myMusic.getDuration());
+                    String duration = timeSeekbar(playerManager.getDuration());
                     txt_time.setText(duration);
-                    seekBar.setMax(myMusic.getDuration());
-                    myMusic.start();
+                    seekBar.setMax(playerManager.getDuration());
+                    playerManager.play();
                     updateHeartButtonUI();
                     loadLRC(idSong);
                     //readLRCFile();
@@ -697,16 +721,14 @@ public class PlayMusicActivity extends AppCompatActivity {
                         createADS();
                     }
                 } else {
-                    if (myMusic.isPlaying()) {
-                        myMusic.stop();
-                        myMusic.reset();
+                    if (playerManager.isPlaying()) {
+                        playerManager.stop();
                     }
-                    if (!myMusic.isPlaying()) {
-                        myMusic.stop();
-                        myMusic.reset();
+                    if (!playerManager.isPlaying()) {
+                        playerManager.stop();
                     }
                     Integer idSong = arr.get(currentPosition);
-                    loadDataSong(idSong);
+                    playerManager.setDataSource(loadDataSong(idSong));
                     loadNameArtist(idSong);
                     //updateHistorySong(idSong);
                     updateSongHistory(userID, IDSong);
@@ -718,10 +740,10 @@ public class PlayMusicActivity extends AppCompatActivity {
                     if (Role.equalsIgnoreCase("premium")) {
                         lyricsManager.loadLyrics(linkLRC);
                     }
-                    String duration = timeSeekbar(myMusic.getDuration());
+                    String duration = timeSeekbar(playerManager.getDuration());
                     txt_time.setText(duration);
-                    seekBar.setMax(myMusic.getDuration());
-                    myMusic.start();
+                    seekBar.setMax(playerManager.getDuration());
+                    playerManager.play();
 
                     updateHeartButtonUI();
                     imageView_songs.startAnimation(animation);
@@ -734,7 +756,7 @@ public class PlayMusicActivity extends AppCompatActivity {
         btn_pre.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (myMusic != null) {
+                if (playerManager.getMediaPlayer() != null) {
                     btn_play.setImageResource(R.drawable.ic_pause);
                 }
                 if (frag) {
@@ -746,16 +768,14 @@ public class PlayMusicActivity extends AppCompatActivity {
                         currentPosition = arr.size() - 1;
                     }
 
-                    if (myMusic.isPlaying()) {
-                        myMusic.stop();
-                        myMusic.reset();
+                    if (playerManager.isPlaying()) {
+                        playerManager.stop();
                     }
-                    if (!myMusic.isPlaying()) {
-                        myMusic.stop();
-                        myMusic.reset();
+                    if (!playerManager.isPlaying()) {
+                        playerManager.stop();
                     }
                     Integer idSong = arr.get(currentPosition);
-                    loadDataSong(idSong);
+                    playerManager.setDataSource(loadDataSong(idSong));
                     loadNameArtist(idSong);
                     //updateHistorySong(idSong);
                     updateSongHistory(userID, IDSong);
@@ -768,26 +788,24 @@ public class PlayMusicActivity extends AppCompatActivity {
                     }
                     updateHeartButtonUI();
                     sendNotification();
-                    String duration = timeSeekbar(myMusic.getDuration());
+                    String duration = timeSeekbar(playerManager.getDuration());
                     txt_time.setText(duration);
-                    seekBar.setMax(myMusic.getDuration());
-                    myMusic.start();
+                    seekBar.setMax(playerManager.getDuration());
+                    playerManager.play();
                     imageView_songs.startAnimation(animation);
                     if (Role.equalsIgnoreCase("member")) {
                         createADS();
                     }
                 } else {
-                    if (myMusic.isPlaying()) {
-                        myMusic.stop();
-                        myMusic.reset();
+                    if (playerManager.isPlaying()) {
+                        playerManager.stop();
                     }
 
-                    if (!myMusic.isPlaying()) {
-                        myMusic.stop();
-                        myMusic.reset();
+                    if (!playerManager.isPlaying()) {
+                        playerManager.stop();
                     }
                     Integer idSong = arr.get(currentPosition);
-                    loadDataSong(idSong);
+                    playerManager.setDataSource(loadDataSong(idSong));
                     loadNameArtist(idSong);
                     //updateHistorySong(idSong);
                     updateSongHistory(userID, IDSong);
@@ -800,10 +818,10 @@ public class PlayMusicActivity extends AppCompatActivity {
                     updateViewSong(idSong);
                     updateHeartButtonUI();
                     sendNotification();
-                    String duration = timeSeekbar(myMusic.getDuration());
+                    String duration = timeSeekbar(playerManager.getDuration());
                     txt_time.setText(duration);
-                    seekBar.setMax(myMusic.getDuration());
-                    myMusic.start();
+                    seekBar.setMax(playerManager.getDuration());
+                    playerManager.play();
                     imageView_songs.startAnimation(animation);
                     if (Role.equalsIgnoreCase("member")) {
                         createADS();
@@ -815,10 +833,10 @@ public class PlayMusicActivity extends AppCompatActivity {
         btn_back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (myMusic != null) {  // Kiểm tra myMusic có null không
-                    if (myMusic.isPlaying()) {
+                if (playerManager.getMediaPlayer() != null) {  // Kiểm tra myMusic có null không
+                    if (playerManager.isPlaying()) {
                         try {
-                            myMusic.stop();
+                            playerManager.stop();
                             //myMus
                             //myMusic.reset();
                         } catch (IllegalStateException e) {
@@ -858,11 +876,17 @@ public class PlayMusicActivity extends AppCompatActivity {
                 if (frag) {
                     // Thực hiện các hành động khi nút được bật
                     btn_toggle.setImageResource(R.drawable.ic_repeatactive);
-                    myMusic.setLooping(true);
+                    MediaPlayerManager.Builder.getInstance()
+                            .setLooping(true)
+                            .apply();
+//                    myMusic.setLooping(true);
                     frag = false;
                 } else {
                     btn_toggle.setImageResource(R.drawable.ic_repeat);
-                    myMusic.setLooping(false);
+                    MediaPlayerManager.Builder.getInstance()
+                            .setLooping(false)
+                            .apply();
+                    //myMusic.setLooping(false);
                     frag = true;
                 }
             }
@@ -883,12 +907,12 @@ public class PlayMusicActivity extends AppCompatActivity {
         });
 
         // set giới hạn Max cho thanh seekBar
-        seekBar.setMax(myMusic.getDuration());
+        seekBar.setMax(playerManager.getDuration());
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser) {
-                    myMusic.seekTo(progress);
+                    playerManager.seekTo(progress);
                     seekBar.setProgress(progress);
                 }
             }
@@ -906,10 +930,10 @@ public class PlayMusicActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                while (myMusic != null) {
-                    if (myMusic.isPlaying()) {
+                while (playerManager != null) {
+                    if (playerManager.isPlaying()) {
                         try {
-                            final double current = myMusic.getCurrentPosition();
+                            final double current = playerManager.getCurrentPosition();
                             final String time = timeSeekbar((int) current);
 
                             runOnUiThread(new Runnable() {
@@ -1078,14 +1102,13 @@ public class PlayMusicActivity extends AppCompatActivity {
 //    }
 
     private void playNextSong(@NonNull ArrayList<Integer> arr) {
-        myMusic.reset();
         if (currentPosition < arr.size() - 1) {
             currentPosition++;
         } else {
             currentPosition = 0;
         }
         Integer idSong = arr.get(currentPosition);
-        loadDataSong(idSong);
+        playerManager.setDataSource(loadDataSong(idSong));
         loadNameArtist(idSong);
         updateHeartButtonUI();
         updateViewSong(idSong);
@@ -1097,10 +1120,10 @@ public class PlayMusicActivity extends AppCompatActivity {
         if (Role.equalsIgnoreCase("premium")) {
             lyricsManager.loadLyrics(linkLRC);
         }
-        String duration = timeSeekbar(myMusic.getDuration());
+        String duration = timeSeekbar(playerManager.getDuration());
         txt_time.setText(duration);
-        seekBar.setMax(myMusic.getDuration());
-        myMusic.start();
+        seekBar.setMax(playerManager.getDuration());
+        playerManager.play();
         if (Role.equalsIgnoreCase("member")) {
             createADS();
         }
@@ -1132,27 +1155,4 @@ public class PlayMusicActivity extends AppCompatActivity {
         imageView_songs.startAnimation(animation);
     }
 
-    // Đọc file LRC và lưu lời bài hát theo thời gian
-    private void readLRCFile() {
-        List<LyricsSyncManager.LyricLine> lyrics;
-        LyricsSyncManager lyricsSyncManager = new LyricsSyncManager(myMusic, txt_lyric);
-        try {
-            // InputStream inputStream = getResources().openRawResource(R.raw.badbyelrc);
-            // Thay thế đường dẫn URL vào đây
-            if (linkLRC == null || linkLRC.equalsIgnoreCase("null") || linkLRC.equalsIgnoreCase("")) {
-                txt_lyric.setText("Lyric đang câp nhât");
-            } else {
-                URL url = new URL(linkLRC);
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
-                lyrics = LRCParser.parse(inputStream);
-                lyricsSyncManager.setLyrics(lyrics);
-                lyricsSyncManager.start();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            // Xử lý lỗi ở đây
-            return;
-        }
-    }
 }
