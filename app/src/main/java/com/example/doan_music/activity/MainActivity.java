@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.ImageView;
@@ -24,6 +25,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.media3.common.BuildConfig;
 
 import com.example.doan_music.R;
 import com.example.doan_music.database.ConnectionClass;
@@ -52,6 +54,8 @@ import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
     DrawerLayout drawerLayout;
@@ -81,6 +85,13 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if (BuildConfig.DEBUG) {
+            StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                    .detectAll()
+                    .penaltyLog()
+                    .penaltyDeath()
+                    .build());
+        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -94,67 +105,99 @@ public class MainActivity extends AppCompatActivity {
         userID = sharedPreferences.getInt("userID", -1);  // Lấy userID
         Log.e("UserID", String.valueOf(userID));
 
-        loadRoleUser(userID);
-
-//        loadDataOff(userID);
-        databaseHelper = new DatabaseHelper(this);
-        database =  databaseHelper.getWritableDatabase();
-        databaseHelper.onUpgrade(database,2,1);
-        if (Role.equalsIgnoreCase("premium") && loadDataOff(userID)) {
-            saveDataOntoOff(userID);
-            databaseHelper.getReadableDatabase();
+//        loadRoleUser(userID);
+//
+////        loadDataOff(userID);
+//        databaseHelper = new DatabaseHelper(this);
+//        database =  databaseHelper.getWritableDatabase();
+//        databaseHelper.onUpgrade(database,2,1);
+//        if (Role.equalsIgnoreCase("premium") && loadDataOff(userID)) {
+//            saveDataOntoOff(userID);
+//            databaseHelper.getReadableDatabase();
+//            databaseHelper = new DatabaseHelper(this);
+//            database = databaseHelper.getWritableDatabase();
+//            ContentValues values = new ContentValues();
+//            values.put("id", userID);
+//            values.put("username", userOffline.getUsername());
+//            values.put("password", userOffline.getPassword());
+//            values.put("is_premium", userOffline.isPremium() ? 1 : 0);
+//            // Chuyển long thành định dạng ngày trước khi lưu
+//            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+//            String formattedDate = dateFormat.format(new Date(userOffline.getPremiumExpireDate()));
+//            values.put("premium_expire_date", formattedDate);
+////            values.put("premium_expire_date",userOffline.getPremiumExpireDate());
+//            database.insert("users", null, values);
+//        }
+//        Log.e("loaddataOff", String.valueOf(loadDataOff(userID)));
+//        if (Role.equalsIgnoreCase("member") && !loadDataOff(userID)) {
+//
+//            databaseHelper = new DatabaseHelper(this);
+//            SQLiteDatabase db = databaseHelper.getWritableDatabase();
+//            ContentValues values = new ContentValues();
+//            values.put("is_premium", 0); // Cập nhật is_premium thành 0
+//            // Cập nhật bản ghi với userID tương ứng
+//            int rowsAffected = db.update("users", values, "id = ?", new String[]{String.valueOf(userID)});
+//
+//            // Kiểm tra cập nhật thành công
+//            if (rowsAffected > 0) {
+//                // Thành công
+//                Log.d("DatabaseUpdate", "Cập nhật thành công: " + rowsAffected + " bản ghi");
+//            } else {
+//                // Không có bản ghi nào được cập nhật
+//                Log.d("DatabaseUpdate", "Cập nhật không thành công");
+//            }
+//        }
+//        if (Role.equalsIgnoreCase("premium") && !loadDataOff(userID)) {
+//
+//            databaseHelper = new DatabaseHelper(this);
+//            SQLiteDatabase db = databaseHelper.getWritableDatabase();
+//            ContentValues values = new ContentValues();
+//            values.put("is_premium", 1); // Cập nhật is_premium thành 0
+//            // Cập nhật bản ghi với userID tương ứng
+//            int rowsAffected = db.update("users", values, "id = ?", new String[]{String.valueOf(userID)});
+//
+//            // Kiểm tra cập nhật thành công
+//            if (rowsAffected > 0) {
+//                // Thành công
+//                Log.d("DatabaseUpdate", "Cập nhật thành công: " + rowsAffected + " bản ghi");
+//            } else {
+//                // Không có bản ghi nào được cập nhật
+//                Log.d("DatabaseUpdate", "Cập nhật không thành công");
+//            }
+//        }
+        // Drawer
+        // Chuyển tác vụ nặng sang background thread
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            loadRoleUser(userID);
             databaseHelper = new DatabaseHelper(this);
             database = databaseHelper.getWritableDatabase();
-            ContentValues values = new ContentValues();
-            values.put("id", userID);
-            values.put("username", userOffline.getUsername());
-            values.put("password", userOffline.getPassword());
-            values.put("is_premium", userOffline.isPremium() ? 1 : 0);
-            // Chuyển long thành định dạng ngày trước khi lưu
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            String formattedDate = dateFormat.format(new Date(userOffline.getPremiumExpireDate()));
-            values.put("premium_expire_date", formattedDate);
-//            values.put("premium_expire_date",userOffline.getPremiumExpireDate());
-            database.insert("users", null, values);
-        }
-        Log.e("loaddataOff", String.valueOf(loadDataOff(userID)));
-        if (Role.equalsIgnoreCase("member") && !loadDataOff(userID)) {
 
-            databaseHelper = new DatabaseHelper(this);
-            SQLiteDatabase db = databaseHelper.getWritableDatabase();
-            ContentValues values = new ContentValues();
-            values.put("is_premium", 0); // Cập nhật is_premium thành 0
-            // Cập nhật bản ghi với userID tương ứng
-            int rowsAffected = db.update("users", values, "id = ?", new String[]{String.valueOf(userID)});
+            boolean isUserOffline = loadDataOff(userID);
 
-            // Kiểm tra cập nhật thành công
-            if (rowsAffected > 0) {
-                // Thành công
-                Log.d("DatabaseUpdate", "Cập nhật thành công: " + rowsAffected + " bản ghi");
-            } else {
-                // Không có bản ghi nào được cập nhật
-                Log.d("DatabaseUpdate", "Cập nhật không thành công");
+            if (Role.equalsIgnoreCase("premium") && isUserOffline) {
+                saveDataOntoOff(userID);
+                ContentValues values = new ContentValues();
+                values.put("id", userID);
+                values.put("username", userOffline.getUsername());
+                values.put("password", userOffline.getPassword());
+                values.put("is_premium", userOffline.isPremium() ? 1 : 0);
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                String formattedDate = dateFormat.format(new Date(userOffline.getPremiumExpireDate()));
+                values.put("premium_expire_date", formattedDate);
+                database.insert("users", null, values);
+            } else if (Role.equalsIgnoreCase("member") && !isUserOffline) {
+                ContentValues values = new ContentValues();
+                values.put("is_premium", 0);
+                database.update("users", values, "id = ?", new String[]{String.valueOf(userID)});
+            } else if (Role.equalsIgnoreCase("premium") && !isUserOffline) {
+                ContentValues values = new ContentValues();
+                values.put("is_premium", 1);
+                database.update("users", values, "id = ?", new String[]{String.valueOf(userID)});
             }
-        }
-        if (Role.equalsIgnoreCase("premium") && !loadDataOff(userID)) {
 
-            databaseHelper = new DatabaseHelper(this);
-            SQLiteDatabase db = databaseHelper.getWritableDatabase();
-            ContentValues values = new ContentValues();
-            values.put("is_premium", 1); // Cập nhật is_premium thành 0
-            // Cập nhật bản ghi với userID tương ứng
-            int rowsAffected = db.update("users", values, "id = ?", new String[]{String.valueOf(userID)});
-
-            // Kiểm tra cập nhật thành công
-            if (rowsAffected > 0) {
-                // Thành công
-                Log.d("DatabaseUpdate", "Cập nhật thành công: " + rowsAffected + " bản ghi");
-            } else {
-                // Không có bản ghi nào được cập nhật
-                Log.d("DatabaseUpdate", "Cập nhật không thành công");
-            }
-        }
-        // Drawer
+            executor.shutdown();
+        });
         setSupportActionBar(toolbar);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open_nav, R.string.close_nav);
         drawerLayout.addDrawerListener(toggle);
@@ -388,46 +431,54 @@ public class MainActivity extends AppCompatActivity {
         mini_player_song_name.setText(songName);
         mini_player_artist_name.setText(artistName);
 
-        // Initialize the SQL Server connection using your custom ConnectionClass
-        ConnectionClass sql = new ConnectionClass();
-        Connection connection = sql.conClass();  // Assuming conClass() returns a Connection object
-
-        if (connection != null) {
+        // Chuyển tác vụ nặng sang background thread
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
             try {
-                // SQL query to get link song from the Songs table for a specific SongID
-                String query = "SELECT LinkSong, SongImage FROM Song WHERE SongID = " + songID;
-                Statement smt = connection.createStatement();
-                ResultSet resultSet = smt.executeQuery(query);
+                ConnectionClass sql = new ConnectionClass();
+                Connection connection = sql.conClass();
 
-                if (resultSet.next()) {
-                    songLink = resultSet.getString("LinkSong");
-                    String img = resultSet.getString("SongImage");
+                if (connection != null) {
+                    String query = "SELECT LinkSong, SongImage FROM Song WHERE SongID = " + songID;
+                    Statement smt = connection.createStatement();
+                    ResultSet resultSet = smt.executeQuery(query);
 
-                    // Phát bài hát
-                    if (myMusic == null) {
-                        myMusic = new MediaPlayer();
-                    } else {
-                        myMusic.reset();  // Reset MediaPlayer nếu đã khởi tạo trước đó
+                    if (resultSet.next()) {
+                        songLink = resultSet.getString("LinkSong");
+                        String img = resultSet.getString("SongImage");
+
+                        // Tải ảnh từ URL
+                        byte[] imageBytes = getImageBytesFromURL(img);
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+
+                        // Chuẩn bị MediaPlayer
+                        if (myMusic == null) {
+                            myMusic = new MediaPlayer();
+                        } else {
+                            myMusic.reset();
+                        }
+                        myMusic.setDataSource(songLink);
+                        myMusic.prepare(); // Chuẩn bị trong background thread
+
+                        // Cập nhật UI trên main thread
+                        runOnUiThread(() -> {
+                            mini_player_image.setImageBitmap(bitmap);
+                            mini_player_play_pause.setImageResource(myMusic.isPlaying() ? R.drawable.ic_pause : R.drawable.ic_play);
+                        });
+
+                        resultSet.close();
+                        smt.close();
+                        connection.close();
                     }
-
-                    myMusic.setDataSource(songLink);
-                    myMusic.prepare();
-                    myMusic.seekTo(playbackTime); // Đặt thời gian phát lại
-
-                    // Lấy ảnh bài hát và cập nhật
-                    byte[] imageBytes = getImageBytesFromURL(img);
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
-                    mini_player_image.setImageBitmap(bitmap);
+                } else {
+                    Log.e("Error: ", "Connection is null");
                 }
-                resultSet.close();  // Đóng ResultSet
-                smt.close();  // Đóng Statement
-                connection.close();
             } catch (Exception e) {
                 Log.e("Error: ", e.getMessage());
+            } finally {
+                executor.shutdown(); // Đóng executor sau khi hoàn thành
             }
-        } else {
-            Log.e("Error: ", "Connection is null");
-        }
+        });
     }
 
     @Override
@@ -443,13 +494,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         if (myMusic != null && myMusic.isPlaying()) {
-            // Lưu thời gian phát nhạc
-//            SharedPreferences sharedPreferences = getSharedPreferences("musicData", MODE_PRIVATE);
-//            SharedPreferences.Editor editor = sharedPreferences.edit();
-//            editor.putInt("playbackTime", myMusic.getCurrentPosition());
-//            editor.apply();
-
-            myMusic.pause(); // Dừng phát nhạc
+            myMusic.pause();
+            mini_player_play_pause.setImageResource(R.drawable.ic_play);
         }
     }
 
@@ -468,14 +514,28 @@ public class MainActivity extends AppCompatActivity {
 
     private byte[] getImageBytesFromURL(String imageUrl) {
         try {
+//            URL url = new URL(imageUrl);
+//            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+//            connection.setDoInput(true);
+//            connection.connect();
+//            InputStream input = connection.getInputStream();
+//            Bitmap bitmap = BitmapFactory.decodeStream(input);
+//            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+//            return stream.toByteArray();
             URL url = new URL(imageUrl);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setDoInput(true);
             connection.connect();
             InputStream input = connection.getInputStream();
-            Bitmap bitmap = BitmapFactory.decodeStream(input);
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = input.read(buffer)) != -1) {
+                stream.write(buffer, 0, bytesRead);
+            }
+            input.close();
+            connection.disconnect();
             return stream.toByteArray();
         } catch (IOException e) {
             Log.e("Error: ", "Failed to load image from URL: " + e.getMessage());

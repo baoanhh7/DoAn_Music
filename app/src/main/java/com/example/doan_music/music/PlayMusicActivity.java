@@ -104,6 +104,7 @@ public class PlayMusicActivity extends AppCompatActivity {
     SongOffline songOffline, songOffline2;
     MusicDownloadManager musicDownloadManager;
     private MediaPlayerManager playerManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -129,8 +130,8 @@ public class PlayMusicActivity extends AppCompatActivity {
 
         loadRoleUser(userID);
 
-        updateHistorySong(IDSong);
-        updateViewSong(IDSong);
+//        updateHistorySong(IDSong);
+//        updateViewSong(IDSong);
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
         // Lấy instance đã được cấu hình trước đó
@@ -146,27 +147,29 @@ public class PlayMusicActivity extends AppCompatActivity {
 //                .apply(); // Cập nhật cấu hình cho Singleton
 //        MediaPlayerManager playerManager = MediaPlayerManager.getInstance(); // Lấy Singleton
         //myMusic = playerManager.getMediaPlayer(); // Lấy MediaPlayer
-        playerManager.setDataSource(loadDataSong(IDSong));
-        playerManager.play();
+//        playerManager.setDataSource(loadDataSong(IDSong));
+//        playerManager.play();
 //        myMusic.seekTo(0);
 //        myMusic.start();
 //        myMusic.setLooping(false);
+        lyricsManager = new LyricsManager(playerManager.getMediaPlayer(), txt_lyric);
+        playNewSong(IDSong);
         seekbar1.setVisibility(View.GONE);
         // tạo biến duration để lưu thời gian bài hát
-        String duration = timeSeekbar(playerManager.getMediaPlayer().getDuration());
-        txt_time.setText(duration);
-        loadNameArtist(IDSong);
-        sendNotification();
-        loadLRC(IDSong);
+//        String duration = timeSeekbar(playerManager.getMediaPlayer().getDuration());
+//        txt_time.setText(duration);
+//        loadNameArtist(IDSong);
+//        sendNotification();
+//        loadLRC(IDSong);
         txt_lyric.setText("");
-        updateHeartButtonUI();
+//        updateHeartButtonUI();
 
-        addSongToHistory(userID, IDSong);
-        updateSongHistory(userID, IDSong);
+//        addSongToHistory(userID, IDSong);
+//        updateSongHistory(userID, IDSong);
 
         volume();
         // Đọc file LRC và lưu trữ lời bài hát
-        lyricsManager = new LyricsManager(playerManager.getMediaPlayer(), txt_lyric);
+
 //        readLRCFile();
 
 //        refreshRunnable = new Runnable() {
@@ -177,20 +180,19 @@ public class PlayMusicActivity extends AppCompatActivity {
 //                handler.postDelayed(this, REFRESH_INTERVAL);
 //            }
 //        };
-        if (Role.equalsIgnoreCase("member")) {
-            createADS();
-            txt_lyric.setText("premium de mo tinh nang");
-        }
-        if (Role.equalsIgnoreCase("premium")) {
-            lyricsManager.loadLyrics(linkLRC);
-        }
+//        if (Role.equalsIgnoreCase("member")) {
+//            createADS();
+//            txt_lyric.setText("premium de mo tinh nang");
+//        }
+//        if (Role.equalsIgnoreCase("premium")) {
+//            lyricsManager.loadLyrics(linkLRC);
+//        }
         // Bắt đầu cập nhật lời bài hát
         if (frag) {
             playerManager.getMediaPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
                     playNextSong(arr);
-                    sendNotification();
                 }
             });
         }
@@ -203,6 +205,7 @@ public class PlayMusicActivity extends AppCompatActivity {
         // Giải phóng resources
         playerManager.release();
     }
+
     private void addSongToHistory(int userID, Integer songID) {
         ConnectionClass sql = new ConnectionClass();
 
@@ -634,222 +637,6 @@ public class PlayMusicActivity extends AppCompatActivity {
                     Toast.makeText(PlayMusicActivity.this, "Tài khoản premium mới có thể tải nhạc", Toast.LENGTH_LONG).show();
             }
         });
-        btn_volume.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int visibility = seekbar1.getVisibility();
-                if (visibility == View.GONE) {
-                    seekbar1.setVisibility(View.VISIBLE);
-                } else
-                    seekbar1.setVisibility(View.GONE);
-            }
-        });
-        btn_home.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (playerManager.getMediaPlayer().isPlaying()) {
-                    playerManager.stop();
-                    // myMusic.reset();
-                }
-
-                Intent intent = new Intent(PlayMusicActivity.this, MainActivity.class);
-                startActivity(intent);
-
-                finish();
-            }
-        });
-        btn_play.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (playerManager.getMediaPlayer().isPlaying()) {
-                    playerManager.pause();
-                    btn_play.setImageResource(R.drawable.ic_play);
-                    imageView_songs.clearAnimation();
-
-                } else {
-                    playerManager.play();
-                    btn_play.setImageResource(R.drawable.ic_pause);
-
-                    // Áp dụng animation vào ImageView
-                    imageView_songs.startAnimation(animation);
-                }
-            }
-        });
-        btn_next.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (playerManager.getMediaPlayer() != null) {
-                    btn_play.setImageResource(R.drawable.ic_pause);
-                }
-                if (frag) {
-                    if (Isshuffle) {
-                        Positionshuffle = currentPosition;
-                        currentPosition = getRandom(arr.size() - 1);
-                    } else if (currentPosition < arr.size() - 1) {
-                        currentPosition++;
-                    } else {
-                        currentPosition = 0;
-                    }
-
-
-                    if (playerManager.getMediaPlayer().isPlaying()) {
-                        playerManager.stop();
-                    }
-                    if (!playerManager.getMediaPlayer().isPlaying()) {
-                        playerManager.stop();
-                    }
-                    Integer idSong = arr.get(currentPosition);
-                    playerManager.setDataSource(loadDataSong(idSong));
-                    loadNameArtist(idSong);
-                    //updateHistorySong(idSong);
-                    updateSongHistory(userID, IDSong);
-                    updateViewSong(idSong);
-                    txt_lyric.setText("");
-                    sendNotification();
-                    String duration = timeSeekbar(playerManager.getDuration());
-                    txt_time.setText(duration);
-                    seekBar.setMax(playerManager.getDuration());
-                    playerManager.play();
-                    updateHeartButtonUI();
-                    loadLRC(idSong);
-                    //readLRCFile();
-                    if (Role.equalsIgnoreCase("premium")) {
-                        lyricsManager.loadLyrics(linkLRC);
-                    }
-                    imageView_songs.startAnimation(animation);
-                    if (Role.equalsIgnoreCase("member")) {
-                        createADS();
-                    }
-                } else {
-                    if (playerManager.isPlaying()) {
-                        playerManager.stop();
-                    }
-                    if (!playerManager.isPlaying()) {
-                        playerManager.stop();
-                    }
-                    Integer idSong = arr.get(currentPosition);
-                    playerManager.setDataSource(loadDataSong(idSong));
-                    loadNameArtist(idSong);
-                    //updateHistorySong(idSong);
-                    updateSongHistory(userID, IDSong);
-                    updateViewSong(idSong);
-                    txt_lyric.setText("");
-                    loadLRC(idSong);
-                    sendNotification();
-                    //readLRCFile();
-                    if (Role.equalsIgnoreCase("premium")) {
-                        lyricsManager.loadLyrics(linkLRC);
-                    }
-                    String duration = timeSeekbar(playerManager.getDuration());
-                    txt_time.setText(duration);
-                    seekBar.setMax(playerManager.getDuration());
-                    playerManager.play();
-
-                    updateHeartButtonUI();
-                    imageView_songs.startAnimation(animation);
-                    if (Role.equalsIgnoreCase("member")) {
-                        createADS();
-                    }
-                }
-            }
-        });
-        btn_pre.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (playerManager.getMediaPlayer() != null) {
-                    btn_play.setImageResource(R.drawable.ic_pause);
-                }
-                if (frag) {
-                    if (Isshuffle) {
-                        currentPosition = Positionshuffle;
-                    } else if (currentPosition > 0) {
-                        currentPosition--;
-                    } else {
-                        currentPosition = arr.size() - 1;
-                    }
-
-                    if (playerManager.isPlaying()) {
-                        playerManager.stop();
-                    }
-                    if (!playerManager.isPlaying()) {
-                        playerManager.stop();
-                    }
-                    Integer idSong = arr.get(currentPosition);
-                    playerManager.setDataSource(loadDataSong(idSong));
-                    loadNameArtist(idSong);
-                    //updateHistorySong(idSong);
-                    updateSongHistory(userID, IDSong);
-                    updateViewSong(idSong);
-                    txt_lyric.setText("");
-                    loadLRC(idSong);
-                    //readLRCFile();
-                    if (Role.equalsIgnoreCase("premium")) {
-                        lyricsManager.loadLyrics(linkLRC);
-                    }
-                    updateHeartButtonUI();
-                    sendNotification();
-                    String duration = timeSeekbar(playerManager.getDuration());
-                    txt_time.setText(duration);
-                    seekBar.setMax(playerManager.getDuration());
-                    playerManager.play();
-                    imageView_songs.startAnimation(animation);
-                    if (Role.equalsIgnoreCase("member")) {
-                        createADS();
-                    }
-                } else {
-                    if (playerManager.isPlaying()) {
-                        playerManager.stop();
-                    }
-
-                    if (!playerManager.isPlaying()) {
-                        playerManager.stop();
-                    }
-                    Integer idSong = arr.get(currentPosition);
-                    playerManager.setDataSource(loadDataSong(idSong));
-                    loadNameArtist(idSong);
-                    //updateHistorySong(idSong);
-                    updateSongHistory(userID, IDSong);
-                    txt_lyric.setText("");
-                    loadLRC(idSong);
-                    //readLRCFile();
-                    if (Role.equalsIgnoreCase("premium")) {
-                        lyricsManager.loadLyrics(linkLRC);
-                    }
-                    updateViewSong(idSong);
-                    updateHeartButtonUI();
-                    sendNotification();
-                    String duration = timeSeekbar(playerManager.getDuration());
-                    txt_time.setText(duration);
-                    seekBar.setMax(playerManager.getDuration());
-                    playerManager.play();
-                    imageView_songs.startAnimation(animation);
-                    if (Role.equalsIgnoreCase("member")) {
-                        createADS();
-                    }
-                }
-            }
-        });
-
-        btn_back.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (playerManager.getMediaPlayer() != null) {  // Kiểm tra myMusic có null không
-                    if (playerManager.isPlaying()) {
-                        try {
-                            playerManager.stop();
-                            //myMus
-                            //myMusic.reset();
-                        } catch (IllegalStateException e) {
-                            Log.e("MediaPlayer", "Error stopping or resetting", e);
-                        }
-                    }
-                } else {
-                    Log.e("MediaPlayer", "myMusic is null");
-                }
-                finish();
-            }
-        });
-
         btn_heart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -869,87 +656,303 @@ public class PlayMusicActivity extends AppCompatActivity {
                 }
             }
         });
-
-        btn_toggle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (frag) {
-                    // Thực hiện các hành động khi nút được bật
-                    btn_toggle.setImageResource(R.drawable.ic_repeatactive);
-                    MediaPlayerManager.Builder.getInstance()
-                            .setLooping(true)
-                            .apply();
-//                    myMusic.setLooping(true);
-                    frag = false;
-                } else {
-                    btn_toggle.setImageResource(R.drawable.ic_repeat);
-                    MediaPlayerManager.Builder.getInstance()
-                            .setLooping(false)
-                            .apply();
-                    //myMusic.setLooping(false);
-                    frag = true;
-                }
-            }
-        });
-        btn_shuffle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (Isshuffle) {
-                    btn_shuffle.setImageResource(R.drawable.ic_shuffer);
-                    Isshuffle = false;
-//                    Collections.shuffle(arr);
-                } else {
-                    btn_shuffle.setImageResource(R.drawable.ic_shufferactive);
-//                    arr = shuffle;
-                    Isshuffle = true;
-                }
-            }
-        });
-
+        setupVolumeControl();
+        setupPlaybackControls();
+        setupNavigationControls();
+        setupProgressBar();
         // set giới hạn Max cho thanh seekBar
-        seekBar.setMax(playerManager.getDuration());
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser) {
-                    playerManager.seekTo(progress);
-                    seekBar.setProgress(progress);
-                }
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (playerManager != null) {
-                    if (playerManager.isPlaying()) {
-                        try {
-                            final double current = playerManager.getCurrentPosition();
-                            final String time = timeSeekbar((int) current);
-
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    txt_time_first.setText(time);
-                                    seekBar.setProgress((int) current);
-                                }
-                            });
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                        }
-                    }
-                }
-            }
-        }).start();
+//        seekBar.setMax(playerManager.getDuration());
+//        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+//            @Override
+//            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+//                if (fromUser) {
+//                    playerManager.seekTo(progress);
+//                    seekBar.setProgress(progress);
+//                }
+//            }
+//
+//            @Override
+//            public void onStartTrackingTouch(SeekBar seekBar) {
+//
+//            }
+//
+//            @Override
+//            public void onStopTrackingTouch(SeekBar seekBar) {
+//
+//            }
+//        });
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                while (playerManager != null) {
+//                    if (playerManager.isPlaying()) {
+//                        try {
+//                            final double current = playerManager.getCurrentPosition();
+//                            final String time = timeSeekbar((int) current);
+//
+//                            runOnUiThread(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    txt_time_first.setText(time);
+//                                    seekBar.setProgress((int) current);
+//                                }
+//                            });
+//                            Thread.sleep(1000);
+//                        } catch (InterruptedException e) {
+//                        }
+//                    }
+//                }
+//            }
+//        }).start();
+//        btn_toggle.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (frag) {
+//                    // Thực hiện các hành động khi nút được bật
+//                    btn_toggle.setImageResource(R.drawable.ic_repeatactive);
+//                    MediaPlayerManager.Builder.getInstance()
+//                            .setLooping(true)
+//                            .apply();
+////                    myMusic.setLooping(true);
+//                    frag = false;
+//                } else {
+//                    btn_toggle.setImageResource(R.drawable.ic_repeat);
+//                    MediaPlayerManager.Builder.getInstance()
+//                            .setLooping(false)
+//                            .apply();
+//                    //myMusic.setLooping(false);
+//                    frag = true;
+//                }
+//            }
+//        });
+//        btn_shuffle.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (Isshuffle) {
+//                    btn_shuffle.setImageResource(R.drawable.ic_shuffer);
+//                    Isshuffle = false;
+////                    Collections.shuffle(arr);
+//                } else {
+//                    btn_shuffle.setImageResource(R.drawable.ic_shufferactive);
+////                    arr = shuffle;
+//                    Isshuffle = true;
+//                }
+//            }
+//        });
+//        btn_back.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (playerManager.getMediaPlayer() != null) {  // Kiểm tra myMusic có null không
+//                    if (playerManager.isPlaying()) {
+//                        try {
+//                            playerManager.stop();
+//                            //myMus
+//                            //myMusic.reset();
+//                        } catch (IllegalStateException e) {
+//                            Log.e("MediaPlayer", "Error stopping or resetting", e);
+//                        }
+//                    }
+//                } else {
+//                    Log.e("MediaPlayer", "myMusic is null");
+//                }
+//                finish();
+//            }
+//        });
+//        btn_volume.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                int visibility = seekbar1.getVisibility();
+//                if (visibility == View.GONE) {
+//                    seekbar1.setVisibility(View.VISIBLE);
+//                } else
+//                    seekbar1.setVisibility(View.GONE);
+//            }
+//        });
+//        btn_home.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (playerManager.getMediaPlayer().isPlaying()) {
+//                    playerManager.stop();
+//                    // myMusic.reset();
+//                }
+//
+//                Intent intent = new Intent(PlayMusicActivity.this, MainActivity.class);
+//                startActivity(intent);
+//
+//                finish();
+//            }
+//        });
+//        btn_play.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (playerManager.getMediaPlayer().isPlaying()) {
+//                    playerManager.pause();
+//                    btn_play.setImageResource(R.drawable.ic_play);
+//                    imageView_songs.clearAnimation();
+//
+//                } else {
+//                    playerManager.play();
+//                    btn_play.setImageResource(R.drawable.ic_pause);
+//
+//                    // Áp dụng animation vào ImageView
+//                    imageView_songs.startAnimation(animation);
+//                }
+//            }
+//        });
+//        btn_next.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (playerManager.getMediaPlayer() != null) {
+//                    btn_play.setImageResource(R.drawable.ic_pause);
+//                }
+//                if (frag) {
+//                    if (Isshuffle) {
+//                        Positionshuffle = currentPosition;
+//                        currentPosition = getRandom(arr.size() - 1);
+//                    } else if (currentPosition < arr.size() - 1) {
+//                        currentPosition++;
+//                    } else {
+//                        currentPosition = 0;
+//                    }
+//
+//
+//                    if (playerManager.getMediaPlayer().isPlaying()) {
+//                        playerManager.stop();
+//                    }
+//                    if (!playerManager.getMediaPlayer().isPlaying()) {
+//                        playerManager.stop();
+//                    }
+//                    Integer idSong = arr.get(currentPosition);
+//                    playerManager.setDataSource(loadDataSong(idSong));
+//                    loadNameArtist(idSong);
+//                    //updateHistorySong(idSong);
+//                    updateSongHistory(userID, IDSong);
+//                    updateViewSong(idSong);
+//                    txt_lyric.setText("");
+//                    sendNotification();
+//                    String duration = timeSeekbar(playerManager.getDuration());
+//                    txt_time.setText(duration);
+//                    seekBar.setMax(playerManager.getDuration());
+//                    playerManager.play();
+//                    updateHeartButtonUI();
+//                    loadLRC(idSong);
+//                    //readLRCFile();
+//                    if (Role.equalsIgnoreCase("premium")) {
+//                        lyricsManager.loadLyrics(linkLRC);
+//                    }
+//                    imageView_songs.startAnimation(animation);
+//                    if (Role.equalsIgnoreCase("member")) {
+//                        createADS();
+//                    }
+//                } else {
+//                    if (playerManager.isPlaying()) {
+//                        playerManager.stop();
+//                    }
+//                    if (!playerManager.isPlaying()) {
+//                        playerManager.stop();
+//                    }
+//                    Integer idSong = arr.get(currentPosition);
+//                    playerManager.setDataSource(loadDataSong(idSong));
+//                    loadNameArtist(idSong);
+//                    //updateHistorySong(idSong);
+//                    updateSongHistory(userID, IDSong);
+//                    updateViewSong(idSong);
+//                    txt_lyric.setText("");
+//                    loadLRC(idSong);
+//                    sendNotification();
+//                    //readLRCFile();
+//                    if (Role.equalsIgnoreCase("premium")) {
+//                        lyricsManager.loadLyrics(linkLRC);
+//                    }
+//                    String duration = timeSeekbar(playerManager.getDuration());
+//                    txt_time.setText(duration);
+//                    seekBar.setMax(playerManager.getDuration());
+//                    playerManager.play();
+//
+//                    updateHeartButtonUI();
+//                    imageView_songs.startAnimation(animation);
+//                    if (Role.equalsIgnoreCase("member")) {
+//                        createADS();
+//                    }
+//                }
+//            }
+//        });
+//        btn_pre.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (playerManager.getMediaPlayer() != null) {
+//                    btn_play.setImageResource(R.drawable.ic_pause);
+//                }
+//                if (frag) {
+//                    if (Isshuffle) {
+//                        currentPosition = Positionshuffle;
+//                    } else if (currentPosition > 0) {
+//                        currentPosition--;
+//                    } else {
+//                        currentPosition = arr.size() - 1;
+//                    }
+//
+//                    if (playerManager.isPlaying()) {
+//                        playerManager.stop();
+//                    }
+//                    if (!playerManager.isPlaying()) {
+//                        playerManager.stop();
+//                    }
+//                    Integer idSong = arr.get(currentPosition);
+//                    playerManager.setDataSource(loadDataSong(idSong));
+//                    loadNameArtist(idSong);
+//                    //updateHistorySong(idSong);
+//                    updateSongHistory(userID, IDSong);
+//                    updateViewSong(idSong);
+//                    txt_lyric.setText("");
+//                    loadLRC(idSong);
+//                    //readLRCFile();
+//                    if (Role.equalsIgnoreCase("premium")) {
+//                        lyricsManager.loadLyrics(linkLRC);
+//                    }
+//                    updateHeartButtonUI();
+//                    sendNotification();
+//                    String duration = timeSeekbar(playerManager.getDuration());
+//                    txt_time.setText(duration);
+//                    seekBar.setMax(playerManager.getDuration());
+//                    playerManager.play();
+//                    imageView_songs.startAnimation(animation);
+//                    if (Role.equalsIgnoreCase("member")) {
+//                        createADS();
+//                    }
+//                } else {
+//                    if (playerManager.isPlaying()) {
+//                        playerManager.stop();
+//                    }
+//
+//                    if (!playerManager.isPlaying()) {
+//                        playerManager.stop();
+//                    }
+//                    Integer idSong = arr.get(currentPosition);
+//                    playerManager.setDataSource(loadDataSong(idSong));
+//                    loadNameArtist(idSong);
+//                    //updateHistorySong(idSong);
+//                    updateSongHistory(userID, IDSong);
+//                    txt_lyric.setText("");
+//                    loadLRC(idSong);
+//                    //readLRCFile();
+//                    if (Role.equalsIgnoreCase("premium")) {
+//                        lyricsManager.loadLyrics(linkLRC);
+//                    }
+//                    updateViewSong(idSong);
+//                    updateHeartButtonUI();
+//                    sendNotification();
+//                    String duration = timeSeekbar(playerManager.getDuration());
+//                    txt_time.setText(duration);
+//                    seekBar.setMax(playerManager.getDuration());
+//                    playerManager.play();
+//                    imageView_songs.startAnimation(animation);
+//                    if (Role.equalsIgnoreCase("member")) {
+//                        createADS();
+//                    }
+//                }
+//            }
+//        });
     }
 
     private void saveDataSongOff(Integer idSong) {
@@ -1108,25 +1111,26 @@ public class PlayMusicActivity extends AppCompatActivity {
             currentPosition = 0;
         }
         Integer idSong = arr.get(currentPosition);
-        playerManager.setDataSource(loadDataSong(idSong));
-        loadNameArtist(idSong);
-        updateHeartButtonUI();
-        updateViewSong(idSong);
-        //updateHistorySong(idSong);
-        updateSongHistory(userID, IDSong);
-        txt_lyric.setText("");
-        loadLRC(idSong);
-        //readLRCFile();
-        if (Role.equalsIgnoreCase("premium")) {
-            lyricsManager.loadLyrics(linkLRC);
-        }
-        String duration = timeSeekbar(playerManager.getDuration());
-        txt_time.setText(duration);
-        seekBar.setMax(playerManager.getDuration());
-        playerManager.play();
-        if (Role.equalsIgnoreCase("member")) {
-            createADS();
-        }
+        playNewSong(idSong);
+//        playerManager.setDataSource(loadDataSong(idSong));
+//        loadNameArtist(idSong);
+//        updateHeartButtonUI();
+//        updateViewSong(idSong);
+//        //updateHistorySong(idSong);
+//        updateSongHistory(userID, IDSong);
+//        txt_lyric.setText("");
+//        loadLRC(idSong);
+//        //readLRCFile();
+//        if (Role.equalsIgnoreCase("premium")) {
+//            lyricsManager.loadLyrics(linkLRC);
+//        }
+//        String duration = timeSeekbar(playerManager.getDuration());
+//        txt_time.setText(duration);
+//        seekBar.setMax(playerManager.getDuration());
+//        playerManager.play();
+//        if (Role.equalsIgnoreCase("member")) {
+//            createADS();
+//        }
     }
 
     private void addControls() {
@@ -1154,5 +1158,166 @@ public class PlayMusicActivity extends AppCompatActivity {
         // Áp dụng animation vào ImageView
         imageView_songs.startAnimation(animation);
     }
+    private void playNewSong(Integer songId) {
+        if (playerManager.isPlaying()) {
+            playerManager.stop();
+        }
 
+        playerManager.setDataSource(loadDataSong(songId));
+        loadNameArtist(songId);
+        updateViewSong(songId);
+        updateHeartButtonUI();
+        updateLyrics(songId);
+        updateUIElements();
+        updateSongHistory(userID, IDSong);
+        playerManager.play();
+        imageView_songs.startAnimation(animation);
+
+        if (Role.equalsIgnoreCase("member")) {
+            createADS();
+        }
+    }
+    private void updateLyrics(Integer songId) {
+        txt_lyric.setText("");
+        loadLRC(songId);
+        if (Role.equalsIgnoreCase("premium")) {
+            lyricsManager.loadLyrics(linkLRC);
+        }
+    }
+    private void updateUIElements() {
+        sendNotification();
+        String duration = timeSeekbar(playerManager.getDuration());
+        txt_time.setText(duration);
+        seekBar.setMax(playerManager.getDuration());
+        btn_play.setImageResource(R.drawable.ic_pause);
+    }
+    private void handleNextSong() {
+        if (Isshuffle) {
+            Positionshuffle = currentPosition;
+            currentPosition = getRandom(arr.size() - 1);
+        } else if (currentPosition < arr.size() - 1) {
+            currentPosition++;
+        } else {
+            currentPosition = 0;
+        }
+
+        Integer songId = arr.get(currentPosition);
+        playNewSong(songId);
+    }
+
+    private void handlePreviousSong() {
+        if (Isshuffle) {
+            currentPosition = Positionshuffle;
+        } else if (currentPosition > 0) {
+            currentPosition--;
+        } else {
+            currentPosition = arr.size() - 1;
+        }
+
+        Integer songId = arr.get(currentPosition);
+        playNewSong(songId);
+    }
+    private void setupVolumeControl() {
+        btn_volume.setOnClickListener(v -> {
+            int visibility = seekbar1.getVisibility();
+            seekbar1.setVisibility(visibility == View.GONE ? View.VISIBLE : View.GONE);
+        });
+    }
+
+    private void setupPlaybackControls() {
+        // Xử lý nút play/pause
+        btn_play.setOnClickListener(v -> {
+            if (playerManager.getMediaPlayer().isPlaying()) {
+                playerManager.pause();
+                btn_play.setImageResource(R.drawable.ic_play);
+                imageView_songs.clearAnimation();
+            } else {
+                playerManager.play();
+                btn_play.setImageResource(R.drawable.ic_pause);
+                imageView_songs.startAnimation(animation);
+            }
+        });
+
+        // Xử lý nút lặp lại
+        btn_toggle.setOnClickListener(v -> {
+            frag = !frag;
+            btn_toggle.setImageResource(frag ? R.drawable.ic_repeat : R.drawable.ic_repeatactive);
+            MediaPlayerManager.Builder.getInstance()
+                    .setLooping(!frag)
+                    .apply();
+        });
+
+        // Xử lý nút phát ngẫu nhiên
+        btn_shuffle.setOnClickListener(v -> {
+            Isshuffle = !Isshuffle;
+            btn_shuffle.setImageResource(Isshuffle ? R.drawable.ic_shufferactive : R.drawable.ic_shuffer);
+        });
+    }
+    private void setupNavigationControls() {
+        // Xử lý các nút điều hướng
+        btn_next.setOnClickListener(v -> handleNextSong());
+        btn_pre.setOnClickListener(v -> handlePreviousSong());
+
+        btn_back.setOnClickListener(v -> {
+            if (playerManager.getMediaPlayer() != null && playerManager.isPlaying()) {
+                try {
+                    playerManager.stop();
+                } catch (IllegalStateException e) {
+                    Log.e("MediaPlayer", "Lỗi khi dừng phát", e);
+                }
+            }
+            finish();
+        });
+
+        btn_home.setOnClickListener(v -> {
+            if (playerManager.getMediaPlayer().isPlaying()) {
+                playerManager.stop();
+            }
+            startActivity(new Intent(PlayMusicActivity.this, MainActivity.class));
+            finish();
+        });
+    }
+
+    private void setupProgressBar() {
+        seekBar.setMax(playerManager.getDuration());
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    playerManager.seekTo(progress);
+                    seekBar.setProgress(progress);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+
+        startProgressUpdateThread();
+    }
+
+    private void startProgressUpdateThread() {
+        new Thread(() -> {
+            while (playerManager != null) {
+                if (playerManager.isPlaying()) {
+                    try {
+                        final double current = playerManager.getCurrentPosition();
+                        final String time = timeSeekbar((int) current);
+
+                        runOnUiThread(() -> {
+                            txt_time_first.setText(time);
+                            seekBar.setProgress((int) current);
+                        });
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+            }
+        }).start();
+    }
 }

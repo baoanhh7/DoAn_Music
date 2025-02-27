@@ -13,6 +13,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -115,7 +116,8 @@ public class Library_Fragment extends Fragment implements OnItemClickListener {
     public void onResume() {
         super.onResume();
         //startAutoRefresh();
-        loadDataSQLServer();
+//        loadDataSQLServer();
+        new LoadDataTask().execute();
     }
 
     private void addEvents() {
@@ -177,31 +179,79 @@ public class Library_Fragment extends Fragment implements OnItemClickListener {
         bottomSheetDialog.show();
     }
 
-    @SuppressLint("NotifyDataSetChanged")
-    private void loadDataSQLServer() {
+//    @SuppressLint("NotifyDataSetChanged")
+//    private void loadDataSQLServer() {
+//        ConnectionClass sql = new ConnectionClass();
+//        connection = sql.conClass();
+//        if (connection != null) {
+//            try {
+//                query = "SELECT * " +
+//                        "FROM Artist " +
+//                        " INNER JOIN User_Artist ON Artist.ArtistID = User_Artist.ArtistID " +
+//                        " WHERE User_Artist.UserID = " + userId;
+//                smt = connection.createStatement();
+//                resultSet = smt.executeQuery(query);
+//                arr.clear();
+//                while (resultSet.next()) {
+//                    Integer maArtist = resultSet.getInt(1);
+//                    String ten = resultSet.getString(2);
+//                    String linkImage = resultSet.getString(3);
+//                    // Chuyển đổi linkImage thành byte[]
+//                    byte[] img = getImageBytesFromURL(linkImage);
+//                    ThuVien thuVien = new ThuVien(img, ten);
+//                    arr.add(thuVien);
+//                }
+//                thuVienAdapter.notifyDataSetChanged();
+//                query = "SELECT * " +
+//                        "FROM  Playlist_User " +
+//                        "WHERE Playlist_User.UserID = " + userId;
+//                smt = connection.createStatement();
+//                resultSet = smt.executeQuery(query);
+//                while (resultSet.next()) {
+//                    Integer UserID = resultSet.getInt(3);
+//                    String ten = resultSet.getString(2);
+//                    byte[] byteArray = convertDrawableToByteArray(requireContext(), R.drawable.music_logo);
+//                    if (userId == UserID) {
+//                        ThuVien thuVien = new ThuVien(byteArray, ten);
+//                        arr.add(thuVien);
+//                    }
+//                }
+//                thuVienAdapter.notifyDataSetChanged();
+//                connection.close();
+//            } catch (Exception e) {
+//                Log.e("Error: ", e.getMessage());
+//            }
+//        } else {
+//            Log.e("Error: ", "Connection null");
+//        }
+//    }
+private class LoadDataTask extends AsyncTask<Void, Void, ArrayList<ThuVien>> {
+    @Override
+    protected ArrayList<ThuVien> doInBackground(Void... voids) {
+        ArrayList<ThuVien> tempArr = new ArrayList<>();
         ConnectionClass sql = new ConnectionClass();
         connection = sql.conClass();
         if (connection != null) {
             try {
+                // Tải danh sách nghệ sĩ
                 query = "SELECT * " +
                         "FROM Artist " +
-                        " INNER JOIN User_Artist ON Artist.ArtistID = User_Artist.ArtistID " +
-                        " WHERE User_Artist.UserID = " + userId;
+                        "INNER JOIN User_Artist ON Artist.ArtistID = User_Artist.ArtistID " +
+                        "WHERE User_Artist.UserID = " + userId;
                 smt = connection.createStatement();
                 resultSet = smt.executeQuery(query);
-                arr.clear();
                 while (resultSet.next()) {
                     Integer maArtist = resultSet.getInt(1);
                     String ten = resultSet.getString(2);
                     String linkImage = resultSet.getString(3);
-                    // Chuyển đổi linkImage thành byte[]
                     byte[] img = getImageBytesFromURL(linkImage);
                     ThuVien thuVien = new ThuVien(img, ten);
-                    arr.add(thuVien);
+                    tempArr.add(thuVien);
                 }
-                thuVienAdapter.notifyDataSetChanged();
+
+                // Tải danh sách playlist
                 query = "SELECT * " +
-                        "FROM  Playlist_User " +
+                        "FROM Playlist_User " +
                         "WHERE Playlist_User.UserID = " + userId;
                 smt = connection.createStatement();
                 resultSet = smt.executeQuery(query);
@@ -211,19 +261,26 @@ public class Library_Fragment extends Fragment implements OnItemClickListener {
                     byte[] byteArray = convertDrawableToByteArray(requireContext(), R.drawable.music_logo);
                     if (userId == UserID) {
                         ThuVien thuVien = new ThuVien(byteArray, ten);
-                        arr.add(thuVien);
+                        tempArr.add(thuVien);
                     }
                 }
-                thuVienAdapter.notifyDataSetChanged();
                 connection.close();
             } catch (Exception e) {
                 Log.e("Error: ", e.getMessage());
             }
         } else {
-            Log.e("Error: ", "Connection null");
+            Log.e("Error: ", "Kết nối null");
         }
+        return tempArr;
     }
 
+    @Override
+    protected void onPostExecute(ArrayList<ThuVien> result) {
+        arr.clear();
+        arr.addAll(result);
+        thuVienAdapter.notifyDataSetChanged();
+    }
+}
     // Phương thức để tải ảnh từ URL và chuyển thành byte[]
     private byte[] getImageBytesFromURL(String imageUrl) {
         try {
