@@ -9,7 +9,7 @@ import java.sql.DriverManager;
 
 public class ConnectionClass {
 
-    private static final String DB_URL = "jdbc:jtds:sqlserver://10.21.2.62:1433;databaseName=DemoMusic";
+    private static final String DB_URL = "jdbc:jtds:sqlserver://10.21.1.167:1433;databaseName=DemoMusic";
     private static final String USER = "sa";
     private static final String PASS = "1";
     Connection connection;

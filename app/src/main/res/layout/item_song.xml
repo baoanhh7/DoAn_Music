@@ -50,12 +50,14 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <ImageView
+        <Button
             android:id="@+id/btn_heart"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:background="@drawable/ic_heart" />
+            android:text="Undo"
+            android:textColor="@color/white"
+            android:background="@null" /> <!-- Hoặc sử dụng style button tùy chỉnh -->
 
     </LinearLayout>
 

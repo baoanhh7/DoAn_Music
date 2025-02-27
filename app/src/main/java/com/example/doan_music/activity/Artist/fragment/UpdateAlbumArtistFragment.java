@@ -20,8 +20,12 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+
 import com.example.doan_music.R;
 import com.example.doan_music.database.ConnectionClass;
+import com.example.doan_music.designPattern.Command;
+import com.example.doan_music.designPattern.CommandPK.CommandManager;
+import com.example.doan_music.designPattern.CommandPK.UpdateAlbumCommand;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.FirebaseStorage;
@@ -35,7 +39,7 @@ import java.util.UUID;
 public class UpdateAlbumArtistFragment extends Fragment {
 
     private static final int PICK_IMAGE_REQUEST = 1;
-
+    private Command command;
     private ImageButton imageButton;
     private EditText albumNameEditText;
     private Button confirmButton, backButton;
@@ -149,73 +153,92 @@ public class UpdateAlbumArtistFragment extends Fragment {
         }
     }
 
-    private void uploadImageToFirebase(String albumName) {
-        // Tạo một tên duy nhất cho ảnh
-        String fileName = UUID.randomUUID().toString();
+//    private void uploadImageToFirebase(String albumName) {
+//        // Tạo một tên duy nhất cho ảnh
+//        String fileName = UUID.randomUUID().toString();
+//
+//        // Tạo tham chiếu đến Firebase Storage
+//        StorageReference fileReference = storageReference.child(fileName);
+//
+//        // Tải ảnh lên Firebase Storage
+//        fileReference.putFile(imageUri)
+//                .addOnSuccessListener(taskSnapshot -> fileReference.getDownloadUrl().addOnSuccessListener(uri -> {
+//                    String imageUrl = uri.toString();
+//                    Log.d(TAG, "uploadImageToFirebase: Image URL = " + imageUrl);
+//                    Log.d(TAG, "uploadImageToFirebase: userID = " + userID);
+//                    updateAlbumInDatabase(albumName, imageUrl, userID);
+//                }))
+//                .addOnFailureListener(e -> {
+//                    Log.e(TAG, "uploadImageToFirebase: Failed to upload image", e);
+//                    Toast.makeText(getContext(), "Tải ảnh lên thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+//                });
+//    }
+//
+//    private void updateAlbumInDatabase(String albumName, String imageUrl, int userID) {
+//        if (albumName == null || imageUrl == null || userID == -1) {
+//            Log.e(TAG, "updateAlbumInDatabase: Some parameters are invalid. albumName: " + albumName + ", imageUrl: " + imageUrl + ", userID: " + userID);
+//            Toast.makeText(getContext(), "Thông tin album không đầy đủ", Toast.LENGTH_SHORT).show();
+//            return;
+//        }
+//
+//        ConnectionClass connectionClass = new ConnectionClass();
+//        Connection connection = connectionClass.conClass(); // Kết nối SQL Server
+//
+//        if (connection == null) {
+//            Toast.makeText(getContext(), "Không thể kết nối cơ sở dữ liệu", Toast.LENGTH_SHORT).show();
+//            return;
+//        }
+//
+//        try {
+//            // Tạo câu lệnh SQL để thêm album mới
+//            String query = "INSERT INTO Album (AlbumName, AlbumImage, ArtistID) VALUES (?, ?, ?)";
+//            PreparedStatement preparedStatement = connection.prepareStatement(query);
+//            preparedStatement.setString(1, albumName);    // Gán giá trị AlbumName
+//            preparedStatement.setString(2, imageUrl);     // Gán giá trị AlbumImage (URL ảnh)
+//            preparedStatement.setInt(3, userID);          // Gán giá trị ArtistID (không cần chuyển đổi)
+//
+//            // Thực hiện câu lệnh SQL
+//            int rowsAffected = preparedStatement.executeUpdate();
+//            if (rowsAffected > 0) {
+//                Toast.makeText(getContext(), "Album đã được thêm thành công!", Toast.LENGTH_SHORT).show();
+//            } else {
+//                Toast.makeText(getContext(), "Thêm album thất bại", Toast.LENGTH_SHORT).show();
+//            }
+//
+//            preparedStatement.close(); // Đóng PreparedStatement sau khi sử dụng
+//        } catch (SQLException e) {
+//            Log.e(TAG, "SQL Error: " + e.getMessage(), e);
+//            Toast.makeText(getContext(), "Đã xảy ra lỗi SQL khi thêm album: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+//        } catch (Exception e) {
+//            Log.e(TAG, "Error: " + e.getMessage(), e);
+//            Toast.makeText(getContext(), "Đã xảy ra lỗi khi thêm album: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+//        } finally {
+//            try {
+//                if (connection != null && !connection.isClosed()) {
+//                    connection.close(); // Đóng kết nối sau khi sử dụng
+//                }
+//            } catch (SQLException e) {
+//                Log.e(TAG, "Failed to close connection: " + e.getMessage(), e);
+//            }
+//        }
+private void uploadImageToFirebase(String albumName) {
+    String fileName = UUID.randomUUID().toString();
+    StorageReference fileReference = storageReference.child(fileName);
 
-        // Tạo tham chiếu đến Firebase Storage
-        StorageReference fileReference = storageReference.child(fileName);
+    fileReference.putFile(imageUri)
+            .addOnSuccessListener(taskSnapshot -> fileReference.getDownloadUrl().addOnSuccessListener(uri -> {
+                String imageUrl = uri.toString();
+                Log.d(TAG, "uploadImageToFirebase: Image URL = " + imageUrl);
 
-        // Tải ảnh lên Firebase Storage
-        fileReference.putFile(imageUri)
-                .addOnSuccessListener(taskSnapshot -> fileReference.getDownloadUrl().addOnSuccessListener(uri -> {
-                    String imageUrl = uri.toString();
-                    Log.d(TAG, "uploadImageToFirebase: Image URL = " + imageUrl);
-                    Log.d(TAG, "uploadImageToFirebase: userID = " + userID);
-                    updateAlbumInDatabase(albumName, imageUrl, userID);
-                }))
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "uploadImageToFirebase: Failed to upload image", e);
-                    Toast.makeText(getContext(), "Tải ảnh lên thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
-    }
+                // Sử dụng Command để thêm album vào database
+                Command updateAlbumCommand = new UpdateAlbumCommand(albumName, imageUrl, userID);
+                CommandManager.getInstance().executeCommand(updateAlbumCommand);
 
-    private void updateAlbumInDatabase(String albumName, String imageUrl, int userID) {
-        if (albumName == null || imageUrl == null || userID == -1) {
-            Log.e(TAG, "updateAlbumInDatabase: Some parameters are invalid. albumName: " + albumName + ", imageUrl: " + imageUrl + ", userID: " + userID);
-            Toast.makeText(getContext(), "Thông tin album không đầy đủ", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        ConnectionClass connectionClass = new ConnectionClass();
-        Connection connection = connectionClass.conClass(); // Kết nối SQL Server
-
-        if (connection == null) {
-            Toast.makeText(getContext(), "Không thể kết nối cơ sở dữ liệu", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        try {
-            // Tạo câu lệnh SQL để thêm album mới
-            String query = "INSERT INTO Album (AlbumName, AlbumImage, ArtistID) VALUES (?, ?, ?)";
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setString(1, albumName);    // Gán giá trị AlbumName
-            preparedStatement.setString(2, imageUrl);     // Gán giá trị AlbumImage (URL ảnh)
-            preparedStatement.setInt(3, userID);          // Gán giá trị ArtistID (không cần chuyển đổi)
-
-            // Thực hiện câu lệnh SQL
-            int rowsAffected = preparedStatement.executeUpdate();
-            if (rowsAffected > 0) {
-                Toast.makeText(getContext(), "Album đã được thêm thành công!", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(getContext(), "Thêm album thất bại", Toast.LENGTH_SHORT).show();
-            }
-
-            preparedStatement.close(); // Đóng PreparedStatement sau khi sử dụng
-        } catch (SQLException e) {
-            Log.e(TAG, "SQL Error: " + e.getMessage(), e);
-            Toast.makeText(getContext(), "Đã xảy ra lỗi SQL khi thêm album: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        } catch (Exception e) {
-            Log.e(TAG, "Error: " + e.getMessage(), e);
-            Toast.makeText(getContext(), "Đã xảy ra lỗi khi thêm album: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        } finally {
-            try {
-                if (connection != null && !connection.isClosed()) {
-                    connection.close(); // Đóng kết nối sau khi sử dụng
-                }
-            } catch (SQLException e) {
-                Log.e(TAG, "Failed to close connection: " + e.getMessage(), e);
-            }
-        }
-    }
+                Toast.makeText(getContext(), "Album đã được thêm!", Toast.LENGTH_SHORT).show();
+            }))
+            .addOnFailureListener(e -> {
+                Log.e(TAG, "uploadImageToFirebase: Failed to upload image", e);
+                Toast.makeText(getContext(), "Tải ảnh lên thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            });
+}
 }
