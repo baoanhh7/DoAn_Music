@@ -104,7 +104,7 @@ public class PlayMusicActivity extends AppCompatActivity {
     SongOffline songOffline, songOffline2;
     MusicDownloadManager musicDownloadManager;
     private MediaPlayerManager playerManager;
-
+    private Playback playBack;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -137,9 +137,7 @@ public class PlayMusicActivity extends AppCompatActivity {
         // Lấy instance đã được cấu hình trước đó
         playerManager = MediaPlayerManager.getInstance();
         // Hoặc cấu hình lại nếu cần
-        MediaPlayerManager.Builder.getInstance()
-                .setVolume(60)
-                .apply();
+        new MediaPlayerManager.Builder().setVolume(60).apply();
 //        new MediaPlayerManager.Builder()
 //                .setLooping(false) // Phát lặp lại
 //                .setSpeed(1.0f) // Tăng tốc độ phát
@@ -199,6 +197,7 @@ public class PlayMusicActivity extends AppCompatActivity {
 
         addEvents();
     }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -210,8 +209,7 @@ public class PlayMusicActivity extends AppCompatActivity {
         ConnectionClass sql = new ConnectionClass();
 
         String query = "INSERT INTO SongHistory (UserID, SongID) VALUES (?, ?)";
-        try (Connection connection = sql.conClass();
-             PreparedStatement stmt = connection.prepareStatement(query)) {
+        try (Connection connection = sql.conClass(); PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, userID);
             stmt.setInt(2, songID);
             stmt.executeUpdate();
@@ -316,74 +314,71 @@ public class PlayMusicActivity extends AppCompatActivity {
 
     private void createADS() {
 
-        new Thread(
-                () -> {
-                    // Initialize the Google Mobile Ads SDK on a background thread.
-                    MobileAds.initialize(this, initializationStatus -> {
-                    });
-                })
-                .start();
+        new Thread(() -> {
+            // Initialize the Google Mobile Ads SDK on a background thread.
+            MobileAds.initialize(this, initializationStatus -> {
+            });
+        }).start();
         AdRequest adRequest = new AdRequest.Builder().build();
 
-        InterstitialAd.load(this, "ca-app-pub-3940256099942544/1033173712", adRequest,
-                new InterstitialAdLoadCallback() {
-                    @Override
-                    public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
-                        // The mInterstitialAd reference will be null until
-                        // an ad is loaded.
-                        mInterstitialAd = interstitialAd;
-                        Log.i("ADS", "onAdLoaded");
-                        if (mInterstitialAd != null) {
+        InterstitialAd.load(this, "ca-app-pub-3940256099942544/1033173712", adRequest, new InterstitialAdLoadCallback() {
+            @Override
+            public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                // The mInterstitialAd reference will be null until
+                // an ad is loaded.
+                mInterstitialAd = interstitialAd;
+                Log.i("ADS", "onAdLoaded");
+                if (mInterstitialAd != null) {
 //                            myMusic.pause();
-                            playerManager.pause();
-                            mInterstitialAd.show(PlayMusicActivity.this);
-                            mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
-                                @Override
-                                public void onAdClicked() {
-                                    // Called when a click is recorded for an ad.
-                                    Log.d("ADS", "Ad was clicked.");
-                                }
-
-                                @Override
-                                public void onAdDismissedFullScreenContent() {
-                                    // Called when ad is dismissed.
-                                    // Set the ad reference to null so you don't show the ad a second time.
-                                    playerManager.play();
-                                    Log.d("ADS", "Ad dismissed fullscreen content.");
-                                    mInterstitialAd = null;
-                                }
-
-                                @Override
-                                public void onAdFailedToShowFullScreenContent(AdError adError) {
-                                    // Called when ad fails to show.
-                                    Log.e("ADS", "Ad failed to show fullscreen content.");
-                                    mInterstitialAd = null;
-                                }
-
-                                @Override
-                                public void onAdImpression() {
-                                    // Called when an impression is recorded for an ad.
-                                    Log.d("ADS", "Ad recorded an impression.");
-                                }
-
-                                @Override
-                                public void onAdShowedFullScreenContent() {
-                                    // Called when ad is shown.
-                                    Log.d("ADS", "Ad showed fullscreen content.");
-                                }
-                            });
-                        } else {
-                            Log.d("TAG", "The interstitial ad wasn't ready yet.");
+                    playerManager.pause();
+                    mInterstitialAd.show(PlayMusicActivity.this);
+                    mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+                        @Override
+                        public void onAdClicked() {
+                            // Called when a click is recorded for an ad.
+                            Log.d("ADS", "Ad was clicked.");
                         }
-                    }
 
-                    @Override
-                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                        // Handle the error
-                        Log.d("ADS", loadAdError.toString());
-                        mInterstitialAd = null;
-                    }
-                });
+                        @Override
+                        public void onAdDismissedFullScreenContent() {
+                            // Called when ad is dismissed.
+                            // Set the ad reference to null so you don't show the ad a second time.
+                            playerManager.play();
+                            Log.d("ADS", "Ad dismissed fullscreen content.");
+                            mInterstitialAd = null;
+                        }
+
+                        @Override
+                        public void onAdFailedToShowFullScreenContent(AdError adError) {
+                            // Called when ad fails to show.
+                            Log.e("ADS", "Ad failed to show fullscreen content.");
+                            mInterstitialAd = null;
+                        }
+
+                        @Override
+                        public void onAdImpression() {
+                            // Called when an impression is recorded for an ad.
+                            Log.d("ADS", "Ad recorded an impression.");
+                        }
+
+                        @Override
+                        public void onAdShowedFullScreenContent() {
+                            // Called when ad is shown.
+                            Log.d("ADS", "Ad showed fullscreen content.");
+                        }
+                    });
+                } else {
+                    Log.d("TAG", "The interstitial ad wasn't ready yet.");
+                }
+            }
+
+            @Override
+            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                // Handle the error
+                Log.d("ADS", loadAdError.toString());
+                mInterstitialAd = null;
+            }
+        });
     }
 
 
@@ -479,23 +474,15 @@ public class PlayMusicActivity extends AppCompatActivity {
         // Tiếp tục xử lý với bitmap
 
         MediaSessionCompat mediaSessionCompat = new MediaSessionCompat(this, "tag");
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_headphone)
-                .setSubText("Music")
-                .setContentTitle(txt_artist_song.getText().toString())
-                .setContentText(txt_name_song.getText().toString())
-                .setLargeIcon(bitmap)
+        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID).setSmallIcon(R.drawable.ic_headphone).setSubText("Music").setContentTitle(txt_artist_song.getText().toString()).setContentText(txt_name_song.getText().toString()).setLargeIcon(bitmap)
                 // Add media control buttons that invoke intents in your media service
                 .addAction(R.drawable.ic_pre, "Previous", null) // #0
                 .addAction(R.drawable.ic_pause, "Pause", null)  // #1
                 .addAction(R.drawable.ic_next, "Next", null)     // #2
-                .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
-                        .setShowActionsInCompactView(0, 1, 2 /* #1: pause button */))
-                .build();
+                .setStyle(new androidx.media.app.NotificationCompat.MediaStyle().setShowActionsInCompactView(0, 1, 2 /* #1: pause button */)).build();
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        if (notificationManager != null)
-            notificationManager.notify(1, notification);
+        if (notificationManager != null) notificationManager.notify(1, notification);
     }
 
     private void volume() {
@@ -527,9 +514,7 @@ public class PlayMusicActivity extends AppCompatActivity {
         if (connection != null) {
             try {
                 // Truy vấn SQL Server để lấy dữ liệu
-                query = "select * from Artist" +
-                        " JOIN Song ON Artist.ArtistID = Song.ArtistID " +
-                        " WHERE Song.SongID =  " + id;
+                query = "select * from Artist" + " JOIN Song ON Artist.ArtistID = Song.ArtistID " + " WHERE Song.SongID =  " + id;
                 smt = connection.createStatement();
                 resultSet = smt.executeQuery(query);
 
@@ -1158,6 +1143,7 @@ public class PlayMusicActivity extends AppCompatActivity {
         // Áp dụng animation vào ImageView
         imageView_songs.startAnimation(animation);
     }
+
     private void playNewSong(Integer songId) {
         if (playerManager.isPlaying()) {
             playerManager.stop();
@@ -1177,6 +1163,7 @@ public class PlayMusicActivity extends AppCompatActivity {
             createADS();
         }
     }
+
     private void updateLyrics(Integer songId) {
         txt_lyric.setText("");
         loadLRC(songId);
@@ -1184,6 +1171,7 @@ public class PlayMusicActivity extends AppCompatActivity {
             lyricsManager.loadLyrics(linkLRC);
         }
     }
+
     private void updateUIElements() {
         sendNotification();
         String duration = timeSeekbar(playerManager.getDuration());
@@ -1191,32 +1179,77 @@ public class PlayMusicActivity extends AppCompatActivity {
         seekBar.setMax(playerManager.getDuration());
         btn_play.setImageResource(R.drawable.ic_pause);
     }
+
     private void handleNextSong() {
-        if (Isshuffle) {
-            Positionshuffle = currentPosition;
-            currentPosition = getRandom(arr.size() - 1);
-        } else if (currentPosition < arr.size() - 1) {
-            currentPosition++;
+        if (frag) {
+            if (Isshuffle) {
+                playBack = new ShufflePlayback();
+            } else {
+                playBack = new NormalPlayback();
+            }
         } else {
-            currentPosition = 0;
+            playBack = new RepeatPlayback();
         }
 
-        Integer songId = arr.get(currentPosition);
+        // Lấy chỉ số bài hát tiếp theo
+        int nextIndex = playBack.getNextPosition(currentPosition, arr);
+
+        // Lấy ID bài hát từ danh sách
+        Integer songId = arr.get(nextIndex);
+
+        // Cập nhật vị trí hiện tại
+        currentPosition = nextIndex;
+
+        // Phát bài hát mới
         playNewSong(songId);
     }
 
     private void handlePreviousSong() {
-        if (Isshuffle) {
-            currentPosition = Positionshuffle;
-        } else if (currentPosition > 0) {
-            currentPosition--;
+        if (frag) {
+            if (Isshuffle) {
+                playBack = new ShufflePlayback();
+            } else {
+                playBack = new NormalPlayback();
+            }
         } else {
-            currentPosition = arr.size() - 1;
+            playBack = new RepeatPlayback();
         }
 
-        Integer songId = arr.get(currentPosition);
+        // Lấy chỉ số bài hát tiếp theo
+        int preIndex = playBack.getPrePosition(currentPosition, arr);
+
+        // Lấy ID bài hát từ danh sách
+        Integer songId = arr.get(preIndex);
+
+        // Cập nhật vị trí hiện tại
+        currentPosition = preIndex;
+
+        // Phát bài hát mới
         playNewSong(songId);
+//        if(frag) {
+//            if (Isshuffle) {
+//                //currentPosition = Positionshuffle;
+//                playBack = new ShufflePlayback();
+//                songId = playBack.getPrePosition(currentPosition,arr);
+//            } else{
+//                playBack = new NormalPlayback();
+//                songId = playBack.getPrePosition(currentPosition,arr);
+//            }
+//            else if (currentPosition > 0) {
+//                currentPosition--;
+//            } else {
+//                currentPosition = arr.size() - 1;
+//            }
+//            Integer songId = arr.get(currentPosition);
+//            playNewSong(songId);
+//        }else {
+//            //Integer songId = arr.get(currentPosition);
+//            playBack = new RepeatPlayback();
+//            songId = playBack.getPrePosition(currentPosition,arr);
+//            playNewSong(songId);
+//        }
     }
+
     private void setupVolumeControl() {
         btn_volume.setOnClickListener(v -> {
             int visibility = seekbar1.getVisibility();
@@ -1242,9 +1275,7 @@ public class PlayMusicActivity extends AppCompatActivity {
         btn_toggle.setOnClickListener(v -> {
             frag = !frag;
             btn_toggle.setImageResource(frag ? R.drawable.ic_repeat : R.drawable.ic_repeatactive);
-            MediaPlayerManager.Builder.getInstance()
-                    .setLooping(!frag)
-                    .apply();
+            new MediaPlayerManager.Builder().setLooping(!frag).apply();
         });
 
         // Xử lý nút phát ngẫu nhiên
@@ -1253,6 +1284,7 @@ public class PlayMusicActivity extends AppCompatActivity {
             btn_shuffle.setImageResource(Isshuffle ? R.drawable.ic_shufferactive : R.drawable.ic_shuffer);
         });
     }
+
     private void setupNavigationControls() {
         // Xử lý các nút điều hướng
         btn_next.setOnClickListener(v -> handleNextSong());
@@ -1290,10 +1322,12 @@ public class PlayMusicActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
 
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
         });
 
         startProgressUpdateThread();

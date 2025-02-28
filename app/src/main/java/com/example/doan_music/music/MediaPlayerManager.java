@@ -180,23 +180,23 @@ public class MediaPlayerManager {
     }
 
     public static class Builder {
-        private static volatile Builder builderInstance;
+//        private static volatile Builder builderInstance;
         private boolean isLooping = false;
         private float speed = 1.0f;
         private int volume = 50;
 
-        private Builder() {}
+        public Builder() {}
 
-        public static Builder getInstance() {
-            if (builderInstance == null) {
-                synchronized (Builder.class) {
-                    if (builderInstance == null) {
-                        builderInstance = new Builder();
-                    }
-                }
-            }
-            return builderInstance;
-        }
+//        public static Builder getInstance() {
+//            if (builderInstance == null) {
+//                synchronized (Builder.class) {
+//                    if (builderInstance == null) {
+//                        builderInstance = new Builder();
+//                    }
+//                }
+//            }
+//            return builderInstance;
+//        }
 
         public Builder setLooping(boolean isLooping) {
             this.isLooping = isLooping;
