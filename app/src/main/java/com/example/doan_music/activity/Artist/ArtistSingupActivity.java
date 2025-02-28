@@ -14,47 +14,56 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.doan_music.R;
-import com.example.doan_music.database.ConnectionClass;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
+import com.example.doan_music.designPattern.DependencyInjectionPK.Class.SQLDatabaseService;
+import com.example.doan_music.designPattern.DependencyInjectionPK.DatabaseService;
+import com.example.doan_music.designPattern.DependencyInjectionPK.IF.UserRepository;
+import com.example.doan_music.designPattern.DependencyInjectionPK.Model.SQLUserRepository;
+import com.example.doan_music.designPattern.DependencyInjectionPK.Model.User;
 
 public class ArtistSingupActivity extends AppCompatActivity {
-    EditText username, email, phone, password, confirmPassword;
-    Button btnBack, btnConfirm;
-    TextView title;
-    ImageView imagePlaceholder;
+
+    private EditText username, email, phone, password, confirmPassword;
+    private Button btnBack, btnConfirm;
+    private TextView title;
+    private ImageView imagePlaceholder;
+    private UserRepository userRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_artist_singup);
-        addControls();
 
-        // Xử lý sự kiện click btnConfirm
+        // Khởi tạo UserRepository với Dependency Injection
+        DatabaseService databaseService = new SQLDatabaseService();
+        userRepository = new SQLUserRepository(databaseService);
+
+        addControls();
+        setupListeners();
+    }
+
+    private void setupListeners() {
         btnConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String user = username.getText().toString();
-                String userEmail = email.getText().toString();
-                String userPhone = phone.getText().toString();
-                String userPassword = password.getText().toString();
-                String userConfirmPassword = confirmPassword.getText().toString();
+                if (validateInputs()) {
+                    User user = new User(
+                            username.getText().toString(),
+                            email.getText().toString(),
+                            phone.getText().toString(),
+                            password.getText().toString(),
+                            "pending"
+                    );
 
-                // Kiểm tra các trường đã được nhập đầy đủ và mật khẩu xác nhận đúng
-                if (user.isEmpty() || userEmail.isEmpty() || userPhone.isEmpty() || userPassword.isEmpty() || userConfirmPassword.isEmpty()) {
-                    Toast.makeText(ArtistSingupActivity.this, "Vui lòng điền đầy đủ thông tin", Toast.LENGTH_SHORT).show();
-                } else if (!userPassword.equals(userConfirmPassword)) {
-                    Toast.makeText(ArtistSingupActivity.this, "Mật khẩu không khớp", Toast.LENGTH_SHORT).show();
-                } else {
-                    // Gọi phương thức để lưu thông tin tài khoản vào cơ sở dữ liệu
-                    saveAccount(user, userEmail, userPhone, userPassword, "pending");
+                    if (userRepository.saveUser(user)) {
+                        Toast.makeText(ArtistSingupActivity.this, "Tài khoản đăng kí thành công", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(ArtistSingupActivity.this, "Lỗi khi lưu tài khoản", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
         });
 
-        // Xử lý sự kiện btnBack
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -63,6 +72,27 @@ public class ArtistSingupActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    private boolean validateInputs() {
+        String userStr = username.getText().toString();
+        String userEmail = email.getText().toString();
+        String userPhone = phone.getText().toString();
+        String userPassword = password.getText().toString();
+        String userConfirmPassword = confirmPassword.getText().toString();
+
+        if (userStr.isEmpty() || userEmail.isEmpty() || userPhone.isEmpty() ||
+                userPassword.isEmpty() || userConfirmPassword.isEmpty()) {
+            Toast.makeText(this, "Vui lòng điền đầy đủ thông tin", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (!userPassword.equals(userConfirmPassword)) {
+            Toast.makeText(this, "Mật khẩu không khớp", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        return true;
     }
 
     private void addControls() {
@@ -75,36 +105,5 @@ public class ArtistSingupActivity extends AppCompatActivity {
         confirmPassword = findViewById(R.id.confirm_password);
         btnBack = findViewById(R.id.btn_back);
         btnConfirm = findViewById(R.id.btn_confirm);
-    }
-
-    private void saveAccount(String username, String email, String phone, String password, String status) {
-        ConnectionClass connectionClass = new ConnectionClass(); // Lớp kết nối của bạn
-        Connection con = connectionClass.conClass();
-
-        if (con != null) {
-            try {
-                String query = "INSERT INTO Users (username, email, phone, password, status) VALUES (?, ?, ?, ?, ?)";
-                PreparedStatement preparedStatement = con.prepareStatement(query);
-                preparedStatement.setString(1, username);
-                preparedStatement.setString(2, email);
-                preparedStatement.setString(3, phone);
-                preparedStatement.setString(4, password);
-                preparedStatement.setString(5, status);
-
-                // Thực thi câu lệnh SQL
-                int rowsInserted = preparedStatement.executeUpdate();
-
-                if (rowsInserted > 0) {
-                    Toast.makeText(ArtistSingupActivity.this, "Tài khoản đăng kí thành công", Toast.LENGTH_SHORT).show();
-                }
-
-                con.close(); // Đóng kết nối sau khi thực hiện
-            } catch (Exception e) {
-                Log.e("Database Error", e.getMessage());
-                Toast.makeText(ArtistSingupActivity.this, "Lỗi khi lưu tài khoản", Toast.LENGTH_SHORT).show();
-            }
-        } else {
-            Toast.makeText(ArtistSingupActivity.this, "Không thể kết nối cơ sở dữ liệu", Toast.LENGTH_SHORT).show();
-        }
     }
 }
