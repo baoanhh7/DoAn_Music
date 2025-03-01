@@ -80,7 +80,6 @@ public class PlayMusicActivity extends AppCompatActivity {
     Integer Positionshuffle = -1;
     boolean Isshuffle = false;
     SQLiteDatabase database = null;
-    DbHelper dbHelper;
     Animation animation;
     // Tạo một biến Bitmap để lưu hình ảnh
 //    Bitmap bitmapResult;
