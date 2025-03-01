@@ -15,7 +15,7 @@ public class LyricsSyncManager {
     private final Handler handler;
     private List<LyricLine> lyrics;
     private int currentLineIndex;
-
+    private boolean isRunning = false;
     public LyricsSyncManager(MediaPlayer mediaPlayer, TextView lyricsTextView) {
         this.mediaPlayer = mediaPlayer;
         this.lyricsTextView = lyricsTextView;
@@ -31,32 +31,51 @@ public class LyricsSyncManager {
     }
 
     public void start() {
+        if (isRunning) return;
+        isRunning = true;
         handler.post(new Runnable() {
             @Override
             public void run() {
-                if (mediaPlayer.isPlaying()) {
+                if (isRunning && mediaPlayer != null && mediaPlayer.isPlaying()) {
                     long currentPosition = mediaPlayer.getCurrentPosition();
                     updateLyrics(currentPosition);
-                    handler.postDelayed(this, 100); // Update every 100ms
+                    handler.postDelayed(this, 100);
                 }
             }
         });
     }
 
     private void updateLyrics(long currentPosition) {
-        if (currentLineIndex < lyrics.size()) {
-            LyricLine currentLine = lyrics.get(currentLineIndex);
-            if (currentPosition >= currentLine.startTime) {
-                lyricsTextView.setText(currentLine.text);
-                currentLineIndex++;
-            }
+//        if (currentLineIndex < lyrics.size()) {
+//            LyricLine currentLine = lyrics.get(currentLineIndex);
+//            if (currentPosition >= currentLine.startTime) {
+//                lyricsTextView.setText(currentLine.text);
+//                currentLineIndex++;
+//            }
+//        }
+        if (lyrics.isEmpty()) return;
+
+        int index = Collections.binarySearch(lyrics, new LyricLine(currentPosition, ""),
+                (a, b) -> Long.compare(a.startTime, b.startTime));
+        if (index < 0) {
+            index = -index - 2; // Tìm dòng trước đó
+        }
+        if (index >= 0 && index < lyrics.size() && currentPosition >= lyrics.get(index).startTime) {
+            currentLineIndex = index;
+            lyricsTextView.setText(lyrics.get(currentLineIndex).text);
         }
     }
 
     public void stop() {
+        isRunning = false;
         handler.removeCallbacksAndMessages(null);
     }
 
+    public void release() {
+        stop();
+        lyrics.clear();
+        handler.removeCallbacksAndMessages(null);
+    }
     public static class LyricLine {
         public final long startTime;
         public final String text;

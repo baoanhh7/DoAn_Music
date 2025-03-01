@@ -9,14 +9,21 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class LyricsManager {
     private MediaPlayer mediaPlayer;
     private TextView lyricsTextView;
     private LyricsSyncManager lyricsSyncManager;
     private String currentLRCUrl;
-
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private Future<?> currentTask;
     public LyricsManager(MediaPlayer mediaPlayer, TextView lyricsTextView) {
+        if (mediaPlayer == null || lyricsTextView == null) {
+            throw new IllegalArgumentException("MediaPlayer and TextView must not be null");
+        }
         this.mediaPlayer = mediaPlayer;
         this.lyricsTextView = lyricsTextView;
     }
@@ -31,32 +38,36 @@ public class LyricsManager {
             currentLRCUrl = lrcUrl;
         }
 
-
-        new Thread(() -> {
+// Hủy tác vụ trước đó nếu đang chạy
+        if (currentTask != null && !currentTask.isDone()) {
+            currentTask.cancel(true);
+        }
+        currentTask = executor.submit(() -> {
             try {
                 URL url = new URL(lrcUrl);
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
-                List<LyricsSyncManager.LyricLine> lyrics = LRCParser.parse(inputStream);
-
-                // Chạy trên UI thread để cập nhật UI
-                lyricsTextView.post(() -> {
-                    if (lyricsSyncManager == null) {
-                        lyricsSyncManager = new LyricsSyncManager(mediaPlayer, lyricsTextView);
-                    }
-                    lyricsSyncManager.setLyrics(lyrics);
-                    lyricsSyncManager.start();
-                });
+                try (InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream())) {
+                    List<LyricsSyncManager.LyricLine> lyrics = LRCParser.parse(inputStream);
+                    lyricsTextView.post(() -> {
+                        if (lyricsSyncManager == null) {
+                            lyricsSyncManager = new LyricsSyncManager(mediaPlayer, lyricsTextView);
+                        }
+                        lyricsSyncManager.setLyrics(lyrics);
+                        lyricsSyncManager.start();
+                    });
+                } finally {
+                    urlConnection.disconnect();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
                 lyricsTextView.post(() -> lyricsTextView.setText("Không thể tải lời bài hát"));
             }
-        }).start();
+        });
     }
 
     public void resetLyrics() {
         if (lyricsSyncManager != null) {
-            lyricsSyncManager.stop();
+            lyricsSyncManager.release();
             lyricsSyncManager = null;
         }
         lyricsTextView.setText("");
@@ -65,6 +76,7 @@ public class LyricsManager {
 
     public void release() {
         resetLyrics();
+        executor.shutdown();
         mediaPlayer = null;
         lyricsTextView = null;
     }

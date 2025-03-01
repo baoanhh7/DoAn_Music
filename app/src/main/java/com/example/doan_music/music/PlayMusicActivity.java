@@ -202,6 +202,9 @@ public class PlayMusicActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         // Giải phóng resources
+        if (lyricsManager != null) {
+            lyricsManager.release();
+        }
         playerManager.release();
     }
 
@@ -1148,7 +1151,7 @@ public class PlayMusicActivity extends AppCompatActivity {
         if (playerManager.isPlaying()) {
             playerManager.stop();
         }
-
+        lyricsManager.resetLyrics();
         playerManager.setDataSource(loadDataSong(songId));
         loadNameArtist(songId);
         updateViewSong(songId);
@@ -1353,5 +1356,22 @@ public class PlayMusicActivity extends AppCompatActivity {
                 }
             }
         }).start();
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (lyricsManager != null) {
+            lyricsManager.release();
+        }
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (playerManager.isPlaying()) {
+            playerManager.pause();
+        }
+        if (lyricsManager != null) {
+            lyricsManager.resetLyrics(); // Hoặc release() nếu muốn giải phóng hoàn toàn
+        }
     }
 }
