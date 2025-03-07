@@ -17,6 +17,9 @@ public class LyricsManager {
     private MediaPlayer mediaPlayer;
     private TextView lyricsTextView;
     private LyricsSyncManager lyricsSyncManager;
+
+    private TextViewLyricsDisplay textViewLyricsDisplay;
+
     private String currentLRCUrl;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private Future<?> currentTask;
@@ -26,6 +29,7 @@ public class LyricsManager {
         }
         this.mediaPlayer = mediaPlayer;
         this.lyricsTextView = lyricsTextView;
+        textViewLyricsDisplay = new TextViewLyricsDisplay(lyricsTextView);
     }
 
     public void loadLyrics(String lrcUrl) {
@@ -50,7 +54,8 @@ public class LyricsManager {
                     List<LyricsSyncManager.LyricLine> lyrics = LRCParser.parse(inputStream);
                     lyricsTextView.post(() -> {
                         if (lyricsSyncManager == null) {
-                            lyricsSyncManager = new LyricsSyncManager(mediaPlayer, lyricsTextView);
+//                            lyricsSyncManager = new LyricsSyncManager(mediaPlayer, lyricsTextView);
+                            lyricsSyncManager = new LyricsSyncManager(mediaPlayer, textViewLyricsDisplay);
                         }
                         lyricsSyncManager.setLyrics(lyrics);
                         lyricsSyncManager.start();

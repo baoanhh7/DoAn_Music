@@ -5,6 +5,7 @@ import android.widget.TextView;
 
 import com.example.doan_music.Lyric.LRCParser;
 import com.example.doan_music.Lyric.LyricsSyncManager;
+import com.example.doan_music.Lyric.TextViewLyricsDisplay;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -19,11 +20,16 @@ public class lyricManagerOffline {
     private MediaPlayer mediaPlayer;
     private TextView lyricsTextView;
     private LyricsSyncManager lyricsSyncManager;
+    private TextViewLyricsDisplay textViewLyricsDisplay;
     private String currentLRCUrl;
 
     public lyricManagerOffline(MediaPlayer mediaPlayer, TextView lyricsTextView) {
+        if (mediaPlayer == null || lyricsTextView == null) {
+            throw new IllegalArgumentException("MediaPlayer and TextView must not be null");
+        }
         this.mediaPlayer = mediaPlayer;
         this.lyricsTextView = lyricsTextView;
+        textViewLyricsDisplay = new TextViewLyricsDisplay(lyricsTextView);
     }
 
     public void loadLyricsFromFile(String filePath) {
@@ -46,7 +52,8 @@ public class lyricManagerOffline {
                 // Chạy trên UI thread để cập nhật UI
                 lyricsTextView.post(() -> {
                     if (lyricsSyncManager == null) {
-                        lyricsSyncManager = new LyricsSyncManager(mediaPlayer, lyricsTextView);
+//                        lyricsSyncManager = new LyricsSyncManager(mediaPlayer, lyricsTextView);
+                        lyricsSyncManager = new LyricsSyncManager(mediaPlayer, textViewLyricsDisplay);
                     }
                     lyricsSyncManager.setLyrics(lyrics);
                     lyricsSyncManager.start();

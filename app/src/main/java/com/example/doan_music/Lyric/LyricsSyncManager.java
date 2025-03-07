@@ -11,18 +11,26 @@ import java.util.List;
 
 public class LyricsSyncManager {
     private final MediaPlayer mediaPlayer;
-    private final TextView lyricsTextView;
+    //private final TextView lyricsTextView;
     private final Handler handler;
     private List<LyricLine> lyrics;
     private int currentLineIndex;
     private boolean isRunning = false;
-    public LyricsSyncManager(MediaPlayer mediaPlayer, TextView lyricsTextView) {
-        this.mediaPlayer = mediaPlayer;
-        this.lyricsTextView = lyricsTextView;
-        this.handler = new Handler(Looper.getMainLooper());
-        this.lyrics = new ArrayList<>();
-        this.currentLineIndex = 0;
-    }
+    private final LyricsDisplay display;
+//    public LyricsSyncManager(MediaPlayer mediaPlayer, TextView lyricsTextView) {
+//        this.mediaPlayer = mediaPlayer;
+//        this.lyricsTextView = lyricsTextView;
+//        this.handler = new Handler(Looper.getMainLooper());
+//        this.lyrics = new ArrayList<>();
+//        this.currentLineIndex = 0;
+//    }
+public LyricsSyncManager(MediaPlayer mediaPlayer, LyricsDisplay display) {
+    this.mediaPlayer = mediaPlayer;
+    this.display = display;
+    this.handler = new Handler(Looper.getMainLooper());
+    this.lyrics = new ArrayList<>();
+    this.currentLineIndex = 0;
+}
 
     public void setLyrics(List<LyricLine> lyrics) {
         this.lyrics = new ArrayList<>(lyrics);
@@ -62,7 +70,8 @@ public class LyricsSyncManager {
         }
         if (index >= 0 && index < lyrics.size() && currentPosition >= lyrics.get(index).startTime) {
             currentLineIndex = index;
-            lyricsTextView.setText(lyrics.get(currentLineIndex).text);
+//            lyricsTextView.setText(lyrics.get(currentLineIndex).text);
+            display.displayLyric(lyrics.get(currentLineIndex).text);
         }
     }
 
