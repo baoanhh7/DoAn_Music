@@ -1,9 +1,9 @@
-package com.example.doan_music.designPattern.CommandPK;
+package com.example.doan_music.designPattern.CommandPK.Class;
 
 import android.util.Log;
 
 import com.example.doan_music.database.ConnectionClass;
-import com.example.doan_music.designPattern.Command;
+import com.example.doan_music.designPattern.CommandPK.ICommand.Command;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

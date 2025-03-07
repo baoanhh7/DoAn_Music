@@ -2,7 +2,6 @@ package com.example.doan_music.activity.Artist;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -15,7 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.doan_music.R;
 import com.example.doan_music.designPattern.DependencyInjectionPK.Class.SQLDatabaseService;
-import com.example.doan_music.designPattern.DependencyInjectionPK.DatabaseService;
+import com.example.doan_music.designPattern.DependencyInjectionPK.IF.DatabaseService;
 import com.example.doan_music.designPattern.DependencyInjectionPK.IF.UserRepository;
 import com.example.doan_music.designPattern.DependencyInjectionPK.Model.SQLUserRepository;
 import com.example.doan_music.designPattern.DependencyInjectionPK.Model.User;

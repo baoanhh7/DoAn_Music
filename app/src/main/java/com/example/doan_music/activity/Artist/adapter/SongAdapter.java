@@ -1,7 +1,5 @@
 package com.example.doan_music.activity.Artist.adapter;
 
-import static java.security.AccessController.getContext;
-
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,7 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.doan_music.R;
-import com.example.doan_music.designPattern.CommandPK.CommandManager;
+import com.example.doan_music.designPattern.CommandPK.Class.CommandManager;
 import com.example.doan_music.model.Song;
 import com.squareup.picasso.Picasso;
 

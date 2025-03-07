@@ -22,18 +22,14 @@ import androidx.fragment.app.Fragment;
 
 
 import com.example.doan_music.R;
-import com.example.doan_music.database.ConnectionClass;
-import com.example.doan_music.designPattern.Command;
-import com.example.doan_music.designPattern.CommandPK.CommandManager;
-import com.example.doan_music.designPattern.CommandPK.UpdateAlbumCommand;
+import com.example.doan_music.designPattern.CommandPK.ICommand.Command;
+import com.example.doan_music.designPattern.CommandPK.Class.CommandManager;
+import com.example.doan_music.designPattern.CommandPK.Class.UpdateAlbumCommand;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.UUID;
 
 public class UpdateAlbumArtistFragment extends Fragment {

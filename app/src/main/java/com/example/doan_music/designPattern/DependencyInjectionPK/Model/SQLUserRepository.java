@@ -2,7 +2,7 @@ package com.example.doan_music.designPattern.DependencyInjectionPK.Model;
 
 import android.util.Log;
 
-import com.example.doan_music.designPattern.DependencyInjectionPK.DatabaseService;
+import com.example.doan_music.designPattern.DependencyInjectionPK.IF.DatabaseService;
 import com.example.doan_music.designPattern.DependencyInjectionPK.IF.UserRepository;
 
 import java.sql.Connection;

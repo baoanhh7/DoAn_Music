@@ -1,7 +1,7 @@
 package com.example.doan_music.designPattern.DependencyInjectionPK.Class;
 
 import com.example.doan_music.database.ConnectionClass;
-import com.example.doan_music.designPattern.DependencyInjectionPK.DatabaseService;
+import com.example.doan_music.designPattern.DependencyInjectionPK.IF.DatabaseService;
 
 import java.sql.Connection;
 

@@ -1,6 +1,6 @@
-package com.example.doan_music.designPattern.CommandPK;
+package com.example.doan_music.designPattern.CommandPK.Class;
 
-import com.example.doan_music.designPattern.Command;
+import com.example.doan_music.designPattern.CommandPK.ICommand.Command;
 
 import java.util.Stack;
 
